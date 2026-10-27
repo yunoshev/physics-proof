@@ -6,8 +6,10 @@ client, so hand-checking the arithmetic needs only this file plus
 ``config/prices.json``.
 
 Cached input tokens are a subset of input tokens (that is how the API
-reports them), so charging input tokens at the input price already charges
-cached tokens at the input price: there is no discount and no double count.
+reports them). They are billed at the discounted ``cached_input_per_1m``
+price: cost = (input − cached) × input price + cached × cached price.
+A model entry without ``cached_input_per_1m`` falls back to the input
+price for all input tokens.
 """
 
 from __future__ import annotations
@@ -57,8 +59,11 @@ def compute_cost_usd(usage: Usage, prices: Mapping[str, Any]) -> float:
         if usage.model not in models:
             raise ValueError(f"unknown model in price table: {usage.model!r}")
         entry = models[usage.model]
+        cached_price = float(entry.get("cached_input_per_1m", entry["input_per_1m"]))
+        new_tokens = usage.input_tokens - usage.cached_tokens
         tokens_usd = (
-            usage.input_tokens * float(entry["input_per_1m"])
+            new_tokens * float(entry["input_per_1m"])
+            + usage.cached_tokens * cached_price
             + usage.output_tokens * float(entry["output_per_1m"])
         ) / 1_000_000.0
         searches_usd = usage.searches * float(prices["web_search_per_1k_calls"]) / 1000.0
