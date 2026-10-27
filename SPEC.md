@@ -262,6 +262,8 @@ go into the system prompt. They contain no answers about any clip.
    change when the object turns (the height of an upright object).
 2. **Two independent references.** Cross-check the scale with a second reference at about the same depth (another object
    of known size, a body height). If they disagree beyond their errors, find out why before measuring; report both.
+   Two extents of the same object are not independent: a wrong idea of what the object is (which parts it includes)
+   spoils both and they still agree. The second reference must be a different object or body.
 3. **Fit only unsupported motion.** Find where support starts and ends (takeoff and landing from the lowest point of the
    moving body — feet, bottom of the body mask — not from the tracked point; for a body on a surface, where the surface
    stops pressing on it, e.g. where a curved ramp turns vertical). Frames with support flatten or bend the parabola.
