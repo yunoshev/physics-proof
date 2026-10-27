@@ -21,7 +21,7 @@ import json
 import math
 import shutil
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -36,9 +36,26 @@ from .sam_tool import SamTool
 from .sandbox import SandboxResult, run_python
 from .schema import combine, schema_doc, validate
 from .search_tool import SearchTool
+from .toolbox import Toolbox
 
 #: Code runner for the ``python`` tool: the sandbox by default, swappable in tests.
-PythonRunner = Callable[[str, Path], SandboxResult]
+#: Plain runners take (code, workspace); runners with tool support also
+#: accept an ``extra_imports`` keyword of registered tool names.
+PythonRunner = Callable[..., SandboxResult]
+
+
+def _call_runner(
+    runner: PythonRunner, code: str, workspace: Path, extra: Collection[str]
+) -> SandboxResult:
+    """Run code, passing extra_imports only when tools are registered.
+
+    Plain two-argument runners never see the keyword; runs without tools
+    call them exactly as before.
+    """
+    names = tuple(sorted(set(extra)))
+    if names:
+        return runner(code, workspace, extra_imports=names)
+    return runner(code, workspace)
 
 __all__ = [
     "BUDGET_STATUS",
@@ -142,6 +159,15 @@ TOOLS: list[dict[str, Any]] = [
         {"code": {"type": "string"}},
     ),
     _tool(
+        "make_tool",
+        "Write a small measurement module plus a probe on synthetic data; registered only if the probe passes.",
+        {
+            "name": {"type": "string"},
+            "code": {"type": "string"},
+            "probe": {"type": "string"},
+        },
+    ),
+    _tool(
         "finish",
         "Validate the analysis file from the workspace and end the run. page_texts is a JSON object string, empty for none.",
         {
@@ -233,7 +259,14 @@ def blocks_doc() -> str:
 
 
 def tools_doc(
-    *, max_turns: int, sam_frames: int, searches: int, mask_checks: int, cap_usd: float
+    *,
+    max_turns: int,
+    sam_frames: int,
+    searches: int,
+    mask_checks: int,
+    cap_usd: float,
+    max_tools: int = 4,
+    tool_attempts: int = 3,
 ) -> str:
     """The tools, their argument shapes, and the enforced budgets."""
     return (
@@ -248,6 +281,16 @@ def tools_doc(
         "- search(query): one reference question per call.\n"
         "- python(code): code runs in the workspace sandbox with import blocks; "
         "write analysis files with relative paths.\n"
+        "- make_tool(name, code, probe): name is a snake_case module name; "
+        "code is the module source (functions with docstrings stating "
+        "argument shapes and units); probe is test code that imports the "
+        "module, builds synthetic data with a known answer, checks it with "
+        "explicit tolerances and prints PASS. Both pass the same static "
+        "review as python. The module is written to workspace/tools and "
+        "registered only if the probe exits 0 and prints PASS; then later "
+        "python calls can import it. A failed probe returns its output and "
+        "the module stays unregistered and not importable. Re-registering a "
+        "name replaces it (every version stays on disk).\n"
         "- finish(analysis_file, page_texts): analysis_file is a workspace path; "
         "page_texts is a JSON object string (or empty). finish computes "
         "flights[i].decide, verdict and overall itself from your accel/g/g_err "
@@ -268,7 +311,9 @@ def tools_doc(
         + str(sam_frames) + " SAM frames, "
         + str(searches) + " searches, "
         + str(mask_checks) + " mask checks, $"
-        + ("%.2f" % cap_usd) + " total. "
+        + ("%.2f" % cap_usd) + " total, "
+        + str(max_tools) + " registered tools, "
+        + str(tool_attempts) + " attempts per tool name. "
         "When a budget note warns a limit is near, call finish with what you have."
     )
 
@@ -297,6 +342,8 @@ def assemble_system_prompt(
     mask_checks: int,
     cap_usd: float,
     probe_text: str,
+    max_tools: int = 4,
+    tool_attempts: int = 3,
 ) -> str:
     """Build message 0: the prompt file plus generated parts, then the probe."""
     base = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
@@ -310,6 +357,8 @@ def assemble_system_prompt(
             searches=searches,
             mask_checks=mask_checks,
             cap_usd=cap_usd,
+            max_tools=max_tools,
+            tool_attempts=tool_attempts,
         ),
         "## Verified blocks (generated from docstrings)",
         blocks_doc(),
@@ -331,6 +380,7 @@ class RunSummary:
     sam_frames: int = 0
     searches: int = 0
     mask_checks: int = 0
+    tools_made: int = 0
     cost_usd: float = 0.0
     wall_s: float = 0.0
     analysis_path: Path | None = None
@@ -347,6 +397,7 @@ class RunSummary:
             "sam_frames": self.sam_frames,
             "searches": self.searches,
             "mask_checks": self.mask_checks,
+            "tools_made": self.tools_made,
             "cost_usd": self.cost_usd,
             "wall_s": self.wall_s,
             "analysis_path": str(self.analysis_path) if self.analysis_path else None,
@@ -420,6 +471,7 @@ class _Tools:
     clip: Path
     client: Any
     python_runner: PythonRunner
+    toolbox: Toolbox
 
 
 def _run_video_info(tools: _Tools) -> tuple[str, list[Path]]:
@@ -508,7 +560,9 @@ def _run_python(tools: _Tools, args: dict[str, Any]) -> tuple[str, list[Path]]:
     code = args.get("code")
     if not isinstance(code, str):
         raise ValueError("python code must be a string, got " + repr(code))
-    result = tools.python_runner(code, tools.workspace)
+    result = _call_runner(
+        tools.python_runner, code, tools.workspace, tools.toolbox.registered_names()
+    )
     if result.refused:
         lines = ["python refused:"]
         for problem in result.problems:
@@ -533,6 +587,14 @@ def _run_python(tools: _Tools, args: dict[str, Any]) -> tuple[str, list[Path]]:
                 rels.append(path.name)
         body += "\nimages: " + ", ".join(rels)
     return body, list(result.images)
+
+
+def _run_make_tool(tools: _Tools, args: dict[str, Any], turn: int) -> tuple[str, list[Path]]:
+    """Build and probe one tool; the attempt counts as this turn either way."""
+    _, message = tools.toolbox.make_tool(
+        args.get("name"), args.get("code"), args.get("probe"), turn=turn
+    )
+    return message, []
 
 
 def _parse_page_texts(raw: Any) -> tuple[dict[str, str], str | None]:
@@ -910,6 +972,11 @@ def _run_finish(tools: _Tools, args: dict[str, Any], run_dir: Path) -> tuple[boo
         analysis["page_texts"] = merged
     coerced = _coerce_analysis(analysis)
     _fill_computed(analysis)
+    section = tools.toolbox.tools_section()
+    if section:
+        analysis["tools"] = section
+    else:
+        analysis.pop("tools", None)
     info = video.probe(tools.clip)
     issues = [
         issue.path + ": " + issue.message
@@ -972,6 +1039,9 @@ def _dispatch(
         if name == "python":
             text, images = _run_python(tools, args)
             return False, text, images, None
+        if name == "make_tool":
+            text, images = _run_make_tool(tools, args, turn)
+            return False, text, images, None
         if name == "finish":
             ok, text, dest = _run_finish(tools, args, run_dir)
             return ok, text, [], dest
@@ -987,7 +1057,7 @@ def _dispatch(
 def _low_note(
     *, turn: int, max_turns: int, sam: SamTool, sam_frames: int,
     search: SearchTool, searches: int, mask: MaskCheck, mask_checks: int,
-    budget: Budget,
+    budget: Budget, toolbox: Toolbox | None = None,
 ) -> str:
     """Warn Spark when any budget is close to its limit, else empty."""
     notes = []
@@ -999,6 +1069,8 @@ def _low_note(
         notes.append("searches nearly exhausted")
     if mask_checks - mask.checks_made <= 1:
         notes.append("mask checks nearly exhausted")
+    if toolbox is not None and toolbox.max_tools - toolbox.count() <= 1:
+        notes.append("tool slots nearly exhausted")
     if budget.cap_usd > 0 and budget.spent >= 0.8 * budget.cap_usd:
         notes.append("only $%.4f of the cap left" % (budget.cap_usd - budget.spent))
     if not notes:
@@ -1112,13 +1184,20 @@ def _client_for(tier: str, run_dir: Path, spark: Any) -> tuple[Any, str]:
     return client, TIER_MODELS[tier]
 
 
-def _counters(sam: SamTool, search: SearchTool, mask: MaskCheck, sam_calls: int) -> dict[str, int]:
+def _counters(
+    sam: SamTool,
+    search: SearchTool,
+    mask: MaskCheck,
+    sam_calls: int,
+    toolbox: Toolbox | None = None,
+) -> dict[str, int]:
     """Per-run tool counters for turn files and the summary."""
     return {
         "sam_calls": sam_calls,
         "sam_frames": sam.frames_used,
         "searches": search.searches_made,
         "mask_checks": mask.checks_made,
+        "tools": toolbox.count() if toolbox is not None else 0,
     }
 
 
@@ -1138,6 +1217,8 @@ def run_analysis(
     cache_dir: str | Path | None = None,
     effort: str = "high",
     agent_max_output_tokens: int | None = None,
+    max_tools: int = 4,
+    tool_attempts: int = 3,
 ) -> RunSummary:
     """Run one analysis: blind start, tool loop, finish, logs.
 
@@ -1151,6 +1232,8 @@ def run_analysis(
     logged in the summary. agent_max_output_tokens is the per-turn output
     limit for the agent's own calls (default 32768; reasoning tokens count
     toward it); a turn cut off by it retries once with double the limit.
+    max_tools caps registered make_tool tools per run; tool_attempts caps
+    make_tool attempts per tool name.
     """
     started = time.monotonic()
     run_path = Path(run_dir)
@@ -1172,6 +1255,8 @@ def run_analysis(
         mask_checks=mask_checks,
         cap_usd=cap_usd,
         probe_text=probe_text,
+        max_tools=max_tools,
+        tool_attempts=tool_attempts,
     )
 
     provider, model = _client_for(tier, run_path, spark)
@@ -1183,6 +1268,8 @@ def run_analysis(
     sam = SamTool(guard, workspace, clip, budget_frames=sam_frames, cache_dir=cache_dir)
     search = SearchTool(guard, workspace, limit=searches)
     mask = MaskCheck(guard, workspace, clip, limit=mask_checks)
+    runner = python_runner or run_python
+    toolbox = Toolbox(workspace, runner, max_tools=max_tools, max_attempts=tool_attempts)
     tools = _Tools(
         sam=sam,
         search=search,
@@ -1190,7 +1277,8 @@ def run_analysis(
         workspace=workspace,
         clip=clip,
         client=guard,
-        python_runner=python_runner or run_python,
+        python_runner=runner,
+        toolbox=toolbox,
     )
     sam_calls = 0
 
@@ -1235,6 +1323,7 @@ def run_analysis(
         summary.sam_frames = sam.frames_used
         summary.searches = search.searches_made
         summary.mask_checks = mask.checks_made
+        summary.tools_made = toolbox.count()
         summary.cost_usd = budget.spent
         summary.wall_s = time.monotonic() - started
         summary.tier = tier
@@ -1348,6 +1437,7 @@ def run_analysis(
                 mask=mask,
                 mask_checks=mask_checks,
                 budget=budget,
+                toolbox=toolbox,
             )
         turn_cost = budget.spent - spent_before
 
@@ -1387,7 +1477,7 @@ def run_analysis(
             result_items=result_items,
             cost=turn_cost,
             cumulative=budget.spent,
-            counters=_counters(sam, search, mask, sam_calls),
+            counters=_counters(sam, search, mask, sam_calls, toolbox),
         )
         with open(log_path, log_mode, encoding="utf-8") as handle:
             handle.write(

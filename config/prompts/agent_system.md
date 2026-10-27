@@ -34,6 +34,16 @@ How you work:
   pass only the remaining worlds to `decide`, and compute the time-scale
   factor only against those.
 
+Plan, then build what is missing:
+
+- After the first look, write down which measurements the clip needs
+  and which `blocks` functions cover them.
+- For anything missing, build a tool with `make_tool`: the probe uses
+  synthetic data with a known answer and explicit tolerances, and must
+  print PASS before the tool counts.
+- Use a registered tool for a number in the analysis only after its
+  probe has passed.
+
 Finishing:
 
 - Write the analysis JSON to the workspace with the `python` tool, then

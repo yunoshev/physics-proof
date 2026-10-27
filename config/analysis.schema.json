@@ -327,6 +327,20 @@
     "page_texts": {
       "type": "object",
       "description": "Optional overrides for any text on the page: key to replacement string."
+    },
+    "tools": {
+      "type": "array",
+      "description": "Agent-built tools registered by make_tool; filled by finish from the registry, never hand-written; absent when none were registered. Item fields are enforced by the validator.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "purpose": {"type": "string"},
+          "functions": {"type": "array", "items": {"type": "string"}},
+          "probe_summary": {"type": "string"},
+          "verified": {"const": true}
+        }
+      }
     }
   },
   "$defs": {

@@ -18,6 +18,7 @@ import subprocess
 import sys
 import sysconfig
 import time
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -108,10 +109,13 @@ class SandboxResult:
 class _Checker(ast.NodeVisitor):
     """Collect review problems; fail closed on anything unclear."""
 
-    def __init__(self, problems: list[Problem], skip: set[int]) -> None:
+    def __init__(
+        self, problems: list[Problem], skip: set[int], extra: Collection[str]
+    ) -> None:
         self.problems = problems
         self.skip = skip
         self.subprocess_names = {"subprocess"}
+        self.extra = set(extra)
 
     def add(self, node: ast.AST, rule: str, message: str) -> None:
         self.problems.append(Problem(node.lineno, rule, message))
@@ -121,13 +125,13 @@ class _Checker(ast.NodeVisitor):
             top = alias.name.split(".")[0]
             if top == "subprocess" and alias.asname:
                 self.subprocess_names.add(alias.asname)
-            if top not in _ALLOWED_IMPORTS:
+            if top not in _ALLOWED_IMPORTS and top not in self.extra:
                 self.add(node, "import-allowlist", "import of " + repr(alias.name) + " is not allowed")
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         top = (node.module or "").split(".")[0]
-        if node.level or top not in _ALLOWED_IMPORTS:
+        if node.level or (top not in _ALLOWED_IMPORTS and top not in self.extra):
             name = "." * node.level + (node.module or "")
             self.add(node, "import-allowlist", "import from " + repr(name) + " is not allowed")
             return
@@ -222,10 +226,12 @@ class _Checker(ast.NodeVisitor):
             self.add(node, "path-outside-workspace", "path outside the workspace " + repr(value) + " is not allowed")
 
 
-def review(code: str) -> list[Problem]:
+def review(code: str, *, extra_imports: Collection[str] = ()) -> list[Problem]:
     """Static check of agent code; returns problems (empty means allowed).
 
     Each problem carries the 1-based line, a rule id and a message.
+    extra_imports names extra top-level modules the code may import
+    (registered agent-built tools); everything else follows M5.
     """
     try:
         tree = ast.parse(code)
@@ -238,7 +244,7 @@ def review(code: str) -> list[Problem]:
                 if isinstance(value, ast.Constant) and isinstance(value.value, str):
                     skip.add(id(value))
     problems: list[Problem] = []
-    _Checker(problems, skip).visit(tree)
+    _Checker(problems, skip, extra_imports).visit(tree)
     problems.sort(key=lambda p: (p.line, p.rule, p.message))
     return problems
 
@@ -428,8 +434,34 @@ def _runner_source(repo_root: Path, script: Path, site_dirs: list[Path]) -> str:
     shim = _shim_path(repo_root)
     lines = [
         "import importlib.util as _ilu",
+        "import pathlib as _pl",
         "import runpy as _runpy",
         "import sys as _sys",
+        # Registered agent-built tools (M14) are preloaded from explicit
+        # file paths, like blocks above: no directory is ever put on
+        # sys.path, so agent code cannot scan anything through imports.
+        # Passes retry when one tool imports another; a tool that never
+        # loads stays unloaded and its plain import fails clearly.
+        "_td = _pl.Path(" + json.dumps(str(script)) + ").parent.parent / 'tools' / 'registered'",
+        "if _td.is_dir():",
+        "    _pending = sorted(_td.glob('*.py'))",
+        "    for _ in range(len(_pending) + 1):",
+        "        _rest = []",
+        "        for _mod in _pending:",
+        "            _tname = _mod.stem",
+        "            if not _tname.isidentifier() or _tname.startswith('_'):",
+        "                continue",
+        "            try:",
+        "                _tspec = _ilu.spec_from_file_location(_tname, str(_mod))",
+        "                _tm = _ilu.module_from_spec(_tspec)",
+        "                _sys.modules[_tname] = _tm",
+        "                _tspec.loader.exec_module(_tm)",
+        "            except Exception:",
+        "                _sys.modules.pop(_tname, None)",
+        "                _rest.append(_mod)",
+        "        _pending = _rest",
+        "        if not _pending:",
+        "            break",
     ]
     for entry in site_dirs:
         lines.append("_sys.path.insert(0, " + json.dumps(str(entry)) + ")")
@@ -498,19 +530,26 @@ def _truncate(text: str) -> str:
 
 
 def run_python(
-    code: str, workspace: str | Path, *, timeout_s: float = 60, _skip_review: bool = False
+    code: str,
+    workspace: str | Path,
+    *,
+    timeout_s: float = 60,
+    _skip_review: bool = False,
+    extra_imports: Collection[str] = (),
 ) -> SandboxResult:
     """Run agent code in the sandbox; refuse first if review finds problems.
 
     The test-only _skip_review flag runs the runner layer on its own so
-    each layer is tested separately.
+    each layer is tested separately. extra_imports names registered
+    agent-built tools the code may import (M14); the runner preloads
+    the workspace tools/registered dir into the child sys.modules.
     """
     if timeout_s <= 0:
         raise ValueError("run_python: timeout_s must be positive")
     ws = Path(workspace).resolve()
     scripts = ws / "scripts"
     scripts.mkdir(parents=True, exist_ok=True)
-    problems = [] if _skip_review else review(code)
+    problems = [] if _skip_review else review(code, extra_imports=extra_imports)
     script = _next_script_path(scripts)
     script.write_text(code, encoding="utf-8")
     if problems:

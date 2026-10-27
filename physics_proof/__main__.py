@@ -1,4 +1,4 @@
-"""M8/M12 command surface: ``run``, M10: ``build`` and ``gallery``."""
+"""M8/M12 command surface: ``run``, M10: ``build`` and ``gallery``, M14: ``promote``."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from datetime import date
 from pathlib import Path
 
 from .agent import run_analysis
+from .config import REPO_ROOT
 
 __all__ = ["main"]
 
@@ -37,6 +38,9 @@ def main(argv: list[str] | None = None) -> int:
                        help="output directory; default site/<run tag>")
     gallery = sub.add_parser("gallery", help="regenerate the gallery index")
     gallery.add_argument("--site", default="site", help="site directory")
+    promote = sub.add_parser("promote", help="promote a registered tool into the library")
+    promote.add_argument("run_dir", help="run directory holding workspace/tools")
+    promote.add_argument("tool", help="registered tool name to promote")
     args = parser.parse_args(argv)
 
     if args.command == "build":
@@ -71,6 +75,21 @@ def main(argv: list[str] | None = None) -> int:
             print("analysis: " + str(summary.analysis_path), flush=True)
         else:
             print("analysis: none", flush=True)
+        return 0
+
+    if args.command == "promote":
+        from .toolbox import promote_tool
+
+        try:
+            contrib_path, test_path = promote_tool(
+                Path(args.run_dir), args.tool, repo_root=REPO_ROOT
+            )
+        except ValueError as exc:
+            print("promote failed: " + str(exc), flush=True)
+            return 1
+        print("promoted: " + str(contrib_path), flush=True)
+        print("probe test: " + str(test_path), flush=True)
+        print("a human must review both files before trusting the tool.", flush=True)
         return 0
     return 2
 

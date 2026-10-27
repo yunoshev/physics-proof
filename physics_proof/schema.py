@@ -974,6 +974,7 @@ def validate(
                 issues.append(
                     Issue("/overall/text", "text does not match combine for this verdict")
                 )
+    _check_tools_section(analysis.get("tools"), issues)
     seen: set[tuple[str, str]] = set()
     unique: list[Issue] = []
     for issue in issues:
@@ -982,6 +983,38 @@ def validate(
             seen.add(key)
             unique.append(issue)
     return unique
+
+
+def _check_tools_section(tools: Any, issues: list[Issue]) -> None:
+    """Validate the optional tools section filled by finish (M14).
+
+    Absent means no agent-built tools were registered. When present it
+    must be a list of {name, purpose, functions, probe_summary,
+    verified} objects; finish generates it from the tool registry, never
+    the agent.
+    """
+    if tools is None:
+        return
+    if not isinstance(tools, list):
+        issues.append(Issue("/tools", "expected an array or null"))
+        return
+    for i, entry in enumerate(tools):
+        base = _ptr("/tools", i)
+        if not isinstance(entry, dict):
+            issues.append(Issue(base, "expected an object"))
+            continue
+        _req_str(entry, base, "name", issues)
+        _req_str(entry, base, "purpose", issues)
+        functions = _req_list(entry, base, "functions", issues)
+        if functions is not None:
+            for j, sig in enumerate(functions):
+                if not isinstance(sig, str):
+                    issues.append(Issue(_ptr(base + "/functions", j), "expected a string"))
+        _req_str(entry, base, "probe_summary", issues)
+        if "verified" not in entry:
+            _need(entry, base, "verified", issues)
+        elif entry["verified"] is not True:
+            issues.append(Issue(_ptr(base, "verified"), "expected true"))
 
 
 def _short_text(text: str, limit: int) -> str:
@@ -1019,7 +1052,7 @@ def schema_doc() -> str:
             "type", "schema_version", "clip", "context", "first_look",
             "reference", "scale", "track", "masks", "flights",
             "timescale", "error_budget", "verdict", "overall",
-            "page_texts",
+            "page_texts", "tools",
         )
         if name not in top_required
     ]
@@ -1098,6 +1131,10 @@ def schema_doc() -> str:
         "none_fits.",
         "overall (required) = combine(verdict, timescale): label, text.",
         "page_texts (optional): {key: replacement string}.",
+        "tools (optional) = finish fills it from the tool registry, never "
+        "hand-write it: [{name, purpose [first docstring line], functions[] "
+        "[signatures], probe_summary, verified [true]}]; absent when no "
+        "tool was registered.",
     ]
     doc = "\n".join(lines)
     assert len(doc) <= SCHEMA_DOC_LIMIT, "schema_doc exceeded 6000 characters"
