@@ -431,11 +431,15 @@ function renderErrors() {
 function renderVerdict() {
   const overall = ANALYSIS.overall || {};
   const verdict = ANALYSIS.verdict || {};
+  let extra = "";
+  if (PAGE.ruled_out_line) extra += `<p>${esc(PAGE.ruled_out_line)}</p>`;
+  if (PAGE.legacy_line) extra += `<p class="notice">${esc(PAGE.legacy_line)}</p>`;
   return `<p class="notice"><strong>${esc(PAGE.headline)}</strong> `
     + `<span class="num">${esc(PAGE.key_number)}</span></p>`
     + verdictSVG()
     + `<p>${esc(overall.text || "")}</p>`
-    + `<p>${esc(verdict.text || "")}</p>`;
+    + `<p>${esc(verdict.text || "")}</p>`
+    + extra;
 }
 
 function renderHowMade() {

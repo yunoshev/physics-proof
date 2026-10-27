@@ -154,6 +154,43 @@ def test_gallery_lists_built_pages(tmp_path: Path) -> None:
     assert "poster.jpg" in html
 
 
+def test_verdict_worlds_lines_in_page_data(tmp_path: Path) -> None:
+    """New ruled-out worlds show a line; legacy runs show the tested-against line."""
+    analysis = load("2026-10-27-wallrun-r2")
+    analysis["verdict"]["worlds_tested"] = ["unsupported on Earth"]
+    analysis["verdict"]["worlds_ruled_out"] = [
+        {"world": "Moon", "by": "trees moving in the wind, people walking"}
+    ]
+    run = tmp_path / "newrun"
+    run.mkdir()
+    (run / "analysis.json").write_text(json.dumps(analysis))
+    (run / "clip.mp4").write_bytes(
+        (ROOT / "runs/2026-10-27-wallrun-r2/workspace/clip.mp4").read_bytes())
+    build_page(run, tmp_path / "newsite")
+    data = embedded(tmp_path / "newsite", "page-data")
+    assert data["legacy_worlds"] is False
+    assert data["legacy_line"] is None
+    assert data["ruled_out_line"] == (
+        "Ruled out by the scene: Moon \u2014 trees moving in the wind, people walking")
+
+    analysis["page_texts"] = {"verdict.ruled_out": "Nixed by the view"}
+    (run / "analysis.json").write_text(json.dumps(analysis))
+    build_page(run, tmp_path / "overridesite")
+    data = embedded(tmp_path / "overridesite", "page-data")
+    assert data["ruled_out_line"] == (
+        "Nixed by the view: Moon \u2014 trees moving in the wind, people walking")
+
+    before = (ROOT / "runs/2026-10-27-moonb-r2/analysis.json").read_bytes()
+    build_page(ROOT / "runs/2026-10-27-moonb-r2", tmp_path / "legacy")
+    after = (ROOT / "runs/2026-10-27-moonb-r2/analysis.json").read_bytes()
+    assert before == after
+    data = embedded(tmp_path / "legacy", "page-data")
+    assert data["legacy_worlds"] is True
+    assert data["legacy_line"] == (
+        "This run predates the scene check of worlds; tested against: Earth, Moon")
+    assert data["ruled_out_line"] is None
+
+
 def test_charts_match_stored_fits() -> None:
     """Prepared chart curves reproduce each stored fit rms (px)."""
     scales = {"2026-10-27-moonb-r2": 0.013647761194029853,

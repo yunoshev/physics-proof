@@ -96,6 +96,8 @@ DEFAULT_TEXTS: dict[str, str] = {
     "errors.share": "Relative error",
     "verdict.measured": "measured",
     "verdict.axis_note": "downward acceleration (m/s^2)",
+    "verdict.ruled_out": "Ruled out by the scene",
+    "verdict.legacy_worlds": "This run predates the scene check of worlds; tested against:",
     "howmade.model": "Model",
     "howmade.turns": "Turns",
     "howmade.sam": "SAM calls / frames",
@@ -168,11 +170,36 @@ def recompute_analysis(analysis: dict[str, Any]) -> tuple[dict[str, Any], list[s
             _set(base, decide, key, fresh[key])
     verdict = updated.get("verdict")
     if isinstance(verdict, dict) and isinstance(verdict.get("worlds"), dict):
-        fresh = blocks.decide(verdict["g"], verdict["g_err"],
-                              {k: float(v) for k, v in verdict["worlds"].items()},
-                              k_sigma=_k_sigma_of(verdict))
-        for key in ("state", "world", "consistent", "sigmas", "nearest", "k", "text"):
-            _set("/verdict", verdict, key, fresh[key])
+        try:
+            worlds_all = {str(k): float(v) for k, v in verdict["worlds"].items()}
+        except (TypeError, ValueError):
+            worlds_all = {}
+        tested = verdict.get("worlds_tested")
+        if not tested:
+            # Runs made before the scene check carry no worlds_tested: the
+            # stored decide ran against every world in sigmas, so adopt those
+            # keys without touching the run files.
+            sigmas = verdict.get("sigmas")
+            if isinstance(sigmas, dict) and sigmas:
+                filled = [k for k in sigmas if k in worlds_all]
+                if filled:
+                    verdict["worlds_tested"] = filled
+                    tested = filled
+                    if verdict.get("worlds_ruled_out") is None:
+                        verdict["worlds_ruled_out"] = []
+        decide_worlds = worlds_all
+        if isinstance(tested, list) and tested:
+            if all(isinstance(n, str) and n in worlds_all for n in tested):
+                # Like finish: decide runs against exactly worlds_tested.
+                decide_worlds = {n: worlds_all[n] for n in tested}
+            else:
+                decide_worlds = {}
+        if decide_worlds:
+            fresh = blocks.decide(verdict["g"], verdict["g_err"],
+                                  decide_worlds,
+                                  k_sigma=_k_sigma_of(verdict))
+            for key in ("state", "world", "consistent", "sigmas", "nearest", "k", "text"):
+                _set("/verdict", verdict, key, fresh[key])
         overall = updated.get("overall")
         if isinstance(overall, dict):
             fresh_overall = combine(verdict, updated.get("timescale"))
@@ -362,8 +389,38 @@ def step_urls(base: str, n_steps: int) -> list[str]:
     return [clean + "?step=" + str(i) for i in range(max(0, n_steps))]
 
 
+def _verdict_lines(analysis: dict[str, Any], texts: dict[str, str],
+                   legacy_worlds: bool) -> tuple[str | None, str | None]:
+    """One-line notes for the Verdict step: scene ruled-outs and legacy runs.
+
+    Returns ``(ruled_out_line, legacy_line)``; each is None when there is
+    nothing to say. Both prefixes come from texts so page_texts can
+    override them.
+    """
+    verdict = analysis.get("verdict") if isinstance(analysis, dict) else None
+    if not isinstance(verdict, dict):
+        return None, None
+    ruled_out_line: str | None = None
+    entries = verdict.get("worlds_ruled_out") or []
+    kept = [e for e in entries if isinstance(e, dict) and e.get("world")
+            and e.get("by")]
+    if kept:
+        ruled_out_line = (texts["verdict.ruled_out"] + ": "
+                          + "; ".join(str(e["world"]) + " \u2014 " + str(e["by"])
+                                      for e in kept))
+    legacy_line: str | None = None
+    if legacy_worlds:
+        tested = verdict.get("worlds_tested") or []
+        names = [str(n) for n in tested]
+        if not names:
+            sigmas = verdict.get("sigmas")
+            names = [str(k) for k in sigmas] if isinstance(sigmas, dict) else []
+        legacy_line = texts["verdict.legacy_worlds"] + " " + ", ".join(names)
+    return ruled_out_line, legacy_line
+
+
 def prepare_page(analysis: dict[str, Any], summary: dict[str, Any],
-                 run_tag: str) -> dict[str, Any]:
+                 run_tag: str, legacy_worlds: bool = False) -> dict[str, Any]:
     """All page-specific data: texts, steps, charts, overlays, provenance."""
     texts = merge_texts(analysis.get("page_texts"))
     headline, color = headline_and_color(analysis["overall"], analysis["verdict"])
@@ -396,6 +453,7 @@ def prepare_page(analysis: dict[str, Any], summary: dict[str, Any],
         {"id": "howmade", "title": texts["steps.howmade.title"], "frame": 0},
     ]
     timescale = analysis.get("timescale")
+    ruled_out_line, legacy_line = _verdict_lines(analysis, texts, legacy_worlds)
     prepared_flights = []
     for flight in flights:
         chart = flight_chart(analysis, flight)
@@ -416,6 +474,9 @@ def prepare_page(analysis: dict[str, Any], summary: dict[str, Any],
         "headline": headline,
         "color": color,
         "key_number": key_number,
+        "legacy_worlds": bool(legacy_worlds),
+        "ruled_out_line": ruled_out_line,
+        "legacy_line": legacy_line,
         "steps": steps,
         "flights": prepared_flights,
         "has_timescale": isinstance(timescale, dict),
@@ -452,6 +513,13 @@ def build_page(run_dir: str | Path, out_dir: str | Path | None = None,
     summary_path = run_path / "summary.json"
     summary: dict[str, Any] = json.loads(summary_path.read_text(encoding="utf-8")) \
         if summary_path.exists() else {}
+    stored_verdict = analysis.get("verdict")
+    legacy_worlds = (
+        isinstance(stored_verdict, dict)
+        and not stored_verdict.get("worlds_tested")
+        and isinstance(stored_verdict.get("sigmas"), dict)
+        and bool(stored_verdict.get("sigmas"))
+    )
     analysis, changes = recompute_analysis(analysis)
     for line in changes:
         print("recompute: " + line, flush=True)
@@ -459,7 +527,7 @@ def build_page(run_dir: str | Path, out_dir: str | Path | None = None,
     if issues:
         raise RuntimeError("recomputed analysis does not validate: "
                            + "; ".join(i.path + " " + i.message for i in issues))
-    page = prepare_page(analysis, summary, tag)
+    page = prepare_page(analysis, summary, tag, legacy_worlds=legacy_worlds)
     log = run_path / "conversation.jsonl"
     if summary and log.exists():
         page["howmade"]["runlog_href"] = os.path.relpath(log.resolve(), out.resolve())
