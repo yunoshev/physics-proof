@@ -17,7 +17,9 @@ in EUR on the Meta Model API billing page and will be added at the end.
 | M5 fix 1–3 | sandbox tests run on the Mac (the agent cannot nest Seatbelt); three fix rounds | 22 + 16 + 25 | 3 605 880 (3 382 411) | 42 489 | 0.37 |
 | M3 | SAM 3.1 tool: frame-accurate cut, cache, budget, overlay sheet, id-swap check | 30 | 2 595 852 (2 487 757) | 31 867 | 0.27 + 0.01 API in tests |
 | — | maintainer check of M3 on the Moon clip (70 frames) | 1 SAM | — | — | 0.014 |
-| **Total so far** | | | | | **≈ 1.96** |
+| M4 | search tool with a blindness filter | 25 | 1 907 640 (1 785 767) | 29 879 | 0.20 + 0.004 API in tests |
+| — | maintainer feasibility check on the wall-run clip (runner + wall, 2 × 100 frames) | 2 SAM | — | — | 0.04 |
+| **Total so far** | | | | | **≈ 2.20** |
 
 ## Analysing one video
 
