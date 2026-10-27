@@ -257,8 +257,9 @@ go into the system prompt. They contain no answers about any clip.
    different extent. The most common silent error is a mask that covers more (or less) than the number you looked up.
 2. **Two independent references.** Cross-check the scale with a second reference at about the same depth (another object
    of known size, a body height). If they disagree beyond their errors, find out why before measuring; report both.
-3. **Fit only free flight.** Find takeoff and landing from the lowest point of the moving body (feet, bottom of the body
-   mask), not from the tracked point; frames with ground contact flatten the parabola.
+3. **Fit only unsupported motion.** Find where support starts and ends (takeoff and landing from the lowest point of the
+   moving body — feet, bottom of the body mask — not from the tracked point; for a body on a surface, where the surface
+   stops pressing on it, e.g. where a curved ramp turns vertical). Frames with support flatten or bend the parabola.
 4. **Time is measured, not assumed.** The model checks the real frame rate, duplicated frames, interpolated frames and cuts
    from the frames themselves, and says what its result implies if the clip is not real-time.
 5. **Look before trusting a mask.** Overlay sheets and `track_quality` flags are reviewed; each flag gets a written
@@ -285,8 +286,15 @@ go into the system prompt. They contain no answers about any clip.
 - Cost per run ≤ the per-run cap (§7); wall time ≤ 30 min per run.
 - Repeatability: 3 runs per clip; at least 2 of 3 pass.
 
-**Second clip:** to be chosen. Must be rights-clean (public domain, CC, our own footage, or our own fake built from such
-material) and not sports analysis (that is on the hackathon's anti-project list).
+**Second clip (chosen 2026-10-27): the wall run.** A viral AI-generated clip (TikTok, @stuntversehq, 10 s, 24 fps; a
+runner sprints up a tall vertical wall in Singapore). Used as commentary: the page credits the author and links the
+original; the file is not redistributed elsewhere (`rights` field, M13). Pass criteria:
+- the vertical part of the climb is found as an unsupported segment (`kind: wall`) and its downward acceleration is
+  measured in a frame attached to the wall (the camera pans and tilts);
+- verdict `none_fits` against "unsupported on Earth" (9.81 m/s²) by more than 5σ;
+- the time scale is checked independently (step rate on the run-up) and found normal, so the overall verdict is
+  "physically impossible at normal speed" rather than "slowed";
+- the same page requirements and repeatability as the Moon clips.
 
 ## 6. Process
 
