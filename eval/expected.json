@@ -1,0 +1,22 @@
+{
+  "cost_cap_usd": 2.0,
+  "wall_time_max_s": 1800,
+  "moon-A": {
+    "verdict_state": "fits:Moon",
+    "g_moon": 1.62,
+    "sigma_tol": 2.0,
+    "g_err_max": 0.35
+  },
+  "moon-B": {
+    "verdict_state": "none_fits",
+    "k_target": 1.5,
+    "k_tol": 0.25
+  },
+  "wallrun": {
+    "overall_label": "impossible",
+    "segment_kind": "wall",
+    "sigma_min": 5.0,
+    "timescale_verdict": "normal",
+    "hypothesis_value": 9.81
+  }
+}
