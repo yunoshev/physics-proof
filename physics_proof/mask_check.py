@@ -27,6 +27,7 @@ from scipy import ndimage
 from . import video
 from .blocks import load_masks, mask_stats
 from .config import REPO_ROOT
+from .meta_client import raise_if_incomplete
 
 __all__ = [
     "MASK_CHECK_SCHEMA",
@@ -459,6 +460,7 @@ class MaskCheck:
             json_schema=MASK_CHECK_SCHEMA,
             note="mask-check",
         )
+        raise_if_incomplete(response)
         answer = parse_answer(response.text)
         cost = float(response.cost_usd)
         self._log(npz, oid, wanted, clean_claim, answer, sheet, cost)

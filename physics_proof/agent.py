@@ -1127,6 +1127,7 @@ def run_analysis(
     python_runner: PythonRunner | None = None,
     cache_dir: str | Path | None = None,
     effort: str = "high",
+    agent_max_output_tokens: int | None = None,
 ) -> RunSummary:
     """Run one analysis: blind start, tool loop, finish, logs.
 
@@ -1137,7 +1138,9 @@ def run_analysis(
     may pass a runner without the Seatbelt profile, which M5 owns).
     effort is the reasoning effort for the agent's own turns (high by
     default; sub-calls keep the configured Settings effort); it is
-    logged in the summary.
+    logged in the summary. agent_max_output_tokens is the per-turn output
+    limit for the agent's own calls (default 32768; reasoning tokens count
+    toward it); a turn cut off by it retries once with double the limit.
     """
     started = time.monotonic()
     run_path = Path(run_dir)
@@ -1162,6 +1165,9 @@ def run_analysis(
     )
 
     provider, model = _client_for(tier, run_path, spark)
+    if agent_max_output_tokens is None:
+        agent_max_output_tokens = Settings.from_env().agent_max_output_tokens
+    agent_limit = int(agent_max_output_tokens)
     budget = Budget(cap_usd=float(cap_usd))
     guard = GuardClient(provider, budget)
     sam = SamTool(guard, workspace, clip, budget_frames=sam_frames, cache_dir=cache_dir)
@@ -1244,6 +1250,7 @@ def run_analysis(
                 tools=TOOLS,
                 model=model or None,
                 effort=effort,
+                max_output_tokens=agent_limit,
                 note="agent-turn-%02d" % turn,
             )
         except BudgetExhausted:
@@ -1251,9 +1258,48 @@ def run_analysis(
         except Exception as exc:
             detail = " ".join(str(exc).split())
             return note(RunSummary(status="error: spark call failed: " + detail), done=turn - 1)
+        cut_off: str | None = None
+        reason = getattr(response, "incomplete_reason", None)
+        if reason is not None:
+            if reason != "max_output_tokens":
+                return note(
+                    RunSummary(
+                        status="error: spark call failed: response incomplete (" + reason + ")"
+                    ),
+                    done=turn - 1,
+                )
+            try:
+                response = guard.respond(
+                    _prune(messages),
+                    instructions=system,
+                    tools=TOOLS,
+                    model=model or None,
+                    effort=effort,
+                    max_output_tokens=agent_limit * 2,
+                    note="agent-turn-%02d-retry" % turn,
+                )
+            except BudgetExhausted:
+                return note(RunSummary(status=BUDGET_STATUS), done=turn - 1)
+            except Exception as exc:
+                detail = " ".join(str(exc).split())
+                return note(RunSummary(status="error: spark call failed: " + detail), done=turn - 1)
+            if getattr(response, "incomplete_reason", None) is not None:
+                cut_usage = getattr(response, "usage", None)
+                cut_off = (
+                    "Your last answer was cut off at %d output tokens "
+                    "(max_output_tokens %d). Do the work in smaller steps: "
+                    "make one small tool call now and continue bit by bit."
+                    % (
+                        int(getattr(cut_usage, "output_tokens", 0) or 0),
+                        agent_limit * 2,
+                    )
+                )
         spark_text = str(getattr(response, "text", "") or "")
         calls = list(getattr(response, "function_calls", []) or [])
         output_items = getattr(response, "output", []) or []
+        if cut_off is not None:
+            calls = []
+            output_items = []
 
         this_call: str | None = None
         arguments: Any = None
@@ -1261,7 +1307,7 @@ def run_analysis(
         analysis_dest: Path | None = None
         images: list[Path] = []
         if not calls:
-            result_text = (
+            result_text = cut_off or (
                 "Reply with exactly one tool call per turn: pick the single most "
                 "informative tool and call it now."
             )

@@ -75,6 +75,51 @@ class TruncatedStreamError(StreamError):
     """
 
 
+class ResponseFailedError(ApiError, StreamError):
+    """The stream ended with ``response.failed`` or a bare ``error`` event.
+
+    A subclass of both ApiError and StreamError, so old ``except`` handling
+    for either still applies. Carries the server's message in ``message``
+    and its code in ``code``. Never retried: the request itself was
+    rejected or failed server-side.
+    """
+
+    def __init__(self, message: str, code: str | None = None) -> None:
+        super().__init__(0, message, code)
+        self.code = code
+
+    def __str__(self) -> str:
+        text = f"Meta API response failed: {self.message}"
+        if self.code:
+            text += f" (code: {self.code})"
+        return text
+
+
+class IncompleteResponseError(StreamError):
+    """A terminal but incomplete response (e.g. ``max_output_tokens``).
+
+    Raised only by callers that need a complete answer (search, the
+    blindness classifier, mask check). The agent loop instead returns the
+    partial response and retries with a larger limit. Carries the billed
+    cost of the cut-off call so wrappers can account for it.
+    """
+
+    def __init__(
+        self,
+        reason: str,
+        *,
+        output_tokens: int = 0,
+        cost_usd: float = 0.0,
+    ) -> None:
+        super().__init__(
+            "response incomplete (%s): %d output tokens billed; "
+            "raise max_output_tokens or shorten the request" % (reason, output_tokens)
+        )
+        self.reason = reason
+        self.output_tokens = output_tokens
+        self.cost_usd = cost_usd
+
+
 #: HTTP statuses worth another attempt (plus cut streams, resets, timeouts).
 #: Other 4xx (including 402 billing and 400 validation errors) never retry.
 _RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
@@ -103,7 +148,12 @@ class UsageStats:
 
 @dataclass
 class SparkResponse:
-    """One finished Spark turn."""
+    """One finished Spark turn.
+
+    ``incomplete_reason`` is None for complete responses; otherwise it is
+    the server's ``incomplete_details.reason`` (usually
+    ``"max_output_tokens"``). Incomplete turns still bill their usage.
+    """
 
     id: str
     model: str
@@ -114,6 +164,7 @@ class SparkResponse:
     usage: UsageStats
     cost_usd: float
     raw: bytes = b""
+    incomplete_reason: str | None = None
 
 
 @dataclass
@@ -209,15 +260,61 @@ def iter_sse_events(raw: bytes) -> Iterator[tuple[str | None, str]]:
         yield tail
 
 
-def parse_response_body(raw: bytes) -> tuple[str, dict[str, Any]]:
-    """Parse a full SSE body into ``(delta_text, completed_response)``.
+def incomplete_reason_of(response: dict[str, Any]) -> str | None:
+    """The server's ``incomplete_details.reason``, or None when complete."""
+    details = response.get("incomplete_details") or {}
+    if isinstance(details, dict):
+        reason = details.get("reason")
+        if isinstance(reason, str) and reason.strip():
+            return reason.strip()
+    if response.get("status") == "incomplete":
+        return "incomplete"
+    return None
 
-    ``completed_response`` is the ``response`` object from the terminal
-    ``response.completed`` event. Raises StreamError when the stream ends
-    without one or carries a malformed data line.
+
+def _failed_error(payload: dict[str, Any]) -> ResponseFailedError:
+    """Build the error for a ``response.failed`` or ``error`` event."""
+    response = payload.get("response")
+    error: Any = payload.get("error")
+    if isinstance(response, dict) and isinstance(response.get("error"), dict):
+        error = response["error"]
+    if isinstance(error, dict):
+        message = str(error.get("message") or "response failed")
+        code = error.get("code")
+        code = str(code) if code is not None else None
+    else:
+        message = str(payload.get("message") or "response failed")
+        code_raw = payload.get("code")
+        code = str(code_raw) if code_raw is not None else None
+    return ResponseFailedError(" ".join(message.split()), code)
+
+
+def raise_if_incomplete(response: SparkResponse) -> None:
+    """Raise IncompleteResponseError when a turn was cut off; else no-op."""
+    reason = getattr(response, "incomplete_reason", None)
+    if reason:
+        usage = getattr(response, "usage", None)
+        raise IncompleteResponseError(
+            str(reason),
+            output_tokens=int(getattr(usage, "output_tokens", 0) or 0),
+            cost_usd=float(getattr(response, "cost_usd", 0.0) or 0.0),
+        )
+
+
+def parse_response_body(raw: bytes) -> tuple[str, dict[str, Any]]:
+    """Parse a full SSE body into ``(delta_text, terminal_response)``.
+
+    ``terminal_response`` is the ``response`` object from the terminal
+    event: ``response.completed`` as before, or ``response.incomplete``
+    (returned, not raised — its usage is billed; check
+    ``incomplete_reason_of``). ``response.failed`` and bare ``error``
+    events raise ResponseFailedError with the server's message and code.
+    Only a stream with no terminal event at all raises
+    TruncatedStreamError (the retryable cut-stream case).
     """
     delta_texts: list[str] = []
     completed: dict[str, Any] | None = None
+    incomplete: dict[str, Any] | None = None
     saw_event = False
     for _name, data in iter_sse_events(raw):
         if data == "":
@@ -241,11 +338,19 @@ def parse_response_body(raw: bytes) -> tuple[str, dict[str, Any]]:
             response = payload.get("response", payload)
             if isinstance(response, dict):
                 completed = response
+        elif event_type == "response.incomplete":
+            response = payload.get("response", payload)
+            if isinstance(response, dict):
+                incomplete = response
+        elif event_type in ("response.failed", "error"):
+            raise _failed_error(payload)
     if not saw_event:
         raise StreamError("empty SSE stream: no events received")
-    if completed is None:
-        raise TruncatedStreamError("truncated SSE stream: no response.completed event")
-    return "".join(delta_texts), completed
+    if completed is not None:
+        return "".join(delta_texts), completed
+    if incomplete is not None:
+        return "".join(delta_texts), incomplete
+    raise TruncatedStreamError("truncated SSE stream: no response.completed event")
 
 
 def _message_text(output: list[dict[str, Any]]) -> str:
@@ -545,15 +650,17 @@ class MetaClient:
         retry_model: str = "",
         retry_note: str = "",
     ) -> tuple[bytes, str, dict[str, Any]]:
-        """POST /responses with stream=true; return (raw, delta_text, completed).
+        """POST /responses with stream=true; return (raw, delta_text, terminal).
 
         Retries transient failures — HTTP 429/500/502/503/504, a stream cut
-        before its completion event, connection resets and timeouts — until
+        before any terminal event, connection resets and timeouts — until
         ``settings.max_attempts`` attempts are spent (3 retries by default).
-        Other 4xx, billing errors and malformed streams raise at once. Each
-        failed attempt that will be retried is logged to the ledger as a
-        zero-cost line with its reason. ``budget_check``, when given, runs
-        before every attempt and aborts the loop when it raises.
+        Other 4xx, billing errors, malformed streams, ``response.failed``
+        and ``error`` events raise at once; a terminal ``response.incomplete``
+        is returned (its usage is billed). Each failed attempt that will be
+        retried is logged to the ledger as a zero-cost line with its reason.
+        ``budget_check``, when given, runs before every attempt and aborts
+        the loop when it raises.
         """
         attempts = max(1, self.settings.max_attempts)
         last_error: Exception | None = None
@@ -643,9 +750,12 @@ class MetaClient:
     ) -> SparkResponse:
         """Run one Spark turn and return the parsed response plus cost.
 
-        Transient failures (HTTP 429/500/502/503/504, cut streams, resets,
-        timeouts) retry up to 3 times with backoff; ``budget_check`` runs
-        before every attempt.
+        Transient failures (HTTP 429/500/502/503/504, streams cut before
+        any terminal event, resets, timeouts) retry up to 3 times with
+        backoff; ``budget_check`` runs before every attempt. A terminal
+        ``response.incomplete`` is returned with ``incomplete_reason`` set
+        (usage is billed as usual); ``response.failed`` and ``error``
+        events raise ResponseFailedError.
         """
         used_model = model or self.settings.model
         if isinstance(input, str):
@@ -696,6 +806,7 @@ class MetaClient:
             raise StreamError("response.completed output is not a list")
         text = _message_text(output) or _deltas
         usage = _usage_of(completed)
+        reason = incomplete_reason_of(completed)
         cost = self._record(
             kind="spark",
             model=used_model,
@@ -716,6 +827,7 @@ class MetaClient:
             usage=usage,
             cost_usd=cost,
             raw=raw,
+            incomplete_reason=reason,
         )
 
     def image_part(self, path: str | Path) -> dict[str, Any]:

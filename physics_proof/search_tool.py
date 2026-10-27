@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import REPO_ROOT
+from .meta_client import raise_if_incomplete
 
 __all__ = [
     "BLINDNESS_PATH",
@@ -376,10 +377,14 @@ def _parse_classify(payload: str, count: int) -> list[dict[str, str] | None]:
 
 
 def _classify_respond(client: Any, texts: list[str]) -> Any:
-    """One classifier Spark call for all texts (contributor tier)."""
+    """One classifier Spark call for all texts (contributor tier).
+
+    A cut-off turn is a clear error (fail-closed callers refuse or cut);
+    small limits stay, so this surfaces instead of retrying.
+    """
     _check_batch(texts)
     user = "TEXTS:\n" + json.dumps(texts, ensure_ascii=False)
-    return client.respond(
+    response = client.respond(
         user,
         instructions=_classify_instruction(),
         json_schema=CLASSIFY_SCHEMA,
@@ -387,6 +392,8 @@ def _classify_respond(client: Any, texts: list[str]) -> Any:
         web_search=False,
         note="blindness-classify",
     )
+    raise_if_incomplete(response)
+    return response
 
 
 def classify_with_cost(
@@ -541,7 +548,8 @@ class SearchTool:
             error = "blindness classifier call failed"
             if detail:
                 error += ": " + detail
-            return None, 0.0, error
+            billed = float(getattr(exc, "cost_usd", 0.0) or 0.0)
+            return None, billed, error
         cost = float(getattr(response, "cost_usd", 0.0) or 0.0)
         verdicts = _parse_classify(str(response.text), len(texts))
         if any(item is None for item in verdicts):
@@ -629,6 +637,7 @@ class SearchTool:
                 json_schema=SEARCH_SCHEMA,
                 note="search",
             )
+            raise_if_incomplete(response)
         except Exception as exc:
             detail = _one_line(str(exc))[:160]
             refusal = "refused: search call failed"
