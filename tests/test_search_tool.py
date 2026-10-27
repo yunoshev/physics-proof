@@ -14,13 +14,18 @@ from types import SimpleNamespace
 import pytest
 
 from physics_proof.search_tool import (
+    CLASSIFY_MODEL,
+    CLASSIFY_SCHEMA,
     MAX_TEXT_CHARS,
     SEARCH_SCHEMA,
     SearchResult,
     SearchTool,
     check_query,
+    classify,
     filter_answer,
 )
+
+PROMPT_PATH = Path(__file__).resolve().parent.parent / "config" / "prompts" / "blindness.txt"
 
 ALLOWED_QUERIES = [
     "Apollo A7L spacesuit height and mass",
@@ -56,21 +61,67 @@ GOOD_FACT = {
 
 
 class FakeClient:
-    """Fake Spark client: serves canned facts, records every respond call."""
+    """Fake Spark client: serves canned facts, records every respond call.
 
-    def __init__(self, facts: list[dict[str, str]] | None = None) -> None:
+    Search calls (``web_search=True``) get the canned facts; classifier
+    calls get verdicts from ``verdict`` (one kind for every text, or a
+    callable mapping the input texts to kinds).
+    """
+
+    def __init__(
+        self,
+        facts: list[dict[str, str]] | None = None,
+        verdict: str | object = "reference",
+        classify_cost: float = 0.0004,
+        classify_error: Exception | None = None,
+        classify_payload: str | None = None,
+    ) -> None:
         self.facts = facts if facts is not None else [dict(GOOD_FACT)]
+        self.verdict = verdict
+        self.classify_cost = classify_cost
+        self.classify_error = classify_error
+        self.classify_payload = classify_payload
         self.calls: list[tuple[str, dict]] = []
+
+    def _verdict_items(self, texts: list[str]) -> list[dict[str, str]]:
+        if callable(self.verdict):
+            kinds = self.verdict(texts)
+        else:
+            kinds = [self.verdict] * len(texts)
+        return [{"kind": kind, "reason": "fake " + kind} for kind in kinds]
 
     def respond(self, query: str, **kwargs) -> SimpleNamespace:
         self.calls.append((query, kwargs))
-        assert kwargs.get("web_search") is True
-        assert kwargs.get("json_schema") == SEARCH_SCHEMA
-        assert isinstance(kwargs.get("instructions"), str) and kwargs["instructions"]
+        if kwargs.get("web_search") is True:
+            assert kwargs.get("json_schema") == SEARCH_SCHEMA
+            assert isinstance(kwargs.get("instructions"), str) and kwargs["instructions"]
+            return SimpleNamespace(
+                text=json.dumps({"facts": self.facts}),
+                cost_usd=0.0025,
+            )
+        assert kwargs.get("json_schema") == CLASSIFY_SCHEMA
+        assert kwargs.get("model") == CLASSIFY_MODEL
+        assert kwargs.get("web_search") is False
+        assert kwargs.get("instructions") == PROMPT_PATH.read_text(encoding="utf-8").strip()
+        if self.classify_error is not None:
+            raise self.classify_error
+        if self.classify_payload is not None:
+            return SimpleNamespace(text=self.classify_payload, cost_usd=self.classify_cost)
+        texts = json.loads(query.split("TEXTS:\n", 1)[1])
         return SimpleNamespace(
-            text=json.dumps({"facts": self.facts}),
-            cost_usd=0.0025,
+            text=json.dumps({"items": self._verdict_items(texts)}),
+            cost_usd=self.classify_cost,
         )
+
+
+def _search_calls(fake: FakeClient) -> list:
+    """Calls that hit the web search (classifier calls excluded)."""
+    return [call for call in fake.calls if call[1].get("web_search") is True]
+
+
+def _classify_calls(fake: FakeClient) -> list:
+    """Calls that hit the blindness classifier."""
+    return [call for call in fake.calls if call[1].get("web_search") is not True]
 
 
 def _tool(tmp_path: Path, fake: FakeClient, **kwargs) -> SearchTool:
@@ -130,7 +181,16 @@ def test_chatter_wrapped_json_parses(tmp_path: Path) -> None:
         + " Hope this helps."
     )
     tool = _tool(tmp_path, FakeClient())
-    tool.client.respond = lambda query, **kw: SimpleNamespace(text=payload, cost_usd=0.001)
+
+    def routed_respond(query: str, **kw: object) -> SimpleNamespace:
+        if kw.get("web_search") is True:
+            return SimpleNamespace(text=payload, cost_usd=0.001)
+        return SimpleNamespace(
+            text=json.dumps({"items": [{"kind": "reference", "reason": "fake"}]}),
+            cost_usd=0.0004,
+        )
+
+    tool.client.respond = routed_respond
     result = tool.run("standard gravity value in m/s^2")
     assert result.allowed is True
     assert [item["text"] for item in result.facts] == [GOOD_FACT["text"]]
@@ -143,13 +203,15 @@ def test_limit_refuses_without_client_call(tmp_path: Path) -> None:
     first = tool.run("standard gravity value in m/s^2")
     second = tool.run("Apollo PLSS backpack dimensions")
     assert first.allowed and second.allowed
-    assert len(fake.calls) == 2
+    assert len(_search_calls(fake)) == 2
+    calls_after_two = len(fake.calls)
+    assert calls_after_two > 2  # each run also pays for classifier calls
     assert tool.searches_made == 2
     third = tool.run("surface gravity of the Moon")
     assert third.allowed is False
     assert isinstance(third, SearchResult)
     assert "limit" in third.reason.lower()
-    assert len(fake.calls) == 2
+    assert len(fake.calls) == calls_after_two
     assert tool.searches_made == 2
 
 
@@ -193,7 +255,9 @@ def test_result_text_compact_with_sources(tmp_path: Path) -> None:
     tool = _tool(tmp_path, FakeClient(facts))
     result = tool.run("Apollo A7L spacesuit height and mass")
     assert result.allowed is True
-    assert result.cost_usd == pytest.approx(0.0025)
+    assert result.cost_usd == pytest.approx(0.0025 + 2 * 0.0004)
+    assert len(_search_calls(tool.client)) == 1
+    assert len(_classify_calls(tool.client)) == 2
     body = result.text()
     assert len(body) <= MAX_TEXT_CHARS
     for fact in facts:
@@ -332,6 +396,173 @@ def test_fix1_filter_answer_cuts_each_kind() -> None:
     kept, cut = filter_answer(facts)
     assert [item["text"] for item in kept] == [GOOD_FACT["text"]]
     assert len(cut) == 4
+
+
+def test_fix2_classify_call_shape(tmp_path: Path) -> None:
+    """One contributor-tier call, fixed prompt, strict schema, no web search."""
+    fake = FakeClient()
+    verdicts = classify(["standard gravity value"], fake)
+    assert verdicts == [{"kind": "reference", "reason": "fake reference"}]
+    assert len(fake.calls) == 1
+    query, kwargs = fake.calls[0]
+    assert "TEXTS:" in query and "standard gravity value" in query
+    assert "clip" not in query.lower()
+    assert kwargs["model"] == CLASSIFY_MODEL
+    assert kwargs["web_search"] is False
+    assert kwargs["json_schema"] == CLASSIFY_SCHEMA
+    assert kwargs["instructions"] == PROMPT_PATH.read_text(encoding="utf-8").strip()
+    # The other argument order works too.
+    assert classify(fake, ["surface gravity of the Moon"])[0]["kind"] == "reference"
+
+
+def test_fix2_classifier_refuses_query(tmp_path: Path) -> None:
+    """A paraphrase the patterns miss is refused by the classifier layer."""
+    fake = FakeClient(verdict="event")
+    tool = _tool(tmp_path, fake)
+    result = tool.run("did the runner really reach the top")
+    assert result.allowed is False
+    assert result.facts == []
+    assert _search_calls(fake) == []
+    assert len(_classify_calls(fake)) == 1
+    assert result.cost_usd == pytest.approx(0.0004)
+    record = json.loads((tmp_path / "ws" / "search.jsonl").read_text().splitlines()[0])
+    assert record["decision"] == "refused"
+    assert record["cost_usd"] == pytest.approx(0.0004)
+
+
+def test_fix2_classifier_cuts_facts(tmp_path: Path) -> None:
+    """Non-reference facts are cut with the classifier's reason in one batch."""
+    facts = [
+        {"text": "Fact %d about reference sizes." % i, "source_url": "https://x.example/%d" % i, "quote": "quote %d" % i}
+        for i in range(5)
+    ]
+
+    def pick(texts: list[str]) -> list[str]:
+        if len(texts) == 1:
+            return ["reference"]
+        assert len(texts) == 5
+        return ["reference", "event", "authenticity", "feasibility", "reference"]
+
+    tool = _tool(tmp_path, FakeClient(facts, verdict=pick))
+    result = tool.run("standard gravity value in m/s^2")
+    assert result.allowed is True
+    assert [item["text"] for item in result.facts] == [facts[0]["text"], facts[4]["text"]]
+    assert len(result.cut) == 3
+    assert any("event" in entry["reason"] for entry in result.cut)
+    assert any("authenticity" in entry["reason"] for entry in result.cut)
+    assert any("feasibility" in entry["reason"] for entry in result.cut)
+    assert len(_search_calls(tool.client)) == 1
+    assert len(_classify_calls(tool.client)) == 2  # query + one batch of 5
+    assert result.cost_usd == pytest.approx(0.0025 + 2 * 0.0004)
+    record = json.loads((tmp_path / "ws" / "search.jsonl").read_text().splitlines()[0])
+    assert record["facts_kept"] == 2 and record["cut"] == 3
+    assert len(record["cut_reasons"]) == 3
+
+
+def test_fix2_fail_closed_on_classifier_error(tmp_path: Path) -> None:
+    """An API error in the query classifier means refuse with no search."""
+    fake = FakeClient(classify_error=RuntimeError("boom"))
+    tool = _tool(tmp_path, fake)
+    result = tool.run("standard gravity value in m/s^2")
+    assert result.allowed is False
+    assert result.facts == [] and result.cost_usd == 0.0
+    assert _search_calls(fake) == []
+    record = json.loads((tmp_path / "ws" / "search.jsonl").read_text().splitlines()[0])
+    assert record["decision"] == "refused"
+
+
+def test_fix2_fail_closed_on_malformed_answer(tmp_path: Path) -> None:
+    """A malformed classifier answer still costs the call and refuses."""
+    fake = FakeClient(classify_payload="definitely not json {")
+    tool = _tool(tmp_path, fake)
+    result = tool.run("standard gravity value in m/s^2")
+    assert result.allowed is False
+    assert result.cost_usd == pytest.approx(0.0004)
+    record = json.loads((tmp_path / "ws" / "search.jsonl").read_text().splitlines()[0])
+    assert record["decision"] == "refused"
+    assert record["cost_usd"] == pytest.approx(0.0004)
+
+
+def test_fix2_fail_closed_on_missing_item(tmp_path: Path) -> None:
+    """A short classifier answer (4 verdicts for 5 facts) cuts every fact."""
+    facts = [
+        {"text": "Fact %d about reference sizes." % i, "source_url": "https://x.example/%d" % i, "quote": "quote %d" % i}
+        for i in range(5)
+    ]
+    short = json.dumps({"items": [{"kind": "reference", "reason": "fake"}] * 4})
+
+    def routed(query: str, **kw: object) -> SimpleNamespace:
+        if kw.get("web_search") is True:
+            return SimpleNamespace(text=json.dumps({"facts": facts}), cost_usd=0.0025)
+        texts = json.loads(query.split("TEXTS:\n", 1)[1])
+        if len(texts) == 1:
+            return SimpleNamespace(
+                text=json.dumps({"items": [{"kind": "reference", "reason": "ok"}]}),
+                cost_usd=0.0004,
+            )
+        return SimpleNamespace(text=short, cost_usd=0.0004)
+
+    fake = FakeClient(facts)
+    tool = _tool(tmp_path, fake)
+    tool.client.respond = routed
+    result = tool.run("standard gravity value in m/s^2")
+    assert result.allowed is True
+    assert result.facts == []
+    assert len(result.cut) == 5
+
+
+def test_fix2_strict_classify_raises_on_bad_item() -> None:
+    """Module-level classify raises so callers can fail closed."""
+    fake = FakeClient(classify_payload=json.dumps({"items": [{"kind": "nope", "reason": "x"}]}))
+    with pytest.raises(ValueError):
+        classify(["something"], fake)
+    with pytest.raises(TypeError):
+        classify(["something"])
+
+
+FIX2_API_REFUSED = [
+    "is this clip real",
+    "did the runner really reach the top",
+    "was this made with Veo",
+    "how high did he get on the wall",
+    "can a human run on a wall",
+    "Singapore wall run stunt",
+]
+
+FIX2_API_ALLOWED = [
+    "Marina Bay Sands SkyPark length",
+    "height of a Red Bull banner",
+    "coefficient of friction rubber on aluminium",
+    "how long does a sprinter take to cover 10 m",
+    "typical height of a man in Singapore",
+    "what is a quarter pipe ramp",
+    "is that wall made of steel",
+]
+
+
+@pytest.mark.api
+def test_fix2_api_classification(tmp_path) -> None:
+    """API probe: the 13 fresh paraphrases classify as expected (< $0.01)."""
+    from physics_proof.config import Settings
+    from physics_proof.ledger import Ledger
+    from physics_proof.meta_client import MetaClient
+
+    ledger = Ledger(tmp_path / "run.jsonl", tmp_path / "global.jsonl")
+    client = MetaClient(settings=Settings(), ledger=ledger, run="m4-fix2-api")
+    tool = SearchTool(client, tmp_path / "ws")
+    for query in FIX2_API_REFUSED:
+        allowed, _ = tool.check_query(query)
+        verdicts = tool.classify([query])
+        refused = (not allowed) or verdicts[0]["kind"] != "reference"
+        print("\nRefuse? %s kind=%s: %s" % (refused, verdicts[0]["kind"], query), flush=True)
+        assert refused, query + " classified as reference"
+    for query in FIX2_API_ALLOWED:
+        verdicts = tool.classify([query])
+        print("\nAllowed kind=%s: %s" % (verdicts[0]["kind"], query), flush=True)
+        assert verdicts[0]["kind"] == "reference", query + " -> " + str(verdicts[0])
+    total = Ledger.total(tmp_path / "run.jsonl")
+    print("Classifier total: $%.6f" % total, flush=True)
+    assert total < 0.01
 
 
 @pytest.mark.api
