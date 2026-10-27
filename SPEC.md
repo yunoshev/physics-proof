@@ -289,6 +289,9 @@ go into the system prompt. They contain no answers about any clip.
    walking or running person, a pendulum, wing beats, a bouncing object, falling debris) shows whether the clip plays at
    normal speed. "No world fits" means "retimed" only if the clock check agrees; if the clock is normal, the motion
    itself is impossible. Report the clock check with its error either way.
+9. **Test only the worlds the scene allows.** Before deciding, say which worlds the scene rules out and by what (air:
+   moving hair, cloth, dust clouds, plants, clouds, birds; ordinary people walking in the background; buildings,
+   traffic). A world the scene rules out is not a hypothesis: a retime is computed only against worlds that remain.
 
 ## 5. Acceptance (the Moon)
 
