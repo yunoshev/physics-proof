@@ -16,6 +16,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import sysconfig
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -280,43 +281,68 @@ def _sbpl_string(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
+def _site_dirs() -> list[Path]:
+    """Site-packages dirs of this interpreter (venv packages live here)."""
+    found: list[Path] = []
+    for name in ("purelib", "platlib"):
+        try:
+            path = sysconfig.get_path(name)
+        except KeyError:
+            continue
+        if path and Path(path).is_dir() and Path(path) not in found:
+            found.append(Path(path))
+    return found
+
+
 def _sandbox_profile(
     workspace: Path, repo_root: Path, interpreter: str, tools: list[str]
 ) -> str:
-    """SBPL with default allow plus targeted denies.
+    """SBPL: allow by default, deny the dangerous classes with carve-outs.
 
     Deny wins over allow in Seatbelt regardless of rule order, so the
     home-directory deny carries require-not carve-outs (workspace,
     virtualenv, interpreter prefix, package dir) instead of relying on a
     later allow rule. Writes are denied everywhere outside the workspace
-    in a single rule for the same reason.
+    in a single rule for the same reason. Without the leading
+    ``(allow default)`` Seatbelt denies everything, including the
+    interpreter exec itself (exit 71, Operation not permitted).
+
+    Seatbelt checks both the path being executed and the resolved file,
+    so the caller passes the venv interpreter path and its realpath (and
+    both forms of each tool path); every one of them is carved out of the
+    exec deny.
     """
     home = Path.home()
     exe = Path(interpreter).resolve()
-    candidates = [workspace, repo_root, exe.parent.parent, Path(sys.base_prefix).resolve()]
+    candidates = [
+        workspace,
+        repo_root,
+        exe.parent.parent,
+        Path(sys.base_prefix).resolve(),
+        *_site_dirs(),
+    ]
     seen: list[Path] = []
     for candidate in candidates:
         resolved = candidate.resolve()
         if resolved not in seen:
             seen.append(resolved)
-    lines = ["(version 1)", "(deny network*)"]
+    lines = ["(version 1)", "(allow default)", "(deny network*)"]
     if str(home) not in ("", "/"):
         rule = ["(deny file-read*", "  (subpath " + _sbpl_string(str(home)) + ")"]
         for candidate in seen:
-            if home.is_relative_to(candidate):
-                continue
-            rule.append("  (require-not (subpath " + _sbpl_string(str(candidate)) + "))")
+            if candidate.is_relative_to(home) and candidate != home:
+                rule.append("  (require-not (subpath " + _sbpl_string(str(candidate)) + "))")
         rule.append(")")
         lines.extend(rule)
     lines.extend(
         [
             "(deny file-write*",
-            "  (require-not (subpath " + _sbpl_string(str(workspace)) + "))",
+            "  (require-not (subpath " + _sbpl_string(str(workspace.resolve())) + "))",
             "  (require-not (literal " + _sbpl_string("/dev/null") + "))",
             ")",
         ]
     )
-    literals = [str(exe), interpreter]
+    literals = [interpreter, str(exe)]
     literals.extend(tools)
     rule = ["(deny process-exec*"]
     for literal in dict.fromkeys(literals):
@@ -326,15 +352,21 @@ def _sandbox_profile(
     return "\n".join(lines) + "\n"
 
 
-def _runner_source(repo_root: Path, script: Path) -> str:
-    """Bootstrap for python -I: put the blocks.py directory on sys.path."""
-    return (
-        "import runpy as _runpy\n"
-        "import sys as _sys\n"
-        "_sys.path.insert(0, " + json.dumps(str(repo_root)) + ")\n"
-        "_sys.argv = [" + json.dumps(str(script)) + "]\n"
-        "_runpy.run_path(" + json.dumps(str(script)) + ", run_name=" + json.dumps("__main__") + ")\n"
+def _runner_source(repo_root: Path, script: Path, site_dirs: list[Path]) -> str:
+    """Bootstrap for python -I: restore the venv packages on sys.path.
+
+    The runner launches the resolved interpreter directly, so under -I
+    the venv site-packages are missing; re-add them here, with the
+    blocks.py directory first so ``import blocks`` finds our shim.
+    """
+    lines = ["import runpy as _runpy", "import sys as _sys"]
+    for entry in [*site_dirs, repo_root]:
+        lines.append("_sys.path.insert(0, " + json.dumps(str(entry)) + ")")
+    lines.append("_sys.argv = [" + json.dumps(str(script)) + "]")
+    lines.append(
+        "_runpy.run_path(" + json.dumps(str(script)) + ", run_name=" + json.dumps("__main__") + ")"
     )
+    return "\n".join(lines) + "\n"
 
 
 def _image_snapshot(workspace: Path) -> dict[str, tuple[int, int]]:
@@ -392,11 +424,15 @@ def run_python(
         return SandboxResult(ok=False, refused=True, problems=problems, script=script)
     before = _image_snapshot(ws)
     repo_root = _repo_root()
+    exe = str(Path(sys.executable).resolve())
     tool_paths = []
     for tool in ("ffmpeg", "ffprobe"):
         found = shutil.which(tool)
         if found:
-            tool_paths.append(str(Path(found).resolve()))
+            tool_paths.append(found)
+            resolved = str(Path(found).resolve())
+            if resolved != found:
+                tool_paths.append(resolved)
     profile_path = script.with_suffix(".sb")
     profile_path.write_text(
         _sandbox_profile(ws, repo_root, sys.executable, tool_paths), encoding="utf-8"
@@ -405,10 +441,10 @@ def run_python(
         "sandbox-exec",
         "-f",
         str(profile_path),
-        sys.executable,
+        exe,
         "-I",
         "-c",
-        _runner_source(repo_root, script),
+        _runner_source(repo_root, script, _site_dirs()),
     ]
     env = _clean_env(ws)
     start = time.monotonic()
