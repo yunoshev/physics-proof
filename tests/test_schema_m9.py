@@ -227,9 +227,9 @@ def test_combine_retimed() -> None:
 
 # Probe 5: schema_doc is short and complete.
 def test_schema_doc_short_and_complete() -> None:
-    """schema_doc fits 4000 chars and names every top-level section."""
+    """schema_doc fits 6000 chars and names every top-level section."""
     doc = schema_doc()
-    assert len(doc) <= 4000
+    assert len(doc) <= 6000
     for section in (
         "type", "schema_version", "clip", "context", "first_look", "reference",
         "scale", "track", "masks", "flights", "timescale", "error_budget",

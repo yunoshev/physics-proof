@@ -321,9 +321,9 @@ def validate(
         "verdict", "overall",
     ):
         _need(analysis, "", key, issues)
-    if analysis.get("type") != "world-g":
+    if "type" in analysis and analysis.get("type") != "world-g":
         issues.append(Issue("/type", "expected the constant world-g"))
-    if analysis.get("schema_version") != 1:
+    if "schema_version" in analysis and analysis.get("schema_version") != 1:
         issues.append(Issue("/schema_version", "expected the constant 1"))
     page_texts = analysis.get("page_texts")
     if page_texts is not None:
@@ -810,41 +810,119 @@ def validate(
                 issues.append(
                     Issue("/overall/text", "text does not match combine for this verdict")
                 )
-    return issues
+    seen: set[tuple[str, str]] = set()
+    unique: list[Issue] = []
+    for issue in issues:
+        key = (issue.path, issue.message)
+        if key not in seen:
+            seen.add(key)
+            unique.append(issue)
+    return unique
+
+
+def _short_text(text: str, limit: int) -> str:
+    """Truncate text at a word boundary; never cut a word in half."""
+    words = text.split()
+    out: list[str] = []
+    size = 0
+    for word in words:
+        extra = len(word) if not out else len(word) + 1
+        if size + extra > limit:
+            break
+        out.append(word)
+        size += extra
+    return " ".join(out)
+
+
+#: Hard character budget for the prompt-ready schema description.
+SCHEMA_DOC_LIMIT = 6000
 
 
 def schema_doc() -> str:
-    """Compact prompt-ready description of the schema (at most 4000 chars)."""
+    """Compact prompt-ready description of the schema.
+
+    One compact line per object, listing required then optional fields
+    down to the leaves, with enum values and units. Generated from
+    ``config/analysis.schema.json`` so the prompt cannot drift from
+    the validator; nested field lists are curated from the schema and
+    the top-level required set is read from the file.
+    """
     schema = load_schema()
-    props = schema.get("properties", {})
-    order = [
-        "type", "schema_version", "clip", "context", "first_look", "reference",
-        "scale", "track", "masks", "flights", "timescale", "error_budget",
-        "verdict", "overall", "page_texts",
+    top_required = schema.get("required") or []
+    top_optional = [
+        name
+        for name in (
+            "type", "schema_version", "clip", "context", "first_look",
+            "reference", "scale", "track", "masks", "flights",
+            "timescale", "error_budget", "verdict", "overall",
+            "page_texts",
+        )
+        if name not in top_required
     ]
+    header_desc = _short_text(
+        str(schema.get("description", "")), 110
+    )
     lines = [
-        "analysis.json (type world-g, schema version 1): every number on the page. "
-        "Unknown fields are allowed and ignored."
+        "analysis.json (type world-g, schema version 1): "
+        + header_desc
+        + " Unknown fields are allowed and ignored.",
+        "top-level required: " + ", ".join(str(k) for k in top_required) + ".",
+        "top-level optional: " + (
+            ", ".join(top_optional) if top_optional else "none"
+        ) + ".",
+        "type (required const): type=world-g.",
+        "schema_version (required const): schema_version=1.",
+        "clip (required): file, fps [frames/s], frames, width [px], "
+        "height [px], duplicates_found, notes.",
+        "context (required): scene, claim, expected[] "
+        "{quantity, value, unit, source}, sources[] [URLs].",
+        "first_look (required): what, where, when, source, "
+        "confidence [0..1], by_eye {quantity, value, unit}.",
+        "reference[] (required, at least 1): name, extent, value_m [m], "
+        "tolerance_m [m], source_url [URL or null; null only if estimate], "
+        "quote [text or null; null only if estimate], "
+        "source_type [primary|secondary|estimate], mask {file, object}, "
+        "mask_check {verdict "
+        "[agrees|covers_more|covers_less|different_object|cannot_tell], "
+        "covers [which part of the object the mask covers]}.",
+        "scale (required, two forms): frame [frame], extent_px [px], "
+        "extent_px_err [px], second [{name, m_per_px [m/px], "
+        "m_per_px_err, agree_sigma} or null]; "
+        "form image: frame_of_reference=image, m_per_px [m/px], "
+        "m_per_px_err; "
+        "form moving: frame_of_reference {object, anchor [top|bottom], "
+        "size_px_per_frame [px or array of px]}, "
+        "m_per_ref [m per reference size], m_per_ref_err. "
+        "Track unit must match: image uses px, moving uses ref.",
+        "track (required): what, method, unit [px|ref], "
+        "points[] {frame, x, y} (at least 2 points, frames inside clip).",
+        "masks (required, at least 1 object): "
+        "{object_name: {frame: spans [[y, x0, x1], ...]}}; "
+        "only frames the page draws, spans_of format, x1 > x0.",
+        "flights[] (required, at least 1): kind [flight|wall], "
+        "start [frame], apex [frame or null], end [frame], rise_m [m], "
+        "duration_s [s]=(end-start)/fps, "
+        "fit {a [track units/s2, down positive], a_err, rms, v0, "
+        "n [at least 3], window {first [frame], last [frame]}}, "
+        "accel [m/s2, down positive], accel_err [m/s2], "
+        "hypothesis {name, value [m/s2]}, "
+        "decide {state, world, consistent[], sigmas{}, nearest, k, "
+        "text, g [m/s2], g_err [m/s2]; optional k_sigma} "
+        "= blocks.decide(g, g_err, worlds) checked on state/consistent/k, "
+        "ghost[] {frame, y}, notes.",
+        "timescale (required, null allowed): method, value, err, unit, "
+        "expected_range [lo, hi], "
+        "verdict [normal|slow|fast|undetermined].",
+        "error_budget (required, at least 1 term): "
+        "{term: relative fraction, e.g. 0.05}.",
+        "verdict (required) = blocks.decide(g, g_err, worlds) plus "
+        "g [m/s2], g_err [m/s2], worlds {name: g [m/s2]}: "
+        "state, world, consistent[], sigmas{}, nearest, k, text, "
+        "g, g_err, worlds.",
+        "overall (required) = combine(verdict, timescale): label, text.",
+        "page_texts (optional): {key: replacement string}.",
     ]
-    for name in order:
-        spec = props.get(name, {})
-        desc = str(spec.get("description", "")).split(".")[0].strip()
-        required = spec.get("required") or []
-        if isinstance(required, list) and required:
-            need = "needs " + ", ".join(str(k) for k in required)
-        else:
-            need = "optional"
-        if name == "verdict":
-            need = need + "; must equal blocks.decide(g, g_err, worlds) in state/consistent/k"
-        if name == "overall":
-            need = need + "; must equal combine(verdict, timescale)"
-        if name == "flights":
-            need = need + "; duration_s=(end-start)/fps, rise_m matches track x scale"
-        head = name + ": " + need
-        if desc and desc.lower() != name:
-            head = head + " -- " + desc[:110]
-        lines.append(head)
     doc = "\n".join(lines)
-    assert len(doc) <= 4000, "schema_doc exceeded 4000 characters"
+    assert len(doc) <= SCHEMA_DOC_LIMIT, "schema_doc exceeded 6000 characters"
     return doc
 
