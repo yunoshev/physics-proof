@@ -34,6 +34,9 @@ __all__ = [
     "scale_from_reference",
     "to_metres",
     "decide",
+    "relative_track",
+    "step_rate",
+    "ghost",
 ]
 
 # 4-connected neighbourhood for component labelling.
@@ -407,6 +410,160 @@ def track_quality(
     return {"gaps": gaps, "area_jumps": jumps, "splits": splits, "summary": summary}
 
 
+def _target_rows(target: Any, n: int, point: str) -> list[float]:
+    """Per-frame target rows in px; nan where the target is missing.
+
+    Argument shapes: target is either a list of N per-frame rows in px
+    (floats, None for missing) or the output of mask_stats (a list of N
+    dicts/None, using the point row); n is the frame count in frames.
+    Raises TypeError for a MaskSet/dict/str instead of the sequence, and
+    ValueError for a wrong length or a mix of dicts and bare rows.
+    """
+    if _is_set_like(target) or isinstance(target, (str, bytes)):
+        raise TypeError(
+            "relative_track: expected target as a list of per-frame rows in px "
+            + "(None allowed) or the output of mask_stats; got "
+            + type(target).__name__
+            + "."
+        )
+    try:
+        items = list(target)
+    except TypeError as exc:
+        raise TypeError(
+            "relative_track: expected target as a list of per-frame rows in px "
+            + "(None allowed) or the output of mask_stats."
+        ) from exc
+    if len(items) != n:
+        raise ValueError(
+            "relative_track: got " + str(len(items)) + " target values for "
+            + str(n) + " reference frames."
+        )
+    if any(isinstance(v, dict) for v in items):
+        rows: list[float] = []
+        for v in items:
+            if v is None:
+                rows.append(math.nan)
+                continue
+            if not isinstance(v, dict):
+                raise ValueError(
+                    "relative_track: target mixes mask_stats dicts with bare rows."
+                )
+            try:
+                if point == "centroid":
+                    row = v["centroid"][1]
+                elif point == "top":
+                    row = v["top_y"]
+                else:
+                    row = v["bottom_y"]
+                rows.append(float(row))
+            except (KeyError, IndexError, TypeError, ValueError) as exc:
+                raise ValueError(
+                    "relative_track: cannot read point " + repr(point)
+                    + " from a mask_stats entry."
+                ) from exc
+        return rows
+    rows = []
+    for v in items:
+        if v is None:
+            rows.append(math.nan)
+            continue
+        if isinstance(v, (str, bytes, dict)) or _is_set_like(v):
+            raise TypeError(
+                "relative_track: target rows must be numbers in px or None; got "
+                + type(v).__name__
+                + "."
+            )
+        try:
+            rows.append(float(v))
+        except (TypeError, ValueError) as exc:
+            raise TypeError(
+                "relative_track: target rows must be numbers in px or None; got "
+                + type(v).__name__
+                + "."
+            ) from exc
+    return rows
+
+
+def relative_track(
+    target: Any,
+    reference: Any,
+    *,
+    anchor: str = "top",
+    size: str = "width_at",
+    point: str = "centroid",
+    size_row_offset: float = 0.1,
+) -> dict[str, Any]:
+    """Track a point in the frame of a static reference object.
+
+    Argument shapes: target is a list of N per-frame point rows in px (None
+    allowed) or the output of mask_stats (then the point row is used);
+    reference is a single-object bool mask array with shape [N, H, W] (px
+    on/off) of a static object; anchor picks the reference row ("top" is the
+    first mask row, "bottom" the last) in px; size picks the reference extent
+    ("width_at" measures the reference width in px on the row top +
+    size_row_offset x height, "height" uses the full extent height in px);
+    point picks the mask_stats row ("centroid", "top" or "bottom") in px.
+    Returns: dict with frames ([N] in frames), value ([N] unit-free, the
+    (target - anchor) / size in reference sizes, nan where missing), size_px
+    ([N] in px) and zoom {min, max, ratio} over size_px in px, so the page
+    can say how much the camera zoomed. Raises TypeError for a MaskSet/dict
+    instead of the single-object array, ValueError for bad anchor/size/point
+    or a target length that does not match the reference.
+    """
+    if anchor not in ("top", "bottom"):
+        raise ValueError(
+            'relative_track: anchor must be "top" or "bottom"; got ' + repr(anchor) + "."
+        )
+    if size not in ("width_at", "height"):
+        raise ValueError(
+            'relative_track: size must be "width_at" or "height"; got ' + repr(size) + "."
+        )
+    if point not in ("centroid", "top", "bottom"):
+        raise ValueError(
+            'relative_track: point must be "centroid", "top" or "bottom"; got '
+            + repr(point)
+            + "."
+        )
+    offset = float(size_row_offset)
+    if not math.isfinite(offset) or not 0.0 <= offset <= 1.0:
+        raise ValueError("relative_track: size_row_offset must be within [0, 1].")
+    ref = _as_bool_3d("relative_track.reference", reference)
+    n = int(ref.shape[0])
+    if n == 0:
+        raise ValueError("relative_track: need at least one frame.")
+    rows = _target_rows(target, n, point)
+    value = np.full(n, math.nan)
+    size_px = np.full(n, math.nan)
+    for i in range(n):
+        ys = np.flatnonzero(ref[i].any(axis=1))
+        if ys.size == 0 or not math.isfinite(rows[i]):
+            continue
+        top, bottom = int(ys[0]), int(ys[-1])
+        arow = top if anchor == "top" else bottom
+        if size == "height":
+            extent = float(bottom - top + 1)
+        else:
+            height = bottom - top + 1
+            row = min(max(top + int(round(offset * height)), top), bottom)
+            extent = float(ref[i][row].sum())
+        if extent <= 0:
+            continue
+        size_px[i] = extent
+        value[i] = (rows[i] - arow) / extent
+    finite = size_px[np.isfinite(size_px)]
+    if finite.size == 0:
+        zoom = {"min": math.nan, "max": math.nan, "ratio": math.nan}
+    else:
+        lo, hi = float(finite.min()), float(finite.max())
+        zoom = {"min": lo, "max": hi, "ratio": hi / lo if lo > 0 else math.nan}
+    return {
+        "frames": list(range(n)),
+        "value": np.asarray(value, dtype=float),
+        "size_px": np.asarray(size_px, dtype=float),
+        "zoom": zoom,
+    }
+
+
 def fit_parabola(frames: Any, y_px: Any, fps: Any) -> dict[str, Any]:
     """Fit y = a*t^2 + b*t + c to a free-flight track (least squares).
 
@@ -466,6 +623,110 @@ def fit_parabola(frames: Any, y_px: Any, fps: Any) -> dict[str, Any]:
     }
 
 
+def step_rate(series: Any, fps: Any, *, min_hz: float = 1.0, max_hz: float = 8.0) -> dict[str, Any]:
+    """Dominant rhythm of a periodic signal, e.g. mask-top bobbing in steps/s.
+
+    Argument shapes: series holds N samples (one per frame) in px, e.g. the
+    runner mask top row wobbling on the run-up; fps is the frame rate in
+    frames/s; min_hz/max_hz bound the search in steps/s (Hz). Detrends by
+    subtracting a quadratic, applies a Hann window, then takes the
+    periodogram; hz is the peak bin refined by parabolic interpolation in
+    steps/s, hz_err is half one DFT bin (fps / n) in steps/s, period_frames
+    is fps / hz in frames, n is the sample count, and peak_ratio is the peak
+    power over the median in-band power (unit-free; low means no clear
+    rhythm). Needs at least 2 periods inside the series. Raises TypeError
+    for a MaskSet/dict instead of the sequence, ValueError for bad rates, a
+    band with no bins, non-finite samples, or a series too short for 2
+    periods at min_hz.
+    """
+    _need_single("step_rate.series", series, "a 1-D sequence of N samples")
+    if isinstance(series, (str, bytes)):
+        raise TypeError("step_rate: expected a 1-D sequence of N samples.")
+    try:
+        x = np.asarray(series, dtype=float).reshape(-1)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("step_rate: series must be a 1-D sequence of N samples.") from exc
+    if x.ndim != 1:
+        raise ValueError("step_rate: series must be a 1-D sequence of N samples.")
+    if x.size == 0 or not np.all(np.isfinite(x)):
+        raise ValueError("step_rate: series must hold finite samples.")
+    n = int(x.size)
+    rate = float(fps)
+    lo_hz, hi_hz = float(min_hz), float(max_hz)
+    if not math.isfinite(rate) or rate <= 0:
+        raise ValueError("step_rate: fps must be positive.")
+    if not math.isfinite(lo_hz) or not math.isfinite(hi_hz) or not 0 < lo_hz < hi_hz:
+        raise ValueError("step_rate: need 0 < min_hz < max_hz.")
+    if lo_hz >= rate / 2.0:
+        raise ValueError("step_rate: min_hz is above the Nyquist rate.")
+    if n < 8:
+        raise ValueError("step_rate: need at least 8 samples.")
+    if n / rate < 2.0 / lo_hz:
+        raise ValueError(
+            "step_rate: the series holds fewer than 2 periods at min_hz; "
+            + "use a longer series or a higher min_hz."
+        )
+    t = np.arange(n) / rate
+    trend = np.polyval(np.polyfit(t, x, 2), t)
+    windowed = (x - trend) * np.hanning(n)
+    spectrum = np.fft.rfft(windowed)
+    power = spectrum.real * spectrum.real + spectrum.imag * spectrum.imag
+    freqs = np.fft.rfftfreq(n, 1.0 / rate)
+    band = np.flatnonzero((freqs >= lo_hz) & (freqs <= hi_hz))
+    if band.size < 3:
+        raise ValueError("step_rate: the search band holds no usable bins.")
+    peak = int(band[int(np.argmax(power[band]))])
+    peak_power = float(power[peak])
+    median = float(np.median(power[band]))
+    if median > 0:
+        peak_ratio = peak_power / median
+    else:
+        peak_ratio = float("inf") if peak_power > 0 else 1.0
+    df = float(freqs[1] - freqs[0])
+    if 0 < peak < power.size - 1:
+        left, mid, right = (float(power[peak - 1]), peak_power, float(power[peak + 1]))
+        denom = left - 2.0 * mid + right
+        shift = 0.5 * (left - right) / denom if denom < 0 else 0.0
+    else:
+        shift = 0.0
+    hz = float(freqs[peak] + shift * df)
+    return {
+        "hz": hz,
+        "hz_err": df / 2.0,
+        "period_frames": rate / hz if hz > 0 else math.inf,
+        "n": n,
+        "peak_ratio": peak_ratio,
+    }
+
+
+def ghost(y0: Any, v0: Any, a: Any, frames: Any, fps: Any) -> list[float]:
+    """Positions under constant acceleration from a measured start.
+
+    Argument shapes: y0/v0/a are scalars (y0 and v0 share one length unit, px
+    or m; a is in those units/s^2); frames holds M frame indices in frames;
+    fps is the frame rate in frames/s; time is t = (frame - frames[0]) / fps
+    in s. Returns: a list of M floats, y0 + v0 t + a t^2 / 2, in the same
+    units as y0, for the page ghost (where the body would be under gravity).
+    Raises ValueError for an empty frame list or a non-positive fps.
+    """
+    _need_single("ghost.frames", frames, "a sequence of M frame indices")
+    try:
+        start = [float(v) for v in list(frames)]
+    except TypeError as exc:
+        raise TypeError("ghost: frames must be a sequence of M frame indices.") from exc
+    if len(start) == 0:
+        raise ValueError("ghost: need at least one frame.")
+    for name, num in (("y0", y0), ("v0", v0), ("a", a)):
+        if not math.isfinite(float(num)):
+            raise ValueError("ghost: " + name + " must be finite.")
+    rate = float(fps)
+    if not math.isfinite(rate) or rate <= 0:
+        raise ValueError("ghost: fps must be positive.")
+    y0f, v0f, af = float(y0), float(v0), float(a)
+    first = start[0]
+    return [y0f + v0f * (f - first) / rate + af * ((f - first) / rate) ** 2 / 2.0 for f in start]
+
+
 def scale_from_reference(
     length_px: float, length_px_err: float, size_m: float, size_m_err: float
 ) -> tuple[float, float]:
@@ -498,7 +759,8 @@ def to_metres(
 
     Argument shapes: all four are scalars; g_px in px/s^2, px_per_m in px/m,
     errors are standard errors in the same units. Returns: (g in m/s^2,
-    g_err in m/s^2); relative errors are added in quadrature.
+    g_err in m/s^2); relative errors are added in quadrature. When g_px is
+    0 the result is (0, g_px_err / px_per_m) without dividing by zero.
     """
     for name, value in (
         ("g_px", g_px),
@@ -511,6 +773,8 @@ def to_metres(
     px_per_m = float(px_per_m)
     if px_per_m <= 0:
         raise ValueError("to_metres: px_per_m must be positive.")
+    if float(g_px) == 0.0:
+        return 0.0, abs(float(g_px_err)) / px_per_m
     g = float(g_px) / px_per_m
     rel = math.sqrt((float(g_px_err) / float(g_px)) ** 2 + (float(px_per_m_err) / px_per_m) ** 2)
     return g, abs(g) * rel
@@ -523,15 +787,19 @@ def decide(
 
     Argument shapes: g and g_err are scalars in m/s^2; worlds maps world
     names to g in m/s^2 (default Earth 9.81 and Moon 1.62; pass Mars 3.71
-    explicitly to include it); k_sigma is a unit-free threshold. For each
-    world sigma = (g - g_world) / g_err; a world is consistent when
+    explicitly to include it, or a hypothesis such as {"unsupported on
+    Earth": 9.81} for the wall run); k_sigma is a unit-free threshold. For
+    each world sigma = (g - g_world) / g_err; a world is consistent when
     |sigma| <= k_sigma (with a 1e-9 tolerance). Returns: dict with state
     ("fits:<World>", "undetermined" or "none_fits"), world (the fitting
     world or None), consistent (list), sigmas (dict, unit-free), nearest
     (smallest |ln(g / g_world)|), k = sqrt(g_world / g) for the nearest
     world (k > 1: the clip would have to be running slow by ×k;
-    k < 1: running fast by ×(1/k)), and a one-sentence English text for
-    the page.
+    k < 1: running fast by ×(1/k); k is None when g <= 0), and a
+    one-sentence English text for the page. When nothing fits and the
+    measured downward acceleration is <= 0, no time scaling can explain it
+    (a zero or upward acceleration stays so at any playback speed), so the
+    text says plainly that no playback speed explains the motion.
     """
     g, g_err, k_sigma = float(g), float(g_err), float(k_sigma)
     if not math.isfinite(g) or not math.isfinite(g_err) or g_err <= 0:
@@ -557,6 +825,23 @@ def decide(
         state, world = "undetermined", None
     else:
         state, world = "none_fits", None
+    if state == "none_fits" and g <= 0:
+        text = (
+            "The measured g of " + f"{g:.2f}" + " ± " + f"{g_err:.2f}"
+            + " m/s^2 fits no listed world; no playback speed explains the motion."
+        )
+        return {
+            "state": state,
+            "world": world,
+            "consistent": consistent,
+            "sigmas": sigmas,
+            "nearest": nearest,
+            "k": k,
+            "text": text,
+            "g": g,
+            "g_err": g_err,
+            "k_sigma": k_sigma,
+        }
     shown = f"{k_sigma:g}"
     if state.startswith("fits:"):
         text = (
