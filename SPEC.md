@@ -115,8 +115,11 @@ cents. A module is done when all its probes pass and the probe commands are in t
 - **Does:** `search(query)`: a separate Spark call with `web_search` that returns `{facts: [{text, source_url, quote}]}`
   under a strict schema. Allowed: sizes and masses of manufactured objects, equipment specifications, physical constants,
   what a piece of equipment is. Refused: the event's own results and the clip's authenticity (Principle 7).
-- **Blindness filter:** a word list plus patterns on the query (refuse before calling) and on the answer (cut sentences,
-  log the cut). Per-clip limit (default 6). Every query, refusal and cut goes to the run log.
+- **Blindness filter:** two layers. (1) A word list plus patterns on the query (refuse before calling) and on the answer
+  (cut sentences, log the cut). (2) Added 2026-10-27 after the patterns kept leaking on paraphrases: a separate,
+  context-free Spark call classifies every query that passed the patterns, and every returned fact, as a reference fact
+  or as being about the filmed event / its authenticity / whether the filmed action is possible; anything but a
+  reference fact is refused or cut. The classifier fails closed (an error means refuse). Per-clip limit (default 6). Every query, refusal and cut goes to the run log.
 - **Probes:** a fixed list of 20 queries (10 must pass, 10 must be refused) is classified exactly; an answer with a
   planted forbidden sentence comes back with it removed and logged *(offline)*; one real query returns at least one fact
   with a source URL and a verbatim quote *(API)*.
