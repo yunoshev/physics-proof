@@ -229,6 +229,14 @@ cents. A module is done when all its probes pass and the probe commands are in t
 - **Probes:** a fixture run ends after the second finish; a validator error goes back to Spark with paths; screenshots
   exist and are non-blank.
 
+### M14. Toolsmith (added 2026-10-27)
+- **Does:** an agent tool `make_tool(name, code, probe)`: the agent writes a small module for a measurement the blocks do
+  not cover plus a probe on synthetic data with a known answer; the module becomes importable only if the probe passes
+  in the sandbox. `finish` lists the verified tools in `analysis.tools`; the page shows them. `promote` turns a useful
+  tool into a library candidate (`physics_proof/contrib/` + a test) for human review — the toolbox grows from clip to
+  clip.
+- **Probes:** see `tasks/M14.md`.
+
 ### M12. CLI
 - `run <video> [--tag] [--turns] [--cap-usd] [--tier standard|contributor] [--resume]` → run directory and the page path.
 - `build <analysis.json> <video>` → rebuild a page without the agent (for player work).
