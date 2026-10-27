@@ -1,0 +1,9 @@
+{
+  "models": {
+    "muse-spark-1.3": {"input_per_1m": 1.25, "output_per_1m": 4.25},
+    "muse-spark-1.3-contributor": {"input_per_1m": 0.10, "output_per_1m": 0.20}
+  },
+  "web_search_per_1k_calls": 2.50,
+  "sam_per_1k_frames": 0.20,
+  "sam_per_1k_images": 2.50
+}
