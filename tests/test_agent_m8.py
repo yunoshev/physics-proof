@@ -203,7 +203,12 @@ def _analysis(clip_path: Path, npz_name: str) -> dict[str, Any]:
             "extent_px_err": 1.0,
             "m_per_px": 0.002,
             "m_per_px_err": 0.0001,
-            "second": None,
+            "second": {
+                "name": "red square width",
+                "m_per_px": 0.002,
+                "m_per_px_err": 0.0001,
+                "agree_sigma": 0.2,
+            },
             "frame_of_reference": "image",
         },
         "track": {"what": "square centre", "method": "centroid", "unit": "px", "points": points},
@@ -485,6 +490,202 @@ def test_image_pruning_keeps_last_two() -> None:
     assert len(kept) == 2
     assert kept[0]["content"][1]["image_url"] == "img2"
     assert "omitted" in pruned[0]["content"][0]["text"]
+
+
+def _no_computed(analysis: dict[str, Any]) -> dict[str, Any]:
+    """Copy with measurements only: no decide, no computed verdict/overall keys."""
+    import copy
+
+    broken = copy.deepcopy(analysis)
+    for flight in broken["flights"]:
+        flight.pop("decide", None)
+    verdict = broken.get("verdict", {})
+    for key in ("state", "world", "consistent", "sigmas", "nearest", "k", "text", "k_sigma"):
+        verdict.pop(key, None)
+    broken["overall"] = {"label": "Earth", "text": "A hand-written guess, not combine."}
+    return broken
+
+
+def test_finish_fills_decide_verdict_overall(tmp_path: Path) -> None:
+    """Probe 1 (fix1): finish computes decide/verdict/overall; no text guess needed."""
+    from physics_proof.agent import run_analysis as local_run
+
+    analysis = _no_computed(_analysis(CLIP, NPZ))
+    assert analysis["overall"]["label"] == "Earth"
+    script = [
+        ("call", "sam", {"phrase": "red square", "start": 0, "stop": 10}),
+        (
+            "call",
+            "mask_check",
+            {
+                "file": NPZ,
+                "object": 0,
+                "frames": [0, 5, 9],
+                "claim": "the mask covers only the red square",
+            },
+        ),
+        ("call", "python", {"code": _code(analysis)}),
+        ("call", "finish", {"analysis_file": "draft.json", "page_texts": ""}),
+    ]
+    spark = ScriptSpark(script)
+    run_dir = tmp_path / "run"
+    summary = local_run(CLIP, run_dir, spark=spark, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    assert summary.status == "ok"
+    saved = json.loads((run_dir / "analysis.json").read_text(encoding="utf-8"))
+    assert validate(saved) == []
+    flight_decide = blocks.decide(9.81, 0.5, {"Earth": 9.81})
+    verdict_decide = blocks.decide(9.81, 0.5, {"Earth": 9.81, "Moon": 1.62})
+    for key in ("state", "consistent", "k", "text"):
+        assert saved["flights"][0]["decide"][key] == flight_decide[key]
+    for key in ("state", "consistent", "k", "text"):
+        assert saved["verdict"][key] == verdict_decide[key]
+    assert saved["overall"] == combine(
+        dict(verdict_decide, worlds={"Earth": 9.81, "Moon": 1.62}), None
+    )
+    turns = _turns(run_dir)
+    assert "does not match combine" not in turns[-1]["result_text"]
+    assert "valid" in turns[-1]["result_text"]
+
+
+def test_finish_coerces_type_slips(tmp_path: Path) -> None:
+    """Probe 6 (fix1): int/list slips are coerced and reported, not rejected."""
+    import copy
+
+    from physics_proof.agent import run_analysis as local_run
+
+    analysis = copy.deepcopy(_analysis(CLIP, NPZ))
+    analysis["clip"]["duplicates_found"] = [(1, 2), (4, 5)]
+    analysis["reference"][0]["mask"]["object"] = 0
+    flight = analysis["flights"][0]
+    flight["accel"] = [flight["accel"], flight["accel_err"]]
+    del flight["accel_err"]
+    flight.pop("decide", None)
+    analysis["scale"]["second"] = [analysis["scale"]["second"]]
+    script = [
+        ("call", "sam", {"phrase": "red square", "start": 0, "stop": 10}),
+        (
+            "call",
+            "mask_check",
+            {
+                "file": NPZ,
+                "object": 0,
+                "frames": [0, 5, 9],
+                "claim": "the mask covers only the red square",
+            },
+        ),
+        ("call", "python", {"code": _code(analysis)}),
+        ("call", "finish", {"analysis_file": "draft.json", "page_texts": ""}),
+    ]
+    spark = ScriptSpark(script)
+    run_dir = tmp_path / "run"
+    summary = local_run(CLIP, run_dir, spark=spark, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    assert summary.status == "ok"
+    saved = json.loads((run_dir / "analysis.json").read_text(encoding="utf-8"))
+    assert validate(saved) == []
+    assert saved["clip"]["duplicates_found"] == 2
+    assert saved["reference"][0]["mask"]["object"] == "0"
+    assert saved["flights"][0]["accel"] == pytest.approx(9.81)
+    assert saved["flights"][0]["accel_err"] == pytest.approx(0.5)
+    assert isinstance(saved["scale"]["second"], dict)
+    assert saved["scale"]["second"]["name"] == "red square width"
+    turns = _turns(run_dir)
+    assert "Coercions" in turns[-1]["result_text"]
+    assert "/clip/duplicates_found" in turns[-1]["result_text"]
+    assert "/reference/0/mask/object" in turns[-1]["result_text"]
+
+
+def test_finish_second_reference_asked_once(tmp_path: Path) -> None:
+    """Probe 5 (fix1): first finish without scale.second asks; the next passes."""
+    import copy
+
+    from physics_proof.agent import run_analysis as local_run
+
+    analysis = copy.deepcopy(_analysis(CLIP, NPZ))
+    analysis["scale"]["second"] = None
+    script = [
+        ("call", "sam", {"phrase": "red square", "start": 0, "stop": 10}),
+        (
+            "call",
+            "mask_check",
+            {
+                "file": NPZ,
+                "object": 0,
+                "frames": [0, 5, 9],
+                "claim": "the mask covers only the red square",
+            },
+        ),
+        ("call", "python", {"code": _code(analysis)}),
+        ("call", "finish", {"analysis_file": "draft.json", "page_texts": ""}),
+        ("call", "finish", {"analysis_file": "draft.json", "page_texts": ""}),
+    ]
+    spark = ScriptSpark(script)
+    run_dir = tmp_path / "run"
+    summary = local_run(CLIP, run_dir, spark=spark, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    assert summary.status == "ok"
+    turns = _turns(run_dir)
+    assert len(turns) == 5
+    assert "second" in turns[3]["result_text"]
+    assert "scale.notes" in turns[3]["result_text"]
+    assert "valid" in turns[4]["result_text"]
+    saved = json.loads((run_dir / "analysis.json").read_text(encoding="utf-8"))
+    assert validate(saved) == []
+
+
+def test_tool_results_name_workspace_files(tmp_path: Path) -> None:
+    """Probe 2 (fix1): every tool result names the files it produced."""
+    analysis = _analysis(CLIP, NPZ)
+    spark = ScriptSpark(_full_script(analysis, NPZ))
+    run_dir = tmp_path / "run"
+    summary = run_analysis(CLIP, run_dir, spark=spark, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    assert summary.status == "ok"
+    turns = _turns(run_dir)
+    assert "sheets/turn02.png" in turns[1]["result_text"]
+    assert "sam/red_square.0-10.npz" in turns[2]["result_text"]
+    assert "sam/red_square.0-10.png" in turns[2]["result_text"]
+    assert "mask_checks/" in turns[3]["result_text"]
+    assert NPZ in turns[3]["result_text"]
+    assert "scripts/" in turns[4]["result_text"]
+
+
+def test_blocks_doc_has_full_signatures() -> None:
+    """Probe 3 (fix1): the prompt carries full signatures and docstrings."""
+    from physics_proof.agent import assemble_system_prompt, blocks_doc
+
+    doc = blocks_doc()
+    for name in blocks.__all__:
+        func = getattr(blocks, name)
+        assert "blocks." + name + "(" in doc, name
+        first_line = (func.__doc__ or "").strip().splitlines()[0]
+        assert first_line[:40] in doc, name
+    assert "fit_parabola(frames" in doc
+    assert "decide(g" in doc
+    prompt = assemble_system_prompt(
+        max_turns=60,
+        sam_frames=1500,
+        searches=6,
+        mask_checks=4,
+        cap_usd=2.0,
+        probe_text=clip_probe_text(video.probe(CLIP), []),
+    )
+    assert "rglob" in prompt
+    assert "finish computes" in prompt
+    assert "sam/<phrase>.<start>-<stop>.npz" in prompt
+
+
+def test_effort_high_default_and_logged(tmp_path: Path) -> None:
+    """Defaults: 60 turns, high reasoning effort, logged in the summary."""
+    import inspect
+
+    from physics_proof.agent import run_analysis as local_run
+
+    assert inspect.signature(local_run).parameters["max_turns"].default == 60
+    assert inspect.signature(local_run).parameters["effort"].default == "high"
+    spark = ScriptSpark([("call", "video_info", {})])
+    run_dir = tmp_path / "run"
+    summary = local_run(CLIP, run_dir, spark=spark, max_turns=1, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    stored = json.loads((run_dir / "summary.json").read_text(encoding="utf-8"))
+    assert stored["effort"] == "high"
+    assert summary.effort == "high"
 
 
 @pytest.mark.api

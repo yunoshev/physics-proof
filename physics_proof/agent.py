@@ -16,7 +16,9 @@ recomputes the verdicts, and writes ``run_dir/analysis.json``.
 
 from __future__ import annotations
 
+import inspect
 import json
+import math
 import shutil
 import time
 from collections.abc import Callable
@@ -207,13 +209,21 @@ def evidence_rules() -> str:
 
 
 def blocks_doc() -> str:
-    """One line per public blocks function, generated from docstrings."""
+    """Full signature plus docstring of every public blocks function.
+
+    Generated with inspect at run time, so the prompt cannot drift from
+    the verified library; nothing here is hand-copied.
+    """
     lines = []
     for name in sorted(blocks.__all__):
-        doc = (getattr(blocks, name).__doc__ or "").strip().splitlines()
-        first = doc[0].strip() if doc else name
-        lines.append("- blocks." + name + ": " + first)
-    return "\n".join(lines)
+        func = getattr(blocks, name)
+        try:
+            sig = str(inspect.signature(func))
+        except (TypeError, ValueError):
+            sig = "(...)"
+        doc = inspect.getdoc(func) or name
+        lines.append("blocks." + name + sig + "\n" + doc)
+    return "\n\n".join(lines)
 
 
 def tools_doc(
@@ -233,7 +243,18 @@ def tools_doc(
         "- python(code): code runs in the workspace sandbox with import blocks; "
         "write analysis files with relative paths.\n"
         "- finish(analysis_file, page_texts): analysis_file is a workspace path; "
-        "page_texts is a JSON object string (or empty).\n"
+        "page_texts is a JSON object string (or empty). finish computes "
+        "flights[i].decide, verdict and overall itself from your accel/g/g_err "
+        "measurements and worlds — supply only the measurements plus page_texts "
+        "and notes prose, never hand-written decide/verdict/overall texts.\n"
+        "Workspace layout (all tool paths are relative to the workspace): "
+        "sam/ holds sam/<phrase>.<start>-<stop>.npz masks plus its overlay "
+        "sheet sam/<phrase>.<start>-<stop>.png; sheets/ holds frames contact "
+        "sheets; mask_checks/ holds mask-check sheets; scripts/ holds each "
+        "python call as scripts/NNN.py; images your code writes land next to "
+        "it. Every tool result names the files it produced. There is no shell "
+        "and no os/glob: use pathlib (for example sorted(Path('.').rglob('*'))) "
+        "in python to list the workspace.\n"
         "Budgets enforced in code: at most "
         + str(max_turns) + " turns, "
         + str(sam_frames) + " SAM frames, "
@@ -307,6 +328,7 @@ class RunSummary:
     analysis_path: Path | None = None
     tier: str = "contributor"
     model: str = ""
+    effort: str = "high"
 
     def to_json(self) -> dict[str, Any]:
         """Plain-JSON form for summary.json."""
@@ -322,6 +344,7 @@ class RunSummary:
             "analysis_path": str(self.analysis_path) if self.analysis_path else None,
             "tier": self.tier,
             "model": self.model,
+            "effort": self.effort,
         }
 
 
@@ -429,7 +452,8 @@ def _run_frames(tools: _Tools, args: dict[str, Any], turn: int) -> tuple[str, li
         raise ValueError("label must be a string, got " + repr(label))
     out = tools.workspace / "sheets" / ("turn%02d.png" % turn)
     video.contact_sheet(tools.clip, sorted(set(indices)), out=out, crop=crop)
-    text = "contact sheet of frames " + repr(sorted(set(indices))) + " at " + out.name
+    rel = out.relative_to(tools.workspace).as_posix()
+    text = "contact sheet of frames " + repr(sorted(set(indices))) + " at " + rel
     if crop is not None:
         text += " with crop " + repr(list(crop))
     if label.strip():
@@ -446,7 +470,9 @@ def _run_sam(tools: _Tools, args: dict[str, Any]) -> tuple[str, list[Path]]:
     if not isinstance(phrase, str):
         raise ValueError("sam phrase must be a string, got " + repr(phrase))
     result = tools.sam.run(phrase, start, stop)
-    return result.text(), [result.sheet]
+    npz_rel = result.npz.relative_to(tools.workspace).as_posix()
+    sheet_rel = result.sheet.relative_to(tools.workspace).as_posix()
+    return result.text() + "\nfiles: " + npz_rel + ", " + sheet_rel, [result.sheet]
 
 
 def _run_mask_check(tools: _Tools, args: dict[str, Any]) -> tuple[str, list[Path]]:
@@ -456,7 +482,9 @@ def _run_mask_check(tools: _Tools, args: dict[str, Any]) -> tuple[str, list[Path
         raise ValueError("mask_check file must be a workspace path, got " + repr(claimed))
     npz = tools.workspace / claimed.strip()
     result = tools.mask.run(npz, args.get("object"), args.get("frames"), args.get("claim"))
-    return result.text(), [result.sheet]
+    sheet_rel = result.sheet.relative_to(tools.workspace).as_posix()
+    npz_rel = npz.relative_to(tools.workspace).as_posix()
+    return result.text() + " [mask file " + npz_rel + ", sheet " + sheet_rel + "]", [result.sheet]
 
 
 def _run_search(tools: _Tools, args: dict[str, Any]) -> tuple[str, list[Path]]:
@@ -479,12 +507,23 @@ def _run_python(tools: _Tools, args: dict[str, Any]) -> tuple[str, list[Path]]:
             lines.append("- line " + str(problem.line) + " [" + problem.rule + "] " + problem.message)
         return "\n".join(lines), []
     body = "python: exit " + str(result.exit_code) + " in " + ("%.1f" % result.seconds) + "s."
+    if result.script is not None:
+        try:
+            body += " script: " + result.script.relative_to(tools.workspace).as_posix() + "."
+        except ValueError:
+            body += " script: " + result.script.name + "."
     if result.stdout.strip():
         body += "\n-- stdout --\n" + result.stdout.strip()
     if result.stderr.strip():
         body += "\n-- stderr --\n" + result.stderr.strip()
     if result.images:
-        body += "\nimages: " + ", ".join(path.name for path in result.images)
+        rels = []
+        for path in result.images:
+            try:
+                rels.append(path.relative_to(tools.workspace).as_posix())
+            except ValueError:
+                rels.append(path.name)
+        body += "\nimages: " + ", ".join(rels)
     return body, list(result.images)
 
 
@@ -548,76 +587,289 @@ def _reference_checked(entries: list[dict[str, Any]], mask_file: Any, obj: Any) 
     return False
 
 
-def _recompute_issues(analysis: dict[str, Any]) -> list[str]:
-    """Recompute every flight verdict, the top verdict and overall by hand."""
-    problems: list[str] = []
-    for pos, flight in enumerate(analysis.get("flights", [])):
-        if not isinstance(flight, dict):
-            continue
-        hypo = flight.get("hypothesis", {}) if isinstance(flight.get("hypothesis"), dict) else {}
-        worlds = {}
-        if isinstance(hypo.get("name"), str) and isinstance(hypo.get("value"), (int, float)):
-            worlds = {hypo["name"]: float(hypo["value"])}
+def _num(value: Any) -> float | None:
+    """Finite float of a real number or a numeric string, else None."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value) if math.isfinite(value) else None
+    if isinstance(value, str):
         try:
-            want = blocks.decide(
-                float(flight["accel"]), float(flight["accel_err"]), worlds or None
-            )
-        except (KeyError, TypeError, ValueError) as exc:
-            problems.append("/flights/" + str(pos) + "/decide: cannot recompute: " + str(exc))
-            continue
-        stored = flight.get("decide", {})
-        if not isinstance(stored, dict):
-            problems.append("/flights/" + str(pos) + "/decide: expected an object")
-            continue
-        for key in ("state", "consistent", "k"):
-            got, expected = stored.get(key), want[key]
-            if key == "k" and (got is None or expected is None):
-                if got is not expected:
-                    problems.append("/flights/" + str(pos) + "/decide/k: mismatch")
-            elif got != expected:
-                problems.append(
-                    "/flights/" + str(pos) + "/decide/" + key + ": stored "
-                    + repr(got) + " != recomputed " + repr(expected)
-                )
-    verdict = analysis.get("verdict", {})
-    worlds = verdict.get("worlds") if isinstance(verdict, dict) else None
-    if isinstance(verdict, dict) and isinstance(worlds, dict) and worlds:
+            parsed = float(value.strip())
+        except ValueError:
+            return None
+        return parsed if math.isfinite(parsed) else None
+    return None
+
+
+def _int_like(value: Any) -> int | None:
+    """Int of an int, an integral float, or a digit string, else None."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, str):
         try:
-            want = blocks.decide(float(verdict["g"]), float(verdict["g_err"]), dict(worlds))
-        except (KeyError, TypeError, ValueError) as exc:
-            problems.append("/verdict: cannot recompute: " + str(exc))
-            want = None
-        if want is not None:
-            for key in ("state", "consistent", "k"):
-                got, expected = verdict.get(key), want[key]
-                if key == "k" and (got is None or expected is None):
-                    if got is not expected:
-                        problems.append("/verdict/k: mismatch")
-                elif got != expected:
-                    problems.append(
-                        "/verdict/" + key + ": stored " + repr(got)
-                        + " != recomputed " + repr(expected)
-                    )
+            return int(value.strip())
+        except ValueError:
+            return None
+    return None
+
+
+def _coerce_analysis(analysis: dict[str, Any]) -> list[str]:
+    """Fix harmless type slips in place; returns one note per fix.
+
+    Covered slips: clip.duplicates_found as a bool or a list (a list
+    counts its entries) or an int-like value; reference mask.object as
+    an int; accel as a one- or two-number list (two numbers with no
+    accel_err split into accel and accel_err); accel_err as a
+    one-number list; scale.second as [] (null) or [object]; integral
+    floats or digit strings where an int frame/count belongs. Anything
+    else is left for the validator to reject with a path.
+    """
+    notes: list[str] = []
+
+    def note(path: str, before: Any, after: Any) -> None:
+        notes.append("coerced " + path + ": " + repr(before) + " -> " + repr(after))
+
+    clip = analysis.get("clip")
+    if isinstance(clip, dict) and "duplicates_found" in clip:
+        raw = clip["duplicates_found"]
+        if isinstance(raw, bool):
+            clip["duplicates_found"] = int(raw)
+            note("/clip/duplicates_found", raw, clip["duplicates_found"])
+        elif isinstance(raw, list):
+            clip["duplicates_found"] = len(raw)
+            note("/clip/duplicates_found", raw, len(raw))
+        elif not isinstance(raw, int):
+            fixed = _int_like(raw)
+            if fixed is not None and fixed >= 0:
+                clip["duplicates_found"] = fixed
+                note("/clip/duplicates_found", raw, fixed)
+
+    refs = analysis.get("reference")
+    if isinstance(refs, list):
+        for pos, ref in enumerate(refs):
+            if not isinstance(ref, dict):
+                continue
+            mask = ref.get("mask")
+            if isinstance(mask, dict) and "object" in mask:
+                raw = mask["object"]
+                if isinstance(raw, bool):
+                    continue
+                if isinstance(raw, int):
+                    mask["object"] = str(raw)
+                    note("/reference/" + str(pos) + "/mask/object", raw, mask["object"])
+                elif isinstance(raw, float) and raw.is_integer():
+                    mask["object"] = str(int(raw))
+                    note("/reference/" + str(pos) + "/mask/object", raw, mask["object"])
+
+    flights = analysis.get("flights")
+    if isinstance(flights, list):
+        for pos, flight in enumerate(flights):
+            if not isinstance(flight, dict):
+                continue
+            base = "/flights/" + str(pos)
+            raw_accel = flight.get("accel")
+            if isinstance(raw_accel, list):
+                nums = [_num(v) for v in raw_accel]
+                if len(raw_accel) == 1 and nums[0] is not None:
+                    flight["accel"] = nums[0]
+                    note(base + "/accel", raw_accel, nums[0])
+                elif (
+                    len(raw_accel) == 2
+                    and all(v is not None for v in nums)
+                    and _num(flight.get("accel_err")) is None
+                ):
+                    assert nums[0] is not None and nums[1] is not None
+                    flight["accel"], flight["accel_err"] = nums[0], nums[1]
+                    note(base + "/accel", raw_accel, [nums[0], nums[1]])
+            raw_err = flight.get("accel_err")
+            if isinstance(raw_err, list) and len(raw_err) == 1 and _num(raw_err[0]) is not None:
+                fixed = _num(raw_err[0])
+                assert fixed is not None
+                flight["accel_err"] = fixed
+                note(base + "/accel_err", raw_err, fixed)
+            for key in ("start", "apex", "end"):
+                if key in flight and flight[key] is not None and not isinstance(flight[key], int):
+                    raw = flight[key]
+                    fixed = _int_like(raw)
+                    if fixed is not None:
+                        flight[key] = fixed
+                        note(base + "/" + key, raw, fixed)
+            fit = flight.get("fit")
+            if isinstance(fit, dict):
+                if "n" in fit and not isinstance(fit["n"], int):
+                    raw = fit["n"]
+                    fixed = _int_like(raw)
+                    if fixed is not None:
+                        fit["n"] = fixed
+                        note(base + "/fit/n", raw, fixed)
+                window = fit.get("window")
+                if isinstance(window, dict):
+                    for key in ("first", "last"):
+                        if key in window and not isinstance(window[key], int):
+                            raw = window[key]
+                            fixed = _int_like(raw)
+                            if fixed is not None:
+                                window[key] = fixed
+                                note(base + "/fit/window/" + key, raw, fixed)
+            ghost = flight.get("ghost")
+            if isinstance(ghost, list):
+                for j, point in enumerate(ghost):
+                    if isinstance(point, dict) and "frame" in point and not isinstance(
+                        point["frame"], int
+                    ):
+                        raw = point["frame"]
+                        fixed = _int_like(raw)
+                        if fixed is not None:
+                            point["frame"] = fixed
+                            note(base + "/ghost/" + str(j) + "/frame", raw, fixed)
+
+    track = analysis.get("track")
+    if isinstance(track, dict) and isinstance(track.get("points"), list):
+        for j, point in enumerate(track["points"]):
+            if isinstance(point, dict) and "frame" in point and not isinstance(
+                point["frame"], int
+            ):
+                raw = point["frame"]
+                fixed = _int_like(raw)
+                if fixed is not None:
+                    point["frame"] = fixed
+                    note("/track/points/" + str(j) + "/frame", raw, fixed)
+
+    scale = analysis.get("scale")
+    if isinstance(scale, dict) and "second" in scale:
+        raw = scale["second"]
+        if isinstance(raw, list) and len(raw) == 0:
+            scale["second"] = None
+            note("/scale/second", raw, None)
+        elif isinstance(raw, list) and len(raw) == 1:
+            scale["second"] = raw[0]
+            note("/scale/second", raw, raw[0])
+
+    verdict = analysis.get("verdict")
     if isinstance(verdict, dict):
-        try:
-            want_overall = combine(verdict, analysis.get("timescale"))
-        except (TypeError, ValueError) as exc:
-            problems.append("/overall: cannot recompute: " + str(exc))
-            want_overall = None
-        if want_overall is not None:
-            overall = analysis.get("overall", {})
-            if not isinstance(overall, dict):
-                problems.append("/overall: expected an object")
-            elif overall.get("label") != want_overall["label"]:
-                problems.append(
-                    "/overall/label: stored " + repr(overall.get("label"))
-                    + " != recomputed " + repr(want_overall["label"])
+        for key in ("g", "g_err"):
+            if key in verdict and isinstance(verdict[key], list) and len(verdict[key]) == 1:
+                raw = verdict[key]
+                fixed = _num(raw[0])
+                if fixed is not None:
+                    verdict[key] = fixed
+                    note("/verdict/" + key, raw, fixed)
+    return notes
+
+
+def _k_sigma_of(stored: Any) -> float:
+    """Agent's k_sigma when it is a positive number, else the default 2.0."""
+    if isinstance(stored, dict):
+        raw = _num(stored.get("k_sigma"))
+        if raw is not None and raw > 0:
+            return raw
+    return 2.0
+
+
+def _fill_computed(analysis: dict[str, Any]) -> None:
+    """Compute and write flights[i].decide, verdict and overall in place.
+
+    The agent supplies only measurements (accel/accel_err plus the
+    hypothesis, verdict g/g_err plus worlds) and prose; the verified
+    blocks.decide and combine supply every state/label/k/text. Inputs
+    that are missing or unusable are left alone so the validator can
+    reject them with a path.
+    """
+    flights = analysis.get("flights")
+    if isinstance(flights, list):
+        for flight in flights:
+            if not isinstance(flight, dict):
+                continue
+            accel, accel_err = _num(flight.get("accel")), _num(flight.get("accel_err"))
+            hypo = flight.get("hypothesis")
+            hypo_value = _num(hypo.get("value")) if isinstance(hypo, dict) else None
+            if accel is None or accel_err is None or accel_err <= 0:
+                continue
+            if (
+                not isinstance(hypo, dict)
+                or not isinstance(hypo.get("name"), str)
+                or hypo_value is None
+                or hypo_value <= 0
+            ):
+                continue
+            try:
+                flight["decide"] = blocks.decide(
+                    accel,
+                    accel_err,
+                    {hypo["name"]: hypo_value},
+                    k_sigma=_k_sigma_of(flight.get("decide")),
                 )
-    return problems
+            except ValueError:
+                continue
+    verdict = analysis.get("verdict")
+    if isinstance(verdict, dict):
+        g, g_err = _num(verdict.get("g")), _num(verdict.get("g_err"))
+        raw_worlds = verdict.get("worlds")
+        worlds: dict[str, float] | None = None
+        if isinstance(raw_worlds, dict) and raw_worlds:
+            worlds = {}
+            for name, value in raw_worlds.items():
+                fixed = _num(value)
+                if not isinstance(name, str) or fixed is None or fixed <= 0:
+                    worlds = None
+                    break
+                worlds[name] = fixed
+        if g is not None and g_err is not None and g_err > 0 and worlds:
+            try:
+                got = blocks.decide(g, g_err, worlds, k_sigma=_k_sigma_of(verdict))
+            except ValueError:
+                got = None
+            if got is not None:
+                for key in (
+                    "state", "world", "consistent", "sigmas", "nearest",
+                    "k", "text", "g", "g_err", "k_sigma",
+                ):
+                    verdict[key] = got[key]
+                verdict["worlds"] = worlds
+    if isinstance(verdict, dict) and isinstance(verdict.get("state"), str):
+        try:
+            analysis["overall"] = combine(verdict, analysis.get("timescale"))
+        except (TypeError, ValueError):
+            pass
+
+
+#: Workspace marker: the second-reference ask was already sent once.
+SECOND_ASK_MARKER = ".second_reference_asked"
+
+
+def _second_gate(workspace: Path, scale: Any) -> str | None:
+    """Ask-once gate for SPEC rule 2 (two independent references).
+
+    Returns None when the gate is satisfied (a second reference or a
+    written reason in scale.notes, or the ask already went out once);
+    otherwise writes the marker and returns the refusal text.
+    """
+    if not isinstance(scale, dict):
+        return None
+    if scale.get("second") is not None:
+        return None
+    notes = scale.get("notes")
+    if isinstance(notes, str) and notes.strip():
+        return None
+    marker = workspace / SECOND_ASK_MARKER
+    if marker.exists():
+        return None
+    marker.write_text("asked\n", encoding="utf-8")
+    return (
+        "finish: scale has no second reference (the rules of evidence "
+        "want two independent references at about the same depth). "
+        "Add scale.second, or write the reason in scale.notes, then call "
+        "finish again; the next finish is accepted either way."
+    )
 
 
 def _run_finish(tools: _Tools, args: dict[str, Any], run_dir: Path) -> tuple[bool, str, Path | None]:
-    """Minimal finish: validate, gate on the mask check, recompute, write.
+    """Finish: coerce slips, compute decide/verdict/overall, validate, gate, write.
 
     Returns (ok, message, analysis path); only ok ends the run.
     """
@@ -640,12 +892,13 @@ def _run_finish(tools: _Tools, args: dict[str, Any], run_dir: Path) -> tuple[boo
         merged = dict(analysis.get("page_texts", {}) or {})
         merged.update(page_texts)
         analysis["page_texts"] = merged
+    coerced = _coerce_analysis(analysis)
+    _fill_computed(analysis)
     info = video.probe(tools.clip)
     issues = [
         issue.path + ": " + issue.message
         for issue in validate(analysis, clip_frames=info.frame_count, fps=float(info.fps))
     ]
-    issues.extend(_recompute_issues(analysis))
     if issues:
         shown = "\n".join("- " + line for line in issues[:20])
         if len(issues) > 20:
@@ -665,9 +918,17 @@ def _run_finish(tools: _Tools, args: dict[str, Any], run_dir: Path) -> tuple[boo
             "Run mask_check on the reference mask file first.",
             None,
         )
+    ask = _second_gate(tools.workspace, analysis.get("scale"))
+    if ask is not None:
+        return False, ask, None
     dest = run_dir / "analysis.json"
     dest.write_text(json.dumps(analysis, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-    return True, "finish: analysis written to " + dest.name + " and valid.", dest
+    tail = ""
+    if coerced:
+        tail = " Coercions: " + "; ".join(coerced[:10])
+        if len(coerced) > 10:
+            tail += "; and " + str(len(coerced) - 10) + " more"
+    return True, "finish: analysis written to " + dest.name + " and valid." + tail, dest
 
 
 def _dispatch(
@@ -851,7 +1112,7 @@ def run_analysis(
     *,
     tier: str = "contributor",
     cap_usd: float = 2.0,
-    max_turns: int = 40,
+    max_turns: int = 60,
     sam_frames: int = 1500,
     searches: int = 6,
     mask_checks: int = 4,
@@ -859,6 +1120,7 @@ def run_analysis(
     resume: bool = False,
     python_runner: PythonRunner | None = None,
     cache_dir: str | Path | None = None,
+    effort: str = "high",
 ) -> RunSummary:
     """Run one analysis: blind start, tool loop, finish, logs.
 
@@ -867,6 +1129,9 @@ def run_analysis(
     continues from the next turn without calling anything again.
     python_runner runs the ``python`` tool (the sandbox by default; tests
     may pass a runner without the Seatbelt profile, which M5 owns).
+    effort is the reasoning effort for the agent's own turns (high by
+    default; sub-calls keep the configured Settings effort); it is
+    logged in the summary.
     """
     started = time.monotonic()
     run_path = Path(run_dir)
@@ -952,6 +1217,7 @@ def run_analysis(
         summary.wall_s = time.monotonic() - started
         summary.tier = tier
         summary.model = model
+        summary.effort = effort
         (run_path / "summary.json").write_text(
             json.dumps(summary.to_json(), indent=1, sort_keys=True) + "\n", encoding="utf-8"
         )
@@ -971,6 +1237,7 @@ def run_analysis(
                 instructions=system,
                 tools=TOOLS,
                 model=model or None,
+                effort=effort,
                 note="agent-turn-%02d" % turn,
             )
         except BudgetExhausted:

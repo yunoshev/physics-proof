@@ -28,7 +28,8 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--tag", default=None, help="run tag; default is the clip name")
     run.add_argument("--tier", default="contributor", choices=("contributor", "standard"))
     run.add_argument("--cap-usd", type=float, default=2.0)
-    run.add_argument("--turns", type=int, default=40)
+    run.add_argument("--turns", type=int, default=60)
+    run.add_argument("--effort", type=str, default="high")
     run.add_argument("--resume", action="store_true")
     args = parser.parse_args(argv)
 
@@ -44,6 +45,7 @@ def main(argv: list[str] | None = None) -> int:
             cap_usd=args.cap_usd,
             max_turns=args.turns,
             resume=args.resume,
+            effort=args.effort,
         )
         print("status: " + summary.status, flush=True)
         print("turns: " + str(summary.turns), flush=True)

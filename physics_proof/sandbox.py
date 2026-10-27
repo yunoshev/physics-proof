@@ -244,8 +244,18 @@ def review(code: str) -> list[Problem]:
 
 
 def _repo_root() -> Path:
-    """Directory of the top-level blocks.py shim (goes on sys.path)."""
+    """Directory of the top-level blocks.py shim (never on the child path)."""
     return Path(__file__).resolve().parents[1]
+
+
+def _package_dir(repo_root: Path) -> Path:
+    """The physics_proof package dir: all of ``import blocks`` needs."""
+    return Path(repo_root).resolve() / "physics_proof"
+
+
+def _shim_path(repo_root: Path) -> Path:
+    """The top-level blocks.py shim file: plain ``import blocks`` needs."""
+    return Path(repo_root).resolve() / "blocks.py"
 
 
 def _next_script_path(scripts: Path) -> Path:
@@ -343,6 +353,13 @@ def _sandbox_profile(
     are combined with OR, so every deny rule with more than one filter
     wraps them in ``(require-all ...)`` for the intended AND meaning.
 
+    The repo root itself is never carved out: analysis code may read the
+    workspace, the physics_proof package and the blocks.py shim (all of
+    ``import blocks`` needs), the venv and the interpreter — nothing
+    else. Listing the shim's parent dir therefore fails, as do reads of
+    the spec or the held-out answers, while ``import blocks`` still works
+    (its files are read by explicit path, never by scanning the root).
+
     Seatbelt checks both the path being executed and the resolved file,
     so the caller passes the venv interpreter path and its realpath (and
     both forms of each tool path); every one of them is carved out of the
@@ -353,7 +370,8 @@ def _sandbox_profile(
     exe = Path(interpreter).resolve()
     candidates = [
         workspace,
-        repo_root,
+        _package_dir(repo_root),
+        _shim_path(repo_root),
         exe.parent.parent,
         Path(sys.base_prefix).resolve(),
         *_site_dirs(),
@@ -397,15 +415,46 @@ def _sandbox_profile(
 
 
 def _runner_source(repo_root: Path, script: Path, site_dirs: list[Path]) -> str:
-    """Bootstrap for python -I: restore the venv packages on sys.path.
+    """Bootstrap for python -I: preload blocks without scanning the repo.
 
     The runner launches the resolved interpreter directly, so under -I
-    the venv site-packages are missing; re-add them here, with the
-    blocks.py directory first so ``import blocks`` finds our shim.
+    the venv site-packages are missing; re-add them here. The repo root
+    stays off sys.path (the sandbox denies listing it): the
+    physics_proof package and the blocks.py shim are loaded from
+    explicit file paths into sys.modules, so the agent's plain
+    ``import blocks`` hits the preloaded module with no directory scan.
     """
-    lines = ["import runpy as _runpy", "import sys as _sys"]
-    for entry in [*site_dirs, repo_root]:
+    pkg = _package_dir(repo_root)
+    shim = _shim_path(repo_root)
+    lines = [
+        "import importlib.util as _ilu",
+        "import runpy as _runpy",
+        "import sys as _sys",
+    ]
+    for entry in site_dirs:
         lines.append("_sys.path.insert(0, " + json.dumps(str(entry)) + ")")
+    lines.append(
+        "_pkg_spec = _ilu.spec_from_file_location("
+        + json.dumps("physics_proof")
+        + ", "
+        + json.dumps(str(pkg / "__init__.py"))
+        + ", submodule_search_locations=["
+        + json.dumps(str(pkg))
+        + "])"
+    )
+    lines.append("_pkg = _ilu.module_from_spec(_pkg_spec)")
+    lines.append("_sys.modules['physics_proof'] = _pkg")
+    lines.append("_pkg_spec.loader.exec_module(_pkg)")
+    lines.append(
+        "_shim_spec = _ilu.spec_from_file_location("
+        + json.dumps("blocks")
+        + ", "
+        + json.dumps(str(shim))
+        + ")"
+    )
+    lines.append("_shim = _ilu.module_from_spec(_shim_spec)")
+    lines.append("_sys.modules['blocks'] = _shim")
+    lines.append("_shim_spec.loader.exec_module(_shim)")
     lines.append("_sys.argv = [" + json.dumps(str(script)) + "]")
     lines.append(
         "_runpy.run_path(" + json.dumps(str(script)) + ", run_name=" + json.dumps("__main__") + ")"

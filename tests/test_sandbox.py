@@ -441,6 +441,101 @@ def test_profile_carves_out_shim_target(tmp_path: Path) -> None:
     assert _shim_targets(lone, tmp_path / "other") == []
 
 
+# Offline: the repo root itself is never carved out of the file-read
+# deny — only the workspace, the physics_proof package and the blocks.py
+# shim are. Listing the shim's parent and reading SPEC.md or
+# eval/expected.json are therefore denied on the Mac, while the files
+# ``import blocks`` needs stay readable.
+def test_profile_carves_pkg_and_shim_but_not_repo_root(tmp_path: Path) -> None:
+    from physics_proof.sandbox import _package_dir, _sandbox_profile, _shim_path
+
+    repo_root = Path(__file__).resolve().parent.parent
+    pkg = _package_dir(repo_root)
+    shim = _shim_path(repo_root)
+    workspace = tmp_path / "ws"
+    workspace.mkdir()
+    profile = _sandbox_profile(workspace, repo_root, sys.executable, ["ffmpeg"])
+    assert '(require-not (subpath "' + str(workspace.resolve()) + '"))' in profile
+    assert '(require-not (subpath "' + str(pkg) + '"))' in profile
+    assert '(require-not (subpath "' + str(shim) + '"))' in profile
+    assert '(require-not (subpath "' + str(repo_root) + '"))' not in profile
+    assert "(allow default)" in profile
+
+
+# Offline: the bootstrap loads blocks from explicit paths, never by
+# scanning the repo root, so it works even when the root is unlistable.
+def test_runner_source_preloads_blocks_without_repo_root(tmp_path: Path) -> None:
+    from physics_proof.sandbox import _repo_root, _runner_source
+
+    script = tmp_path / "probe.py"
+    script.write_text("import blocks\n", encoding="utf-8")
+    source = _runner_source(_repo_root(), script, [])
+    assert "spec_from_file_location" in source
+    assert "'physics_proof'" in source or '"physics_proof"' in source
+    assert "'blocks'" in source or '"blocks"' in source
+    assert "_sys.path.insert" not in source
+
+
+@needs_sandbox
+def test_sandbox_cannot_list_repo_root(workspace: Path) -> None:
+    """Inside python: listing Path(blocks.__file__).parent fails."""
+    code = (
+        "import blocks\n"
+        "from pathlib import Path\n"
+        "root = Path(blocks.__file__).parent\n"
+        'print("SHIM " + str(Path(blocks.__file__)))\n'
+        "try:\n"
+        "    names = sorted(path.name for path in root.iterdir())\n"
+        '    print("LIST-OK " + repr(names[:5]))\n'
+        "except Exception as exc:\n"
+        '    print("LIST-DENIED " + type(exc).__name__)\n'
+    )
+    result = run_python(code, workspace, _skip_review=True)
+    assert "LIST-DENIED" in result.stdout
+    assert "LIST-OK" not in result.stdout
+    assert "SPEC.md" not in result.stdout
+
+
+@needs_sandbox
+def test_sandbox_cannot_read_spec_or_expected(workspace: Path) -> None:
+    """Inside python: reading SPEC.md and eval/expected.json fails."""
+    code = (
+        "import blocks\n"
+        "from pathlib import Path\n"
+        "root = Path(blocks.__file__).parent\n"
+        "for rel in ['SPEC.md', 'eval/expected.json']:\n"
+        "    try:\n"
+        "        data = (root / rel).read_text(encoding='utf-8')\n"
+        '        print("READ-OK " + rel + " " + data[:20])\n'
+        "    except Exception as exc:\n"
+        '        print("READ-DENIED " + rel + " " + type(exc).__name__)\n'
+    )
+    result = run_python(code, workspace, _skip_review=True)
+    assert "READ-DENIED SPEC.md" in result.stdout
+    assert "READ-DENIED eval/expected.json" in result.stdout
+    assert "READ-OK" not in result.stdout
+
+
+@needs_sandbox
+def test_sandbox_import_blocks_without_repo_listing(workspace: Path) -> None:
+    """Inside python: import blocks works even though the root is locked."""
+    code = (
+        "import blocks\n"
+        "from pathlib import Path\n"
+        "out = blocks.fit_parabola([0, 1, 2, 3, 4], [0.0, 1.0, 4.0, 9.0, 16.0], 1.0)\n"
+        'print("G-OK " + str(out["g_px"]))\n'
+        "try:\n"
+        "    list(Path(blocks.__file__).parent.iterdir())\n"
+        '    print("LIST-OK")\n'
+        "except Exception:\n"
+        '    print("LIST-DENIED")\n'
+    )
+    result = run_python(code, workspace, _skip_review=True)
+    assert result.ok, result.stderr
+    assert "G-OK 2.0" in result.stdout
+    assert "LIST-DENIED" in result.stdout
+
+
 # Seatbelt finding (shown on the Mac): when several rules match, the last
 # matching rule wins — deny-then-allow permits the read, allow-then-deny
 # refuses it. The generated profile therefore puts every deny after
