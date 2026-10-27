@@ -19,8 +19,10 @@ from __future__ import annotations
 import base64
 import json
 import os
+import random
 import subprocess
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterator
@@ -61,6 +63,21 @@ class BillingError(ApiError):
 
 class StreamError(Exception):
     """The SSE stream was truncated or malformed."""
+
+
+class TruncatedStreamError(StreamError):
+    """The SSE stream ended before its completion event.
+
+    A subclass of StreamError, so old ``except StreamError`` handling still
+    applies. Only this failure mode is retried: the request itself was fine
+    and a fresh attempt may get a complete stream. Malformed or empty
+    streams fail fast instead.
+    """
+
+
+#: HTTP statuses worth another attempt (plus cut streams, resets, timeouts).
+#: Other 4xx (including 402 billing and 400 validation errors) never retry.
+_RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
 
 
 @dataclass
@@ -227,7 +244,7 @@ def parse_response_body(raw: bytes) -> tuple[str, dict[str, Any]]:
     if not saw_event:
         raise StreamError("empty SSE stream: no events received")
     if completed is None:
-        raise StreamError("truncated SSE stream: no response.completed event")
+        raise TruncatedStreamError("truncated SSE stream: no response.completed event")
     return "".join(delta_texts), completed
 
 
@@ -480,6 +497,11 @@ class MetaClient:
         raise ApiError(response.status_code, message, param)
 
     def _sleep_before_retry(self, attempt: int, response: httpx.Response | None) -> None:
+        """Wait before the next attempt: Retry-After wins, else backoff+jitter.
+
+        Backoff is ``backoff_base_s * 2**attempt`` (1 s, 2 s, 4 s by default)
+        plus up to one more base of jitter. A zero base (tests) sleeps zero.
+        """
         wait_s: float | None = None
         if response is not None:
             retry_after = response.headers.get("retry-after")
@@ -489,31 +511,116 @@ class MetaClient:
                 except ValueError:
                     wait_s = None
         if wait_s is None:
-            wait_s = self.settings.backoff_base_s * (2.0**attempt)
+            base = self.settings.backoff_base_s
+            wait_s = base * (2.0**attempt) + random.uniform(0.0, base)
         time.sleep(min(wait_s, 60.0))
 
-    def _post_responses_stream(self, body: dict[str, Any]) -> bytes:
-        """POST /responses with stream=true; retry 429/5xx; return raw bytes."""
+    def _log_retry(
+        self,
+        *,
+        kind: str,
+        model: str,
+        attempt: int,
+        attempts: int,
+        reason: str,
+        note: str = "",
+    ) -> None:
+        """Log one zero-cost ledger line for a failed attempt that retries.
+
+        A cut stream carries no usage, so the line records zeros; the reason
+        goes in the note. Partial usage, if a future failure mode ever has
+        some, is recorded once on this line via explicit counts.
+        """
+        label = "retry %d/%d after %s" % (attempt + 1, attempts - 1, reason)
+        if note:
+            label += " (" + " ".join(str(note).split()) + ")"
+        self._record(kind=kind, model=model, note=label)
+
+    def _post_responses_stream(
+        self,
+        body: dict[str, Any],
+        *,
+        budget_check: Callable[[], None] | None = None,
+        retry_kind: str = "spark",
+        retry_model: str = "",
+        retry_note: str = "",
+    ) -> tuple[bytes, str, dict[str, Any]]:
+        """POST /responses with stream=true; return (raw, delta_text, completed).
+
+        Retries transient failures — HTTP 429/500/502/503/504, a stream cut
+        before its completion event, connection resets and timeouts — until
+        ``settings.max_attempts`` attempts are spent (3 retries by default).
+        Other 4xx, billing errors and malformed streams raise at once. Each
+        failed attempt that will be retried is logged to the ledger as a
+        zero-cost line with its reason. ``budget_check``, when given, runs
+        before every attempt and aborts the loop when it raises.
+        """
         attempts = max(1, self.settings.max_attempts)
         last_error: Exception | None = None
         url = self.settings.base_url.rstrip("/") + "/responses"
         for attempt in range(attempts):
-            with httpx.Client(timeout=self.settings.timeout_s) as client:
-                with client.stream(
-                    "POST", url, headers=self._headers(), json=body
-                ) as response:
-                    if response.status_code == 429 or 500 <= response.status_code < 600:
-                        try:
-                            response.read()
-                        finally:
-                            response.close()
-                        last_error = ApiError(response.status_code, "transient Meta API failure")
-                        if attempt < attempts - 1:
-                            self._sleep_before_retry(attempt, response)
-                            continue
+            if budget_check is not None:
+                budget_check()
+            try:
+                with httpx.Client(timeout=self.settings.timeout_s) as client:
+                    with client.stream(
+                        "POST", url, headers=self._headers(), json=body
+                    ) as response:
+                        if response.status_code in _RETRYABLE_STATUS:
+                            reason = "HTTP %d" % response.status_code
+                            try:
+                                response.read()
+                            finally:
+                                response.close()
+                            last_error = ApiError(
+                                response.status_code, "transient Meta API failure"
+                            )
+                            if attempt < attempts - 1:
+                                self._log_retry(
+                                    kind=retry_kind,
+                                    model=retry_model,
+                                    attempt=attempt,
+                                    attempts=attempts,
+                                    reason=reason,
+                                    note=retry_note,
+                                )
+                                self._sleep_before_retry(attempt, response)
+                                continue
+                            self._check_status(response)
                         self._check_status(response)
-                    self._check_status(response)
-                    return b"".join(response.iter_bytes())
+                        raw = b"".join(response.iter_bytes())
+            except httpx.TransportError as exc:
+                reason = "connection error (%s)" % type(exc).__name__
+                last_error = exc
+                if attempt < attempts - 1:
+                    self._log_retry(
+                        kind=retry_kind,
+                        model=retry_model,
+                        attempt=attempt,
+                        attempts=attempts,
+                        reason=reason,
+                        note=retry_note,
+                    )
+                    self._sleep_before_retry(attempt, None)
+                    continue
+                raise
+            try:
+                _deltas, completed = parse_response_body(raw)
+            except TruncatedStreamError as exc:
+                last_error = exc
+                if attempt < attempts - 1:
+                    self._log_retry(
+                        kind=retry_kind,
+                        model=retry_model,
+                        attempt=attempt,
+                        attempts=attempts,
+                        reason=str(exc),
+                        note=retry_note,
+                    )
+                    self._sleep_before_retry(attempt, None)
+                    continue
+                raise
+            return raw, _deltas, completed
         assert last_error is not None
         raise last_error
 
@@ -532,8 +639,14 @@ class MetaClient:
         include: list[str] | None = None,
         max_output_tokens: int | None = None,
         note: str = "",
+        budget_check: Callable[[], None] | None = None,
     ) -> SparkResponse:
-        """Run one Spark turn and return the parsed response plus cost."""
+        """Run one Spark turn and return the parsed response plus cost.
+
+        Transient failures (HTTP 429/500/502/503/504, cut streams, resets,
+        timeouts) retry up to 3 times with backoff; ``budget_check`` runs
+        before every attempt.
+        """
         used_model = model or self.settings.model
         if isinstance(input, str):
             messages: list[dict[str, Any]] = [
@@ -571,8 +684,13 @@ class MetaClient:
             body["previous_response_id"] = previous_response_id
         if include is not None:
             body["include"] = include
-        raw = self._post_responses_stream(body)
-        _deltas, completed = parse_response_body(raw)
+        raw, _deltas, completed = self._post_responses_stream(
+            body,
+            budget_check=budget_check,
+            retry_kind="spark",
+            retry_model=used_model,
+            retry_note=note,
+        )
         output = completed.get("output", [])
         if not isinstance(output, list):
             raise StreamError("response.completed output is not a list")
@@ -679,8 +797,14 @@ class MetaClient:
         *,
         mask_encoding: str = "lossless",
         note: str = "",
+        budget_check: Callable[[], None] | None = None,
     ) -> SamResult:
-        """Segment one noun phrase in a video; always deletes the upload."""
+        """Segment one noun phrase in a video; always deletes the upload.
+
+        The SAM stream shares the Spark retry policy: transient failures
+        retry up to 3 times with backoff; ``budget_check`` runs before
+        every attempt.
+        """
         resolved = Path(video_path)
         width, height = video_dimensions(resolved)
         file_id = self.upload_file(resolved)
@@ -703,8 +827,13 @@ class MetaClient:
                 "stream": True,
                 "store": False,
             }
-            raw = self._post_responses_stream(body)
-            deltas, completed = parse_response_body(raw)
+            raw, deltas, completed = self._post_responses_stream(
+                body,
+                budget_check=budget_check,
+                retry_kind="sam",
+                retry_model="sam-3.1",
+                retry_note=note or phrase,
+            )
             output = completed.get("output", [])
             full_text = _message_text(output) or deltas
             frames = decode_sam_text(full_text, width, height)

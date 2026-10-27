@@ -19,7 +19,8 @@ DEFAULT_MODEL = "muse-spark-1.3-contributor"
 DEFAULT_EFFORT = "low"
 DEFAULT_MAX_OUTPUT_TOKENS = 4096
 DEFAULT_TIMEOUT_S = 300.0
-DEFAULT_MAX_ATTEMPTS = 3
+#: Total attempts per streaming call: the first try plus up to 3 retries.
+DEFAULT_MAX_ATTEMPTS = 4
 DEFAULT_BACKOFF_BASE_S = 1.0
 
 #: Files of this size or less are inlined as data URLs; larger uploads

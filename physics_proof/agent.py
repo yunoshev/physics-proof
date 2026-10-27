@@ -176,7 +176,11 @@ class Budget:
 
 
 class GuardClient:
-    """Wrap a Spark/SAM client so one Budget guards every billable call."""
+    """Wrap a Spark/SAM client so one Budget guards every billable call.
+
+    The cap is checked up front and before every retry attempt inside the
+    client (passed as ``budget_check``); a retry never spends past the cap.
+    """
 
     def __init__(self, inner: Any, budget: Budget) -> None:
         self._inner = inner
@@ -185,6 +189,7 @@ class GuardClient:
     def respond(self, *args: Any, **kwargs: Any) -> Any:
         """Check the cap, delegate, then record the turn cost."""
         self._budget.check()
+        kwargs.setdefault("budget_check", self._budget.check)
         response = self._inner.respond(*args, **kwargs)
         self._budget.add(float(getattr(response, "cost_usd", 0.0) or 0.0))
         return response
@@ -192,6 +197,7 @@ class GuardClient:
     def sam_video(self, *args: Any, **kwargs: Any) -> Any:
         """Check the cap, delegate, then record the SAM cost."""
         self._budget.check()
+        kwargs.setdefault("budget_check", self._budget.check)
         result = self._inner.sam_video(*args, **kwargs)
         self._budget.add(float(getattr(result, "cost_usd", 0.0) or 0.0))
         return result
