@@ -294,18 +294,31 @@ def _site_dirs() -> list[Path]:
     return found
 
 
+def _deny_rule(operation: str, filters: list[str]) -> list[str]:
+    """One ``(deny <operation> ...)`` rule; several filters are AND-ed.
+
+    Filters inside a single Seatbelt rule are combined with OR, so more
+    than one filter must be wrapped in ``(require-all ...)`` for the
+    intended AND meaning. A single filter needs no wrapper.
+    """
+    if len(filters) > 1:
+        lines = ["(deny " + operation, "  (require-all"]
+        lines.extend("    " + item for item in filters)
+        lines.append("  ))")
+        return lines
+    return ["(deny " + operation, *("  " + item for item in filters), ")"]
+
+
 def _sandbox_profile(
     workspace: Path, repo_root: Path, interpreter: str, tools: list[str]
 ) -> str:
     """SBPL: allow by default, deny the dangerous classes with carve-outs.
 
-    Deny wins over allow in Seatbelt regardless of rule order, so the
-    home-directory deny carries require-not carve-outs (workspace,
-    virtualenv, interpreter prefix, package dir) instead of relying on a
-    later allow rule. Writes are denied everywhere outside the workspace
-    in a single rule for the same reason. Without the leading
-    ``(allow default)`` Seatbelt denies everything, including the
-    interpreter exec itself (exit 71, Operation not permitted).
+    Without the leading ``(allow default)`` Seatbelt denies everything,
+    including the interpreter exec itself (exit 71, Operation not
+    permitted). Filters inside one rule are combined with OR, so every
+    deny rule with more than one filter wraps them in ``(require-all ...)``
+    for the intended AND meaning.
 
     Seatbelt checks both the path being executed and the resolved file,
     so the caller passes the venv interpreter path and its realpath (and
@@ -328,27 +341,33 @@ def _sandbox_profile(
             seen.append(resolved)
     lines = ["(version 1)", "(allow default)", "(deny network*)"]
     if str(home) not in ("", "/"):
-        rule = ["(deny file-read*", "  (subpath " + _sbpl_string(str(home)) + ")"]
+        filters = ["(subpath " + _sbpl_string(str(home)) + ")"]
         for candidate in seen:
             if candidate.is_relative_to(home) and candidate != home:
-                rule.append("  (require-not (subpath " + _sbpl_string(str(candidate)) + "))")
-        rule.append(")")
-        lines.extend(rule)
+                filters.append(
+                    "(require-not (subpath " + _sbpl_string(str(candidate)) + "))"
+                )
+        lines.extend(_deny_rule("file-read*", filters))
     lines.extend(
-        [
-            "(deny file-write*",
-            "  (require-not (subpath " + _sbpl_string(str(workspace.resolve())) + "))",
-            "  (require-not (literal " + _sbpl_string("/dev/null") + "))",
-            ")",
-        ]
+        _deny_rule(
+            "file-write*",
+            [
+                "(require-not (subpath " + _sbpl_string(str(workspace.resolve())) + "))",
+                "(require-not (literal " + _sbpl_string("/dev/null") + "))",
+            ],
+        )
     )
     literals = [interpreter, str(exe)]
     literals.extend(tools)
-    rule = ["(deny process-exec*"]
-    for literal in dict.fromkeys(literals):
-        rule.append("  (require-not (literal " + _sbpl_string(literal) + "))")
-    rule.append(")")
-    lines.extend(rule)
+    lines.extend(
+        _deny_rule(
+            "process-exec*",
+            [
+                "(require-not (literal " + _sbpl_string(literal) + "))"
+                for literal in dict.fromkeys(literals)
+            ],
+        )
+    )
     return "\n".join(lines) + "\n"
 
 

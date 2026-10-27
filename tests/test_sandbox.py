@@ -326,6 +326,69 @@ def test_sandbox_truncates_output(workspace: Path) -> None:
     assert "truncated" in result.stdout
 
 
+# Offline: every deny rule with more than one filter wraps them in
+# require-all (Seatbelt ORs filters inside one rule; see M5-fix2).
+def _split_forms(text: str) -> list[str]:
+    """Split top-level balanced s-expressions, ignoring parens in strings."""
+    forms: list[str] = []
+    depth = 0
+    start = -1
+    in_string = False
+    escaped = False
+    for index, char in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+        elif char == '"':
+            in_string = True
+        elif char == "(":
+            if depth == 0:
+                start = index
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0 and start >= 0:
+                forms.append(text[start : index + 1])
+                start = -1
+    return forms
+
+
+def test_profile_multi_filter_denies_use_require_all() -> None:
+    from physics_proof.sandbox import _sandbox_profile
+
+    home = Path.home()
+    if str(home) in ("", "/"):
+        pytest.skip("no home-directory deny rule without a home path")
+    # A workspace under home forces file-read carve-outs, so every deny
+    # rule carries more than one filter here.
+    workspace = home / ("ws_profile_probe_" + str(os.getpid()))
+    profile = _sandbox_profile(
+        workspace,
+        Path(__file__).resolve().parent.parent,
+        sys.executable,
+        ["ffmpeg", "/usr/bin/ffmpeg"],
+    )
+    assert "(require-all" in profile
+    wrapped = 0
+    for block in _split_forms(profile):
+        if not block.startswith("(deny "):
+            continue
+        rest = block[len("(deny "):-1].strip()
+        _, _, filters_text = rest.partition(" ")
+        filters = _split_forms(filters_text.strip())
+        assert len(filters) <= 1, "deny rule with OR-ed filters: " + block
+        if filters and filters[0].startswith("(require-all"):
+            inner = _split_forms(filters[0][len("(require-all"):-1])
+            assert len(inner) > 1, block
+            wrapped += 1
+    # file-write and process-exec always carry several filters.
+    assert wrapped >= 2
+
+
 # Seatbelt finding: deny beats allow no matter the rule order, so the
 # profile must not depend on ordering (it uses require-not carve-outs).
 @needs_sandbox

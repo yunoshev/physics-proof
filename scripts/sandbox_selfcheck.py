@@ -1,4 +1,4 @@
-"""Maintainer probe for M5-fix1: run on the Mac (sandbox-exec works there).
+"""Maintainer probe for M5: run on the Mac (sandbox-exec works there).
 
 Prints the generated Seatbelt profile, then runs a trivial print(1)
 through run_python and shows exit code, stdout and stderr.
@@ -18,7 +18,10 @@ def main() -> None:
         workspace = Path(tmp) / "ws"
         workspace.mkdir()
         result = run_python("print(1)\n", workspace)
-    profile = result.script.with_suffix(".sb").read_text(encoding="utf-8") if result.script else ""
+        # Read the profile before the temporary directory is removed.
+        profile = ""
+        if result.script is not None:
+            profile = result.script.with_suffix(".sb").read_text(encoding="utf-8")
     print("=== profile ===", flush=True)
     print(profile, flush=True)
     print("=== run ===", flush=True)
