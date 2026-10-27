@@ -10,6 +10,7 @@ dependencies = [
     "meta-sam-parser>=0.0.6",
     "pillow>=13.0.0",
     "scipy>=1.18.1",
+    "matplotlib>=3.11.2",
 ]
 
 [dependency-groups]
@@ -28,4 +29,5 @@ packages = ["physics_proof"]
 testpaths = ["tests"]
 markers = [
     "api: calls the real Meta API (opt-in with -m api; spends a fraction of a cent)",
+    "slow: takes about a minute (opt-in with PHYSICS_PROOF_RUN_SLOW=1)",
 ]

@@ -106,6 +106,9 @@ def test_decide_table(g, g_err, worlds, state, nearest, k) -> None:
     if k is not None:
         assert out["k"] == pytest.approx(k, abs=0.001)
     assert isinstance(out["text"], str) and len(out["text"].split(". ")) == 1
+    if state == "none_fits":
+        assert "would have to be running " in out["text"]
+        assert "×" in out["text"]
     assert set(out["sigmas"]) == set((worlds or {"Earth": 9.81, "Moon": 1.62}))
 
 

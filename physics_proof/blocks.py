@@ -529,8 +529,9 @@ def decide(
     ("fits:<World>", "undetermined" or "none_fits"), world (the fitting
     world or None), consistent (list), sigmas (dict, unit-free), nearest
     (smallest |ln(g / g_world)|), k = sqrt(g_world / g) for the nearest
-    world (k > 1: the clip runs slow by x k; k < 1: it runs fast), and a
-    one-sentence English text for the page.
+    world (k > 1: the clip would have to be running slow by ×k;
+    k < 1: running fast by ×(1/k)), and a one-sentence English text for
+    the page.
     """
     g, g_err, k_sigma = float(g), float(g_err), float(k_sigma)
     if not math.isfinite(g) or not math.isfinite(g_err) or g_err <= 0:
@@ -570,14 +571,23 @@ def decide(
             + ", ".join(consistent) + "), so the verdict is undetermined."
         )
     else:
-        pace = "runs slow by x" + f"{k:.3f}" if k is not None and k >= 1 else (
-            "runs fast by x" + f"{1 / k:.3f}" if k else "has an unknown time scale"
-        )
-        text = (
-            "The measured g of " + f"{g:.2f}" + " ± " + f"{g_err:.2f}"
-            + " m/s^2 fits no listed world; the nearest is " + str(nearest)
-            + ", which would need the clip to " + pace + "."
-        )
+        if k is not None and k >= 1:
+            pace: str | None = "running slow by ×" + f"{k:.2f}"
+        elif k is not None:
+            pace = "running fast by ×" + f"{1 / k:.2f}"
+        else:
+            pace = None
+        if pace is None:
+            text = (
+                "The measured g of " + f"{g:.2f}" + " ± " + f"{g_err:.2f}"
+                + " m/s^2 fits no listed world; the time scale is unknown."
+            )
+        else:
+            text = (
+                "The measured g of " + f"{g:.2f}" + " ± " + f"{g_err:.2f}"
+                + " m/s^2 fits no listed world; the nearest is " + str(nearest)
+                + "; the clip would have to be " + pace + "."
+            )
     return {
         "state": state,
         "world": world,
