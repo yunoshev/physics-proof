@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yunoshev.github.io/physics-proof/schemas/analysis.schema.json",
+  "title": "physics-proof analysis (type world-g, version 1)",
+  "description": "Contract between the analysis agent (Spark) and the frozen player: every number on the page.",
+  "type": "object",
+  "required": [
+    "type",
+    "schema_version",
+    "clip",
+    "context",
+    "first_look",
+    "reference",
+    "scale",
+    "track",
+    "masks",
+    "flights",
+    "timescale",
+    "error_budget",
+    "verdict",
+    "overall"
+  ],
+  "properties": {
+    "type": {
+      "const": "world-g",
+      "description": "Renderer selected by the frozen player; this schema only describes world-g."
+    },
+    "schema_version": {
+      "const": 1,
+      "description": "Schema version; the validator and the prompt are generated from this file."
+    },
+    "clip": {
+      "type": "object",
+      "description": "The video file as measured, not as assumed.",
+      "required": ["file", "fps", "frames", "width", "height", "duplicates_found", "notes"],
+      "properties": {
+        "file": {"type": "string", "description": "Anonymised clip file name, e.g. clip.mp4."},
+        "fps": {"type": "number", "exclusiveMinimum": 0, "description": "Measured frame rate in frames per second."},
+        "frames": {"type": "integer", "minimum": 1, "description": "Total frame count."},
+        "width": {"type": "integer", "minimum": 1, "description": "Frame width in px."},
+        "height": {"type": "integer", "minimum": 1, "description": "Frame height in px."},
+        "duplicates_found": {"type": "integer", "minimum": 0, "description": "Duplicate/interpolated frames found by measurement."},
+        "notes": {"type": "string", "description": "What the frame-rate check implies for the verdict."}
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Scene, claim under test, expected values and source URLs.",
+      "required": ["scene", "claim", "expected", "sources"],
+      "properties": {
+        "scene": {"type": "string"},
+        "claim": {"type": "string"},
+        "expected": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["quantity", "value", "unit", "source"],
+            "properties": {
+              "quantity": {"type": "string"},
+              "value": {"type": "number"},
+              "unit": {"type": "string"},
+              "source": {"type": "string"}
+            }
+          }
+        },
+        "sources": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "first_look": {
+      "type": "object",
+      "description": "Spark's by-eye estimate before measuring, shown on the intro step.",
+      "required": ["what", "where", "when", "source", "confidence", "by_eye"],
+      "properties": {
+        "what": {"type": "string"},
+        "where": {"type": "string"},
+        "when": {"type": "string"},
+        "source": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "by_eye": {
+          "type": "object",
+          "required": ["quantity", "value", "unit"],
+          "properties": {
+            "quantity": {"type": "string"},
+            "value": {"type": "number"},
+            "unit": {"type": "string"}
+          }
+        }
+      }
+    },
+    "reference": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Known sizes used for the scale; at least one entry.",
+      "items": {
+        "type": "object",
+        "required": ["name", "extent", "value_m", "tolerance_m", "source_url", "quote", "source_type", "mask", "mask_check"],
+        "properties": {
+          "name": {"type": "string"},
+          "extent": {"type": "string", "description": "Which extent the value measures, e.g. diameter."},
+          "value_m": {"type": "number", "exclusiveMinimum": 0},
+          "tolerance_m": {"type": "number", "exclusiveMinimum": 0},
+          "source_url": {"type": ["string", "null"], "description": "Null only for estimates."},
+          "quote": {"type": ["string", "null"], "description": "Verbatim quote; null only for estimates."},
+          "source_type": {"type": "string", "enum": ["primary", "secondary", "estimate"]},
+          "mask": {
+            "type": "object",
+            "required": ["file", "object"],
+            "properties": {
+              "file": {"type": "string"},
+              "object": {"type": "string"}
+            }
+          },
+          "mask_check": {
+            "type": "object",
+            "required": ["verdict", "covers"],
+            "properties": {
+              "verdict": {"type": "string", "enum": ["agrees", "covers_more", "covers_less", "different_object", "cannot_tell"]},
+              "covers": {"type": "string", "description": "Which part of the object the mask covers."}
+            }
+          }
+        }
+      }
+    },
+    "scale": {
+      "description": "Pixel (or reference-size) to metre conversion with an independent cross-check.",
+      "anyOf": [
+        {
+          "title": "image frame",
+          "type": "object",
+          "required": ["frame", "extent_px", "extent_px_err", "m_per_px", "m_per_px_err", "second", "frame_of_reference"],
+          "properties": {
+            "frame_of_reference": {"const": "image"}
+          }
+        },
+        {
+          "title": "moving camera",
+          "type": "object",
+          "required": ["frame", "extent_px", "extent_px_err", "m_per_ref", "m_per_ref_err", "second", "frame_of_reference"],
+          "properties": {
+            "frame_of_reference": {
+              "type": "object",
+              "required": ["object", "anchor", "size_px_per_frame"],
+              "properties": {
+                "object": {"type": "string"},
+                "anchor": {"type": "string", "enum": ["top", "bottom"]}
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "frame": {"type": "integer", "minimum": 0},
+        "extent_px": {"type": "number", "exclusiveMinimum": 0},
+        "extent_px_err": {"type": "number", "exclusiveMinimum": 0},
+        "m_per_px": {"type": "number", "exclusiveMinimum": 0},
+        "m_per_px_err": {"type": "number", "exclusiveMinimum": 0},
+        "m_per_ref": {"type": "number", "exclusiveMinimum": 0, "description": "Metres per reference size (moving camera only)."},
+        "m_per_ref_err": {"type": "number", "exclusiveMinimum": 0},
+        "second": {
+          "type": ["object", "null"],
+          "description": "Second independent reference and their agreement, or null.",
+          "required": ["name", "m_per_px", "m_per_px_err", "agree_sigma"],
+          "properties": {
+            "name": {"type": "string"},
+            "m_per_px": {"type": "number", "exclusiveMinimum": 0},
+            "m_per_px_err": {"type": "number", "exclusiveMinimum": 0},
+            "agree_sigma": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "track": {
+      "type": "object",
+      "description": "Tracked point, one entry per frame.",
+      "required": ["what", "method", "unit", "points"],
+      "properties": {
+        "what": {"type": "string"},
+        "method": {"type": "string"},
+        "unit": {"type": "string", "enum": ["px", "ref"]},
+        "points": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["frame", "x", "y"],
+            "properties": {
+              "frame": {"type": "integer", "minimum": 0},
+              "x": {"type": "number"},
+              "y": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "masks": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Only frames the page draws: object name to frame to spans (blocks.spans_of format)."
+    },
+    "flights": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Per unsupported segment: flight or wall.",
+      "items": {
+        "type": "object",
+        "required": ["kind", "start", "apex", "end", "rise_m", "duration_s", "fit", "accel", "accel_err", "hypothesis", "decide", "ghost", "notes"],
+        "properties": {
+          "kind": {"type": "string", "enum": ["flight", "wall"]},
+          "start": {"type": "integer", "minimum": 0},
+          "apex": {"type": ["integer", "null"], "minimum": 0},
+          "end": {"type": "integer", "minimum": 0},
+          "rise_m": {"type": "number", "minimum": 0},
+          "duration_s": {"type": "number", "exclusiveMinimum": 0},
+          "fit": {
+            "type": "object",
+            "required": ["a", "a_err", "rms", "v0", "n", "window"],
+            "properties": {
+              "a": {"type": "number", "description": "Fitted acceleration in track units per s^2, down positive."},
+              "a_err": {"type": "number", "exclusiveMinimum": 0},
+              "rms": {"type": "number", "minimum": 0},
+              "v0": {"type": "number"},
+              "n": {"type": "integer", "minimum": 3},
+              "window": {
+                "type": "object",
+                "required": ["first", "last"],
+                "properties": {
+                  "first": {"type": "integer", "minimum": 0},
+                  "last": {"type": "integer", "minimum": 0}
+                }
+              }
+            }
+          },
+          "accel": {"type": "number", "description": "Measured acceleration in m/s^2, down positive."},
+          "accel_err": {"type": "number", "exclusiveMinimum": 0},
+          "hypothesis": {
+            "type": "object",
+            "required": ["name", "value"],
+            "properties": {
+              "name": {"type": "string"},
+              "value": {"type": "number", "exclusiveMinimum": 0}
+            }
+          },
+          "decide": {
+            "$ref": "#/$defs/decide"
+          },
+          "ghost": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["frame", "y"],
+              "properties": {
+                "frame": {"type": "integer", "minimum": 0},
+                "y": {"type": "number"}
+              }
+            }
+          },
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "timescale": {
+      "type": ["object", "null"],
+      "description": "Independent check of the clip's time rate, or null.",
+      "required": ["method", "value", "err", "unit", "expected_range", "verdict"],
+      "properties": {
+        "method": {"type": "string"},
+        "value": {"type": "number"},
+        "err": {"type": "number", "exclusiveMinimum": 0},
+        "unit": {"type": "string"},
+        "expected_range": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "number"}
+        },
+        "verdict": {"type": "string", "enum": ["normal", "slow", "fast", "undetermined"]}
+      }
+    },
+    "error_budget": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Error term name to relative error (fraction, e.g. 0.05)."
+    },
+    "verdict": {
+      "description": "Exactly the dict blocks.decide returns for the combined measurement, plus g, g_err, worlds.",
+      "type": "object",
+      "required": ["state", "world", "consistent", "sigmas", "nearest", "k", "text", "g", "g_err", "worlds"],
+      "properties": {
+        "worlds": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "World or hypothesis name to g in m/s^2."
+        },
+        "g": {"type": "number"},
+        "g_err": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "overall": {
+      "type": "object",
+      "description": "Page verdict from combine(verdict, timescale).",
+      "required": ["label", "text"],
+      "properties": {
+        "label": {"type": "string"},
+        "text": {"type": "string"}
+      }
+    },
+    "page_texts": {
+      "type": "object",
+      "description": "Optional overrides for any text on the page: key to replacement string."
+    }
+  },
+  "$defs": {
+    "decide": {
+      "type": "object",
+      "description": "A blocks.decide result: state, consistent worlds, slowdown factor k.",
+      "required": ["state", "world", "consistent", "sigmas", "nearest", "k", "text", "g", "g_err"],
+      "properties": {
+        "state": {"type": "string"},
+        "world": {"type": ["string", "null"]},
+        "consistent": {"type": "array", "items": {"type": "string"}},
+        "sigmas": {"type": "object"},
+        "nearest": {"type": "string"},
+        "k": {"type": ["number", "null"]},
+        "text": {"type": "string"},
+        "g": {"type": "number"},
+        "g_err": {"type": "number", "exclusiveMinimum": 0}
+      }
+    }
+  }
+}

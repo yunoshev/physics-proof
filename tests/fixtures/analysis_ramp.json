@@ -1,0 +1,515 @@
+{
+  "type": "world-g",
+  "schema_version": 1,
+  "clip": {
+    "file": "ramp.mp4",
+    "fps": 24.0,
+    "frames": 240,
+    "width": 1280,
+    "height": 720,
+    "duplicates_found": 0,
+    "notes": "Frame rate measured from the file; no duplicates found."
+  },
+  "context": {
+    "scene": "A skater rolling up a vertical ramp.",
+    "claim": "The vertical climb is unsupported motion under Earth gravity.",
+    "expected": [
+      {
+        "quantity": "a",
+        "value": 9.81,
+        "unit": "m/s^2",
+        "source": "CODATA"
+      }
+    ],
+    "sources": [
+      "https://physics.nist.gov/cgi-bin/cuu/Value?gn"
+    ]
+  },
+  "first_look": {
+    "what": "skater",
+    "where": "centre ramp",
+    "when": "frames 100-160",
+    "source": "agent",
+    "confidence": 0.5,
+    "by_eye": {
+      "quantity": "rise",
+      "value": 4.0,
+      "unit": "m"
+    }
+  },
+  "reference": [
+    {
+      "name": "gate",
+      "extent": "width",
+      "value_m": 2.0,
+      "tolerance_m": 0.05,
+      "source_url": "https://example.org/venue",
+      "quote": "The start gate is 2 m wide.",
+      "source_type": "secondary",
+      "mask": {
+        "file": "sam/gate.0-240.npz",
+        "object": "gate"
+      },
+      "mask_check": {
+        "verdict": "agrees",
+        "covers": "the whole gate"
+      }
+    }
+  ],
+  "scale": {
+    "frame": 110,
+    "extent_px": 150.0,
+    "extent_px_err": 3.0,
+    "m_per_ref": 2.0,
+    "m_per_ref_err": 0.05,
+    "second": {
+      "name": "lane marker",
+      "m_per_px": 0.02,
+      "m_per_px_err": 0.001,
+      "agree_sigma": 0.8
+    },
+    "frame_of_reference": {
+      "object": "wall",
+      "anchor": "bottom",
+      "size_px_per_frame": 300.0
+    }
+  },
+  "track": {
+    "what": "skater hips",
+    "method": "centroid",
+    "unit": "ref",
+    "points": [
+      {
+        "frame": 100,
+        "x": 1.5,
+        "y": 5.0
+      },
+      {
+        "frame": 101,
+        "x": 1.5,
+        "y": 4.8642361111111105
+      },
+      {
+        "frame": 102,
+        "x": 1.5,
+        "y": 4.731944444444444
+      },
+      {
+        "frame": 103,
+        "x": 1.5,
+        "y": 4.603125
+      },
+      {
+        "frame": 104,
+        "x": 1.5,
+        "y": 4.477777777777778
+      },
+      {
+        "frame": 105,
+        "x": 1.5,
+        "y": 4.355902777777778
+      },
+      {
+        "frame": 106,
+        "x": 1.5,
+        "y": 4.2375
+      },
+      {
+        "frame": 107,
+        "x": 1.5,
+        "y": 4.122569444444444
+      },
+      {
+        "frame": 108,
+        "x": 1.5,
+        "y": 4.011111111111111
+      },
+      {
+        "frame": 109,
+        "x": 1.5,
+        "y": 3.903125
+      },
+      {
+        "frame": 110,
+        "x": 1.5,
+        "y": 3.798611111111111
+      },
+      {
+        "frame": 111,
+        "x": 1.5,
+        "y": 3.6975694444444445
+      },
+      {
+        "frame": 112,
+        "x": 1.5,
+        "y": 3.6
+      },
+      {
+        "frame": 113,
+        "x": 1.5,
+        "y": 3.505902777777778
+      },
+      {
+        "frame": 114,
+        "x": 1.5,
+        "y": 3.415277777777778
+      },
+      {
+        "frame": 115,
+        "x": 1.5,
+        "y": 3.328125
+      },
+      {
+        "frame": 116,
+        "x": 1.5,
+        "y": 3.2444444444444445
+      },
+      {
+        "frame": 117,
+        "x": 1.5,
+        "y": 3.1642361111111112
+      },
+      {
+        "frame": 118,
+        "x": 1.5,
+        "y": 3.0875000000000004
+      },
+      {
+        "frame": 119,
+        "x": 1.5,
+        "y": 3.0142361111111113
+      },
+      {
+        "frame": 120,
+        "x": 1.5,
+        "y": 2.9444444444444446
+      },
+      {
+        "frame": 121,
+        "x": 1.5,
+        "y": 2.8781250000000003
+      },
+      {
+        "frame": 122,
+        "x": 1.5,
+        "y": 2.8152777777777778
+      },
+      {
+        "frame": 123,
+        "x": 1.5,
+        "y": 2.755902777777778
+      },
+      {
+        "frame": 124,
+        "x": 1.5,
+        "y": 2.7
+      },
+      {
+        "frame": 125,
+        "x": 1.5,
+        "y": 2.6475694444444446
+      },
+      {
+        "frame": 126,
+        "x": 1.5,
+        "y": 2.5986111111111114
+      },
+      {
+        "frame": 127,
+        "x": 1.5,
+        "y": 2.553125
+      },
+      {
+        "frame": 128,
+        "x": 1.5,
+        "y": 2.511111111111111
+      },
+      {
+        "frame": 129,
+        "x": 1.5,
+        "y": 2.472569444444445
+      },
+      {
+        "frame": 130,
+        "x": 1.5,
+        "y": 2.4375
+      },
+      {
+        "frame": 131,
+        "x": 1.5,
+        "y": 2.4059027777777775
+      },
+      {
+        "frame": 132,
+        "x": 1.5,
+        "y": 2.377777777777778
+      },
+      {
+        "frame": 133,
+        "x": 1.5,
+        "y": 2.3531250000000004
+      },
+      {
+        "frame": 134,
+        "x": 1.5,
+        "y": 2.331944444444445
+      },
+      {
+        "frame": 135,
+        "x": 1.5,
+        "y": 2.3142361111111116
+      },
+      {
+        "frame": 136,
+        "x": 1.5,
+        "y": 2.3000000000000007
+      },
+      {
+        "frame": 137,
+        "x": 1.5,
+        "y": 2.289236111111111
+      },
+      {
+        "frame": 138,
+        "x": 1.5,
+        "y": 2.2819444444444446
+      },
+      {
+        "frame": 139,
+        "x": 1.5,
+        "y": 2.278125
+      },
+      {
+        "frame": 140,
+        "x": 1.5,
+        "y": 2.277777777777778
+      },
+      {
+        "frame": 141,
+        "x": 1.5,
+        "y": 2.2809027777777784
+      },
+      {
+        "frame": 142,
+        "x": 1.5,
+        "y": 2.2875000000000005
+      },
+      {
+        "frame": 143,
+        "x": 1.5,
+        "y": 2.297569444444445
+      },
+      {
+        "frame": 144,
+        "x": 1.5,
+        "y": 2.311111111111111
+      },
+      {
+        "frame": 145,
+        "x": 1.5,
+        "y": 2.328125
+      },
+      {
+        "frame": 146,
+        "x": 1.5,
+        "y": 2.3486111111111114
+      },
+      {
+        "frame": 147,
+        "x": 1.5,
+        "y": 2.3725694444444447
+      },
+      {
+        "frame": 148,
+        "x": 1.5,
+        "y": 2.4000000000000004
+      },
+      {
+        "frame": 149,
+        "x": 1.5,
+        "y": 2.430902777777778
+      },
+      {
+        "frame": 150,
+        "x": 1.5,
+        "y": 2.4652777777777786
+      },
+      {
+        "frame": 151,
+        "x": 1.5,
+        "y": 2.5031250000000007
+      },
+      {
+        "frame": 152,
+        "x": 1.5,
+        "y": 2.5444444444444443
+      },
+      {
+        "frame": 153,
+        "x": 1.5,
+        "y": 2.589236111111111
+      },
+      {
+        "frame": 154,
+        "x": 1.5,
+        "y": 2.6375
+      },
+      {
+        "frame": 155,
+        "x": 1.5,
+        "y": 2.6892361111111116
+      },
+      {
+        "frame": 156,
+        "x": 1.5,
+        "y": 2.7444444444444454
+      },
+      {
+        "frame": 157,
+        "x": 1.5,
+        "y": 2.8031250000000005
+      },
+      {
+        "frame": 158,
+        "x": 1.5,
+        "y": 2.865277777777778
+      },
+      {
+        "frame": 159,
+        "x": 1.5,
+        "y": 2.930902777777778
+      },
+      {
+        "frame": 160,
+        "x": 1.5,
+        "y": 3.0
+      }
+    ]
+  },
+  "masks": {
+    "skater": {
+      "110": [
+        [
+          300,
+          500,
+          560
+        ],
+        [
+          301,
+          498,
+          562
+        ]
+      ],
+      "160": [
+        [
+          180,
+          505,
+          565
+        ],
+        [
+          181,
+          503,
+          567
+        ]
+      ]
+    }
+  },
+  "flights": [
+    {
+      "kind": "wall",
+      "start": 100,
+      "apex": null,
+      "end": 160,
+      "rise_m": 4.0,
+      "duration_s": 2.5,
+      "fit": {
+        "a": 2.0,
+        "a_err": 0.25,
+        "rms": 0.03,
+        "v0": -3.3,
+        "n": 61,
+        "window": {
+          "first": 100,
+          "last": 160
+        }
+      },
+      "accel": 4.0,
+      "accel_err": 0.5,
+      "hypothesis": {
+        "name": "unsupported on Earth",
+        "value": 9.81
+      },
+      "decide": {
+        "state": "none_fits",
+        "world": null,
+        "consistent": [],
+        "sigmas": {
+          "unsupported on Earth": -11.620000000000001
+        },
+        "nearest": "unsupported on Earth",
+        "k": 1.5660459763365826,
+        "text": "The measured g of 4.00 \u00b1 0.50 m/s^2 fits no listed world; the nearest is unsupported on Earth; the clip would have to be running slow by \u00d71.57.",
+        "g": 4.0,
+        "g_err": 0.5,
+        "k_sigma": 2.0
+      },
+      "ghost": [
+        {
+          "frame": 100,
+          "y": 5.0
+        },
+        {
+          "frame": 120,
+          "y": 3.953125
+        },
+        {
+          "frame": 140,
+          "y": 6.312500000000001
+        },
+        {
+          "frame": 160,
+          "y": 12.078125000000002
+        }
+      ],
+      "notes": "Vertical climb with the camera panning; positions in wall sizes."
+    }
+  ],
+  "timescale": {
+    "method": "step rate on the run-up",
+    "value": 3.2,
+    "err": 0.3,
+    "unit": "steps/s",
+    "expected_range": [
+      2.5,
+      5.0
+    ],
+    "verdict": "normal"
+  },
+  "error_budget": {
+    "reference": 0.025,
+    "scale": 0.03,
+    "fit": 0.125,
+    "tracking": 0.02
+  },
+  "verdict": {
+    "state": "none_fits",
+    "world": null,
+    "consistent": [],
+    "sigmas": {
+      "unsupported on Earth": -11.620000000000001
+    },
+    "nearest": "unsupported on Earth",
+    "k": 1.5660459763365826,
+    "text": "The measured g of 4.00 \u00b1 0.50 m/s^2 fits no listed world; the nearest is unsupported on Earth; the clip would have to be running slow by \u00d71.57.",
+    "g": 4.0,
+    "g_err": 0.5,
+    "k_sigma": 2.0,
+    "worlds": {
+      "unsupported on Earth": 9.81
+    }
+  },
+  "overall": {
+    "label": "impossible",
+    "text": "The motion ignores gravity at normal speed and is physically impossible."
+  }
+}

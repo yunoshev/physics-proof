@@ -1,0 +1,352 @@
+{
+  "type": "world-g",
+  "schema_version": 1,
+  "clip": {
+    "file": "ball.mp4",
+    "fps": 30.0,
+    "frames": 120,
+    "width": 640,
+    "height": 480,
+    "duplicates_found": 0,
+    "notes": "Frame rate measured from the file; no duplicates found."
+  },
+  "context": {
+    "scene": "A ball tossed straight up outdoors.",
+    "claim": "The tossed ball is in free flight under Earth gravity.",
+    "expected": [
+      {
+        "quantity": "g",
+        "value": 9.81,
+        "unit": "m/s^2",
+        "source": "CODATA"
+      }
+    ],
+    "sources": [
+      "https://physics.nist.gov/cgi-bin/cuu/Value?gn"
+    ]
+  },
+  "first_look": {
+    "what": "ball",
+    "where": "centre frame",
+    "when": "frames 10-40",
+    "source": "agent",
+    "confidence": 0.6,
+    "by_eye": {
+      "quantity": "rise",
+      "value": 1.2,
+      "unit": "m"
+    }
+  },
+  "reference": [
+    {
+      "name": "ball",
+      "extent": "diameter",
+      "value_m": 0.22,
+      "tolerance_m": 0.005,
+      "source_url": "https://example.org/ball-specs",
+      "quote": "Official size: 22 cm diameter.",
+      "source_type": "primary",
+      "mask": {
+        "file": "sam/ball.0-120.npz",
+        "object": "ball"
+      },
+      "mask_check": {
+        "verdict": "agrees",
+        "covers": "the whole ball"
+      }
+    }
+  ],
+  "scale": {
+    "frame": 12,
+    "extent_px": 22.0,
+    "extent_px_err": 0.5,
+    "m_per_px": 0.01,
+    "m_per_px_err": 0.0005,
+    "second": null,
+    "frame_of_reference": "image"
+  },
+  "track": {
+    "what": "ball centre",
+    "method": "centroid",
+    "unit": "px",
+    "points": [
+      {
+        "frame": 10,
+        "x": 320.0,
+        "y": 400.0
+      },
+      {
+        "frame": 11,
+        "x": 320.0,
+        "y": 384.195
+      },
+      {
+        "frame": 12,
+        "x": 320.0,
+        "y": 369.48
+      },
+      {
+        "frame": 13,
+        "x": 320.0,
+        "y": 355.855
+      },
+      {
+        "frame": 14,
+        "x": 320.0,
+        "y": 343.32000000000005
+      },
+      {
+        "frame": 15,
+        "x": 320.0,
+        "y": 331.875
+      },
+      {
+        "frame": 16,
+        "x": 320.0,
+        "y": 321.52
+      },
+      {
+        "frame": 17,
+        "x": 320.0,
+        "y": 312.255
+      },
+      {
+        "frame": 18,
+        "x": 320.0,
+        "y": 304.08
+      },
+      {
+        "frame": 19,
+        "x": 320.0,
+        "y": 296.995
+      },
+      {
+        "frame": 20,
+        "x": 320.0,
+        "y": 291.0
+      },
+      {
+        "frame": 21,
+        "x": 320.0,
+        "y": 286.095
+      },
+      {
+        "frame": 22,
+        "x": 320.0,
+        "y": 282.28
+      },
+      {
+        "frame": 23,
+        "x": 320.0,
+        "y": 279.555
+      },
+      {
+        "frame": 24,
+        "x": 320.0,
+        "y": 277.92
+      },
+      {
+        "frame": 25,
+        "x": 320.0,
+        "y": 277.375
+      },
+      {
+        "frame": 26,
+        "x": 320.0,
+        "y": 277.91999999999996
+      },
+      {
+        "frame": 27,
+        "x": 320.0,
+        "y": 279.555
+      },
+      {
+        "frame": 28,
+        "x": 320.0,
+        "y": 282.28
+      },
+      {
+        "frame": 29,
+        "x": 320.0,
+        "y": 286.095
+      },
+      {
+        "frame": 30,
+        "x": 320.0,
+        "y": 291.0
+      },
+      {
+        "frame": 31,
+        "x": 320.0,
+        "y": 296.995
+      },
+      {
+        "frame": 32,
+        "x": 320.0,
+        "y": 304.08
+      },
+      {
+        "frame": 33,
+        "x": 320.0,
+        "y": 312.255
+      },
+      {
+        "frame": 34,
+        "x": 320.0,
+        "y": 321.52000000000004
+      },
+      {
+        "frame": 35,
+        "x": 320.0,
+        "y": 331.875
+      },
+      {
+        "frame": 36,
+        "x": 320.0,
+        "y": 343.32
+      },
+      {
+        "frame": 37,
+        "x": 320.0,
+        "y": 355.855
+      },
+      {
+        "frame": 38,
+        "x": 320.0,
+        "y": 369.48
+      },
+      {
+        "frame": 39,
+        "x": 320.0,
+        "y": 384.195
+      },
+      {
+        "frame": 40,
+        "x": 320.0,
+        "y": 400.0
+      }
+    ]
+  },
+  "masks": {
+    "ball": {
+      "12": [
+        [
+          270,
+          300,
+          340
+        ],
+        [
+          271,
+          298,
+          342
+        ]
+      ],
+      "25": [
+        [
+          200,
+          310,
+          350
+        ],
+        [
+          201,
+          308,
+          352
+        ]
+      ]
+    }
+  },
+  "flights": [
+    {
+      "kind": "flight",
+      "start": 10,
+      "apex": 25,
+      "end": 40,
+      "rise_m": 1.22625,
+      "duration_s": 1.0,
+      "fit": {
+        "a": 981.0,
+        "a_err": 30.0,
+        "rms": 0.4,
+        "v0": -490.5,
+        "n": 31,
+        "window": {
+          "first": 10,
+          "last": 40
+        }
+      },
+      "accel": 9.81,
+      "accel_err": 0.3,
+      "hypothesis": {
+        "name": "Earth",
+        "value": 9.81
+      },
+      "decide": {
+        "state": "fits:Earth",
+        "world": "Earth",
+        "consistent": [
+          "Earth"
+        ],
+        "sigmas": {
+          "Earth": 0.0
+        },
+        "nearest": "Earth",
+        "k": 1.0,
+        "text": "The measured g of 9.81 \u00b1 0.30 m/s^2 fits Earth (9.81 m/s^2) within 2 sigma.",
+        "g": 9.81,
+        "g_err": 0.3,
+        "k_sigma": 2.0
+      },
+      "ghost": [
+        {
+          "frame": 10,
+          "y": 400.0
+        },
+        {
+          "frame": 20,
+          "y": 291.0
+        },
+        {
+          "frame": 30,
+          "y": 291.0
+        },
+        {
+          "frame": 40,
+          "y": 400.0
+        }
+      ],
+      "notes": "Clean free flight between release and catch."
+    }
+  ],
+  "timescale": null,
+  "error_budget": {
+    "reference": 0.023,
+    "scale": 0.05,
+    "fit": 0.031,
+    "tracking": 0.02
+  },
+  "verdict": {
+    "state": "fits:Earth",
+    "world": "Earth",
+    "consistent": [
+      "Earth"
+    ],
+    "sigmas": {
+      "Earth": 0.0,
+      "Moon": 27.300000000000004
+    },
+    "nearest": "Earth",
+    "k": 1.0,
+    "text": "The measured g of 9.81 \u00b1 0.30 m/s^2 fits Earth (9.81 m/s^2) within 2 sigma.",
+    "g": 9.81,
+    "g_err": 0.3,
+    "k_sigma": 2.0,
+    "worlds": {
+      "Earth": 9.81,
+      "Moon": 1.62
+    }
+  },
+  "overall": {
+    "label": "Earth",
+    "text": "The motion fits Earth within the measured error."
+  }
+}
