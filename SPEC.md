@@ -24,11 +24,18 @@ it with what physics predicts, states a verdict with an honest error bar, and pu
   budget and the verdict.
 - **First case:** the Apollo 16 "jump salute" (NASA, public domain) and a slowed copy we make ourselves. The page must say
   "Moon" for the original and "too slow for any world; slowed about ×1.5" for the copy.
+- **Second case: a viral wall run** (an AI-generated clip, Singapore, a runner sprints up a tall vertical wall to the top).
+  The general claim behind both cases: **wherever a body is unsupported, it must move under g.** On a vertical wall
+  nothing presses the runner against it, so there is no normal force, hence no friction to push on, and the vertical
+  motion is free flight: `a_y = −g`. A steady climb (`a_y ≈ 0`) is physically impossible at any playback speed. A second,
+  independent measurement — the step rate on the flat run-up (people run at 2.5–5 steps/s) — shows whether time in the
+  clip runs normally. The page must say "physically impossible: the climb ignores gravity" with both numbers.
 - **Hackathon theme:** Push the Frontier — "understand a physical system… when these models meet the real world".
 - **Language:** all page text and UI in English.
 
-Non-goals for the hackathon: a hosted web service (the site is static, on GitHub Pages — see M13), user accounts, audio-based evidence, scene types other than ballistic
-flight (a stunt/collision type may follow if time allows), any clip we have no rights to.
+Non-goals for the hackathon: a hosted web service (the site is static, on GitHub Pages — see M13), user accounts,
+audio-based evidence, scene types other than unsupported motion under g (ballistic flight, a body on a vertical surface;
+a collision type may follow if time allows), any clip we have no rights to.
 
 ## 2. Principles
 
@@ -139,6 +146,21 @@ cents. A module is done when all its probes pass and the probe commands are in t
   the boundary) matches exactly; `track_quality` flags a planted gap, jump and split; docstrings state argument shapes
   (a single-object mask array vs a dict of objects must give a clear TypeError, not a numpy error).
 
+### M6b. Blocks for moving cameras and time scale (added 2026-10-27 for the wall run)
+- **Does:** more verified functions in `blocks`:
+  - `relative_track(target, reference, *, anchor, size)` — the camera pans and zooms, so positions are expressed in a
+    frame attached to a static object: per frame, (target point − reference anchor) / reference size in px. Units are
+    "reference sizes"; the reference's real size converts them to metres.
+  - `step_rate(series, fps)` — the dominant frequency of a periodic signal (e.g. the runner's mask top bobbing on the
+    run-up) with its error: steps/s.
+  - `ghost(y0, v0, a, frames, fps)` — the trajectory a body would follow from the measured start under a given
+    acceleration (for the page: "where he would be if gravity acted").
+  - `decide` accepts hypotheses as well as worlds (e.g. `{"unsupported on Earth": 9.81}`); when the measured downward
+    acceleration is ≤ 0 or far below every hypothesis, the text says that no playback speed explains it.
+- **Probes:** a synthetic panning-and-zooming camera over a parabola gives back the true acceleration in reference units;
+  a synthetic bob at 3.2 Hz with noise gives 3.2 ± its error; `ghost` matches the analytic formula; `decide` texts for
+  the new cases match a table.
+
 ### M7. Mask check
 - **Does:** `mask_check(file, object, frames, claim)`: a separate Spark call with no context of the run. It sees only crops
   of up to 4 frames, each as "plain | mask highlighted", and must answer under a schema: what is inside the mask, what is
@@ -171,7 +193,9 @@ cents. A module is done when all its probes pass and the probe commands are in t
   (name, which extent, value, tolerance, source URL, verbatim quote, source type primary/secondary/estimate; mask check
   result), `scale` (frame, pixel extent, metres per pixel and error, second independent reference and their agreement),
   `track` (what point, method, one entry per frame), `masks` (only frames the page draws, compact spans), `flights`
-  (per event: takeoff, apex, landing frames, rise in px and m, airborne time, parabola fit, g from curvature, cross-checks),
+  (per unsupported segment: `kind` = `flight` | `wall`, start, apex/end frames, rise in px and m, duration, parabola fit,
+  measured acceleration, the hypothesis it is tested against, the ghost trajectory, cross-checks), `timescale` (optional:
+  how the clip's time rate was checked, e.g. step rate, and its result),
   `error_budget` (term → relative error), `verdict` (exactly the dict from `blocks.decide` plus g, g_err).
 - **Validator:** required fields with paths in error messages; types; ranges (frames inside the clip, positive errors);
   internal consistency (rise = (base − apex) × m/px within rounding; t_air = frames/fps; verdict recomputed by `decide`).
