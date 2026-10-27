@@ -23,7 +23,14 @@ M1–M6b; billing lags up to an hour). The table total below is in USD at list p
 | M6b | blocks for moving cameras and time scale | 24 | 107 083 | 1 709 351 | 33 034 | 0.021 |
 | — | maintainer check of M3 on the Moon clip (70 SAM frames) | — | — | — | — | 0.014 |
 | — | maintainer feasibility check on the wall-run clip (2 × 100 SAM frames) | — | — | — | — | 0.040 |
-| **Total so far** | | | | | | **≈ 0.43** |
+| M4 fix 1 | blindness patterns: pronoun quantities, generative vocabulary, event names, feasibility | 23 | 108 162 | 1 346 373 | 24 211 | 0.018 |
+| M4 fix 2 | context-free classifier layer for blindness, fail-closed | 33 | 80 675 | 2 481 696 | 26 286 | 0.018 + 0.005 API in tests |
+| M1 fix 1 | ledger prices cached input | 21 | 90 917 | 981 219 | 5 408 | 0.012 |
+| M9 + fix 1 | analysis schema, validator, combine, schema_doc | 35 | 238 382 | 2 204 591 | 58 453 | 0.040 |
+| M7 | context-free mask check | 25 | 135 994 | 2 050 855 | 22 789 | 0.022 + 0.000 API in tests |
+| M8 | agent loop, minimal finish, run command | 71 | 237 453 | 11 749 493 | 59 003 | 0.059 + 0.003 API in tests |
+| E1 + fix 1 | acceptance clips (Apollo 16 A, slowed B), eval checker | 77 | 240 807 | 5 176 505 | 45 427 | 0.044 |
+| **Total so far** | | | | | | **≈ 0.65** |
 
 ## Analysing one video
 
