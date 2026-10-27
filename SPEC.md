@@ -258,11 +258,15 @@ go into the system prompt. They contain no answers about any clip.
 1. **A reference size is only as good as knowing what its mask covers.** Use the real size of exactly what the mask
    covers; if a published size refers to a part of the object, find the size of the whole covered extent or measure a
    different extent. The most common silent error is a mask that covers more (or less) than the number you looked up.
+   An object seen at an angle shows a mix of its width and depth: use an extent you see face-on, or one that does not
+   change when the object turns (the height of an upright object).
 2. **Two independent references.** Cross-check the scale with a second reference at about the same depth (another object
    of known size, a body height). If they disagree beyond their errors, find out why before measuring; report both.
 3. **Fit only unsupported motion.** Find where support starts and ends (takeoff and landing from the lowest point of the
    moving body — feet, bottom of the body mask — not from the tracked point; for a body on a surface, where the surface
    stops pressing on it, e.g. where a curved ramp turns vertical). Frames with support flatten or bend the parabola.
+   Track a point that moves rigidly with the body during the segment (the top of the head or helmet, the top of the
+   mask), and check the fit residuals for a trend before trusting the curvature.
 4. **Time is measured, not assumed.** The model checks the real frame rate, duplicated frames, interpolated frames and cuts
    from the frames themselves, and says what its result implies if the clip is not real-time.
 5. **Look before trusting a mask.** Overlay sheets and `track_quality` flags are reviewed; each flag gets a written
