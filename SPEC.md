@@ -27,7 +27,7 @@ it with what physics predicts, states a verdict with an honest error bar, and pu
 - **Hackathon theme:** Push the Frontier — "understand a physical system… when these models meet the real world".
 - **Language:** all page text and UI in English.
 
-Non-goals for the hackathon: a hosted web service, user accounts, audio-based evidence, scene types other than ballistic
+Non-goals for the hackathon: a hosted web service (the site is static, on GitHub Pages — see M13), user accounts, audio-based evidence, scene types other than ballistic
 flight (a stunt/collision type may follow if time allows), any clip we have no rights to.
 
 ## 2. Principles
@@ -63,6 +63,8 @@ video ─► agent loop (Spark) ─► tools: video_info · frames · sam · mas
                                                                      sandbox + physics blocks
                                                                                            ▼
                                                      analysis.json ─► validator ─► frozen player ─► page.html + video
+                                                                                                          ▼
+                                                                          publish ─► GitHub Pages: one page per analysis
 ```
 
 Each module below lists: **does** (responsibility), **in / out**, **probes** (invariants checked at the junction before
@@ -206,6 +208,21 @@ cents. A module is done when all its probes pass and the probe commands are in t
 - `ledger` → spend per run and in total.
 - **Probe:** `run --dry` with the fake Spark finishes offline in under a minute.
 
+### M13. Publish (GitHub Pages)
+- **Does:** `publish <run>` (and `run --publish`): copies the page, its analysis JSON, the video and the mask-check images
+  into `site/<slug>/` on the `gh-pages` branch, regenerates the gallery `site/index.html` (one card per analysis:
+  thumbnail, clip name, verdict, g ± error, link), commits and pushes. Each analysis gets its own address
+  `https://yunoshev.github.io/physics-proof/<slug>/`: send a video in, a new page with the video and its proof appears.
+  The gallery is the presentation and the "live product" for the judges.
+- **Rules:** only clips we have rights to are published — the run carries `rights` (`public-domain`, `cc-by …`, `own`)
+  and `publish` refuses anything else; no secrets and no local paths in published files; each video ≤ 50 MB
+  (GitHub's hard limit is 100 MB per file).
+- **Probes:** publishing a fixture run gives `site/<slug>/index.html` that opens from a local static server with the
+  video playing; the gallery lists it; a run without `rights` is refused; a search of the published tree finds no key
+  and no `/Users/` path.
+- **Stretch:** a GitHub Actions workflow (`workflow_dispatch`, macOS runner, API key as a repository secret) that takes
+  a video URL, runs the agent and publishes the page without a local machine. Only the maintainer can start it (spend).
+
 ## 4. Rules of evidence (lessons from research before 26.10)
 
 Before the hackathon we ran a throw-away proof of concept (not part of this repo). These general rules came out of it and
@@ -263,7 +280,7 @@ material) and not sports analysis (that is on the hackathon's anti-project list)
 |---|---|
 | 27.10 | spec, repo; credits claimed (blocker: card and credits on the Billing page) |
 | 28–29.10 | M1 client, M2 video, M6 blocks, M5 sandbox, M3 SAM, M4 search — with probes |
-| 30–31.10 | M7 mask check, M9 schema, M10 player, M11 finish, M8 agent loop, M12 CLI |
+| 30–31.10 | M7 mask check, M9 schema, M10 player, M11 finish, M8 agent loop, M12 CLI, M13 publish to GitHub Pages |
 | 01–02.11 | Moon acceptance (3 runs per clip), fixes; second clip if time allows |
 | 03.11 | demo video (3 min), README, X post draft; last day for submission questions |
 | 04.11 | submit by 18:00 ET (deadline 21:00 ET) |
@@ -305,7 +322,7 @@ material) and not sports analysis (that is on the hackathon's anti-project list)
 | Public repository | this repo, public before submission; README with setup, one-command run, "How we use Meta tools" |
 | New work clearly identified | history from 27.10; README section "Built during the hackathon"; no pre-hackathon code |
 | 3-minute demo video of what was built | screen recording of a full run on the Moon clips: Spark's turns, SAM masks, mask check, the page and verdicts |
-| Live product | published example pages (A and B) that open in a browser, plus the command to run on any video |
+| Live product | the GitHub Pages gallery: one page per analysis with the video and its proof (A, B, more), plus the command to run on any video |
 | Rights to all assets | NASA public-domain footage and our own derived fakes only |
 | Uses Meta models | Spark (orchestrator, mask check, search), SAM 3.1; optional Spark Open |
 
