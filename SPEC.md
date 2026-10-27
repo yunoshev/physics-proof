@@ -271,6 +271,10 @@ go into the system prompt. They contain no answers about any clip.
    all propagated into g_err. Claiming more than the error bar supports is a failure; "undetermined" is not.
 7. **Relative time survives a wrong scale.** Two clips of the same event share the scale error; their ratio of g still
    recovers a relative slowdown. The page may show this as a cross-check, never as the verdict.
+8. **Check the time rate independently of the physics under test.** A rhythm whose natural rate is known (steps of a
+   walking or running person, a pendulum, wing beats, a bouncing object, falling debris) shows whether the clip plays at
+   normal speed. "No world fits" means "retimed" only if the clock check agrees; if the clock is normal, the motion
+   itself is impossible. Report the clock check with its error either way.
 
 ## 5. Acceptance (the Moon)
 
