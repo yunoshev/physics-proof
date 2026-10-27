@@ -2,10 +2,12 @@
 
 Source: Apollo Lunar Surface Journal page for Apollo 16 video (SPEC 5),
 file ``a16salute.mpg`` linked from that page. The script downloads it once,
-checks size and decodability, then writes ``examples/moon/A.mp4`` (H.264
-re-encode at the probe-measured frame rate) and ``examples/moon/B.mp4``
-(the same clip slowed x1.5 with motion interpolation back to A's rate),
-plus ``examples/moon/SOURCE.md`` with the source and exact commands.
+checks size and decodability, then writes ``examples/moon/A.mp4`` (a
+frame-exact H.264 re-encode: every decoded source frame is piped once
+through rawvideo at the probe-measured frame rate, so no frames are added
+or dropped) and ``examples/moon/B.mp4`` (A slowed x1.5 with motion
+interpolation back to A's rate), plus ``examples/moon/SOURCE.md`` with the
+source and exact commands.
 
 Encoder flags are fixed, so running twice gives bit-identical files.
 ``--dry-run`` prints the ffmpeg commands without touching the network.
@@ -37,6 +39,7 @@ MIN_BYTES = 2_000_000
 #: result or the dry-run output is stale.
 DRY_RUN_FPS = Fraction(30000, 1001)
 DRY_RUN_SAR = (200, 219)
+DRY_RUN_SIZE = (352, 240)
 
 _FFMPEG = "ffmpeg"
 _FFPROBE = "ffprobe"
@@ -49,24 +52,40 @@ def _need_tool(name: str) -> None:
         raise SystemExit(3)
 
 
-def measured_fps(src: Path) -> Fraction:
-    """Frame rate of src via physics_proof.video.probe (SPEC 5: measured)."""
-    from physics_proof.video import probe
+def build_a_cmds(src: Path, dst: Path, fps: Fraction,
+                 sar: tuple[int, int],
+                 size: tuple[int, int]) -> tuple[list[str], list[str]]:
+    """ffmpeg pipe for clip A: a one-to-one re-encode of decoded frames.
 
-    fps = probe(src).fps
-    return Fraction(fps.numerator, fps.denominator)
-
-
-def build_a_cmd(src: Path, dst: Path, fps: Fraction,
-                sar: tuple[int, int]) -> list[str]:
-    """ffmpeg command for clip A: H.264 re-encode at the measured rate."""
+    The decode stage emits every source frame exactly once (rawvideo,
+    ``passthrough``: no CFR resampling, so no frames are added or dropped).
+    The encode stage reads those raw frames at the measured rate and writes
+    CFR H.264 at that same rate, so N frames in means N frames out. The
+    pipe stays in yuv420p, avoiding any extra colourspace conversion.
+    Returns (decode_cmd, encode_cmd); the first writes raw frames to stdout
+    and the second reads them from stdin.
+    """
     rate = str(fps.numerator) + "/" + str(fps.denominator)
     sar_text = "sar=" + str(sar[0]) + "\\:" + str(sar[1])
-    return [
-        _FFMPEG, "-y", "-v", "error",
+    width = size[0] + size[0] % 2
+    height = size[1] + size[1] % 2
+    decode = [
+        _FFMPEG, "-v", "error",
         "-i", str(src),
         "-map", "0:v:0",
         "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+        "-f", "rawvideo",
+        "-pix_fmt", "yuv420p",
+        "-fps_mode", "passthrough",
+        "-",
+    ]
+    encode = [
+        _FFMPEG, "-y", "-v", "error",
+        "-f", "rawvideo",
+        "-framerate", rate,
+        "-video_size", str(width) + "x" + str(height),
+        "-pix_fmt", "yuv420p",
+        "-i", "-",
         "-fps_mode", "cfr",
         "-r", rate,
         "-c:v", "libx264",
@@ -78,6 +97,7 @@ def build_a_cmd(src: Path, dst: Path, fps: Fraction,
         "-map_metadata", "-1",
         str(dst),
     ]
+    return decode, encode
 
 
 def build_b_cmd(src: Path, dst: Path, fps: Fraction) -> list[str]:
@@ -100,14 +120,6 @@ def build_b_cmd(src: Path, dst: Path, fps: Fraction) -> list[str]:
     ]
 
 
-def source_sar(src: Path) -> tuple[int, int]:
-    """Sample aspect ratio of src from physics_proof.video.probe."""
-    from physics_proof.video import probe
-
-    sar = probe(src).sar
-    return sar.numerator, sar.denominator
-
-
 def run(cmd: list[str]) -> None:
     """Run cmd, printing it first; raise SystemExit(3) on failure."""
     print("+ " + " ".join(cmd), flush=True)
@@ -116,6 +128,29 @@ def run(cmd: list[str]) -> None:
         tail = proc.stderr.strip().splitlines()
         detail = tail[-1] if tail else "exit " + str(proc.returncode)
         print("command failed: " + detail, flush=True)
+        raise SystemExit(3)
+
+
+def run_pipe(decode: list[str], encode: list[str]) -> None:
+    """Run decode | encode, piping raw frames; fail loudly either side."""
+    print("+ " + " ".join(decode) + " | " + " ".join(encode), flush=True)
+    first = subprocess.Popen(decode, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+    assert first.stdout is not None
+    second = subprocess.run(encode, stdin=first.stdout, capture_output=True,
+                            text=False)
+    first.wait()
+    if first.returncode != 0:
+        detail = first.stderr.read().decode("utf-8", "replace").strip()
+        tail = detail.splitlines()
+        print("decode failed: " + (tail[-1] if tail else "exit "
+                                     + str(first.returncode)), flush=True)
+        raise SystemExit(3)
+    if second.returncode != 0:
+        detail = second.stderr.decode("utf-8", "replace").strip()
+        tail = detail.splitlines()
+        print("encode failed: " + (tail[-1] if tail else "exit "
+                                     + str(second.returncode)), flush=True)
         raise SystemExit(3)
 
 
@@ -172,8 +207,10 @@ def shell_quote(cmd: list[str]) -> str:
     return " ".join(parts)
 
 
-def write_source_md(out_dir: Path, fps: Fraction, a_frames: int,
-                    b_frames: int, a_cmd: list[str], b_cmd: list[str]) -> Path:
+def write_source_md(out_dir: Path, fps: Fraction, src_frames: int,
+                    a_frames: int, b_frames: int,
+                    a_decode: list[str], a_encode: list[str],
+                    b_cmd: list[str]) -> Path:
     """Write SOURCE.md with the source, note and exact commands."""
     text = (
         "# Source of examples/moon\n"
@@ -191,15 +228,23 @@ def write_source_md(out_dir: Path, fps: Fraction, a_frames: int,
         "\n"
         "## How A.mp4 and B.mp4 were made\n"
         "\n"
-        "A.mp4 re-encodes the download to H.264 (yuv420p, CRF 18), no audio,\n"
-        "no metadata (`-map_metadata -1`), at the frame rate measured by\n"
+        "A.mp4 is a one-to-one re-encode of the " + str(src_frames) + " decoded\n"
+        "source frames to H.264 (yuv420p, CRF 18), no audio, no metadata\n"
+        "(`-map_metadata -1`), at the frame rate measured by\n"
         "`physics_proof.video.probe`: " + str(fps) + " fps (" + str(a_frames) + " frames).\n"
+        "The decode stage pipes every frame once (rawvideo, `passthrough`);\n"
+        "the encode stage reads the pipe at the measured rate and writes CFR\n"
+        "at that same rate, so no frames are added or dropped (an earlier\n"
+        "single-ffmpeg `-r` re-encode duplicated 2 frames to fit the CFR\n"
+        "timeline; see tasks/E1-fix1.md).\n"
         "B.mp4 slows A by x" + str(SLOWDOWN) + " (`setpts=" + str(SLOWDOWN) + "*PTS`) and\n"
         "interpolates (`minterpolate`) back to A's rate (" + str(b_frames) + " frames).\n"
         "\n"
-        "Exact commands (run from the repository root):\n"
+        "Exact commands (run from the repository root; the first two form one\n"
+        "pipe, decode stdout into encode stdin):\n"
         "\n"
-        "    " + shell_quote(a_cmd) + "\n"
+        "    " + shell_quote(a_decode) + " |\n"
+        "        " + shell_quote(a_encode) + "\n"
         "    " + shell_quote(b_cmd) + "\n"
         "\n"
         "Built with: " + ffmpeg_version() + "\n"
@@ -231,10 +276,11 @@ def main(argv: list[str] | None = None) -> int:
         print("# dry run: no download, no files written", flush=True)
         print("# rate/sar shown are the probe-measured values for this source",
               flush=True)
-        a_cmd = build_a_cmd(Path(SOURCE_NAME), out_dir / "A.mp4",
-                            DRY_RUN_FPS, DRY_RUN_SAR)
+        a_decode, a_encode = build_a_cmds(Path(SOURCE_NAME),
+                                          out_dir / "A.mp4", DRY_RUN_FPS,
+                                          DRY_RUN_SAR, DRY_RUN_SIZE)
         b_cmd = build_b_cmd(out_dir / "A.mp4", out_dir / "B.mp4", DRY_RUN_FPS)
-        for cmd in (a_cmd, b_cmd):
+        for cmd in (a_decode, a_encode, b_cmd):
             print("+ " + " ".join(cmd), flush=True)
         return 0
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -242,17 +288,23 @@ def main(argv: list[str] | None = None) -> int:
         src = Path(tmp) / SOURCE_NAME
         download(SOURCE_URL, src)
         check_download(src)
-        fps = measured_fps(src)
-        a_cmd = build_a_cmd(src, out_dir / "A.mp4", fps, source_sar(src))
-        run(a_cmd)
+        from physics_proof.video import probe as video_probe
+
+        info = video_probe(src)
+        fps = Fraction(info.fps.numerator, info.fps.denominator)
+        sar = (info.sar.numerator, info.sar.denominator)
+        a_decode, a_encode = build_a_cmds(src, out_dir / "A.mp4", fps, sar,
+                                         (info.width, info.height))
+        run_pipe(a_decode, a_encode)
         b_cmd = build_b_cmd(out_dir / "A.mp4", out_dir / "B.mp4", fps)
         run(b_cmd)
+        src_frames = info.frame_count
     from physics_proof.video import probe
 
     a_info = probe(out_dir / "A.mp4")
     b_info = probe(out_dir / "B.mp4")
-    write_source_md(out_dir, fps, a_info.frame_count, b_info.frame_count,
-                    a_cmd, b_cmd)
+    write_source_md(out_dir, fps, src_frames, a_info.frame_count,
+                    b_info.frame_count, a_decode, a_encode, b_cmd)
     print("A.mp4: " + str(a_info.fps) + " fps, " + str(a_info.frame_count)
           + " frames, sha256 " + sha256(out_dir / "A.mp4"), flush=True)
     print("B.mp4: " + str(b_info.fps) + " fps, " + str(b_info.frame_count)

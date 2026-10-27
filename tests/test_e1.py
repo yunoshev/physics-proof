@@ -13,9 +13,14 @@ from pathlib import Path
 
 import pytest
 
+from physics_proof import video
+
 REPO = Path(__file__).resolve().parents[1]
 CHECK = REPO / "eval" / "check.py"
 SCRIPT = REPO / "scripts" / "make_moon_clips.py"
+#: Decoded frame count of the source `a16salute.mpg` (E1 run 2026-10-27,
+#: confirmed by the maintainer with `physics_proof.video`).
+SOURCE_FRAMES = 466
 
 
 def write_run(tmp_path: Path, analysis: dict, summary: dict) -> Path:
@@ -179,6 +184,19 @@ def test_missing_mask_check_is_hard(tmp_path: Path) -> None:
     proc = run_check(write_run(tmp_path, analysis, summary), "moon-A")
     assert proc.returncode == 2
     assert "mask check" in proc.stdout
+
+
+@pytest.mark.slow
+def test_clip_a_matches_source_frames() -> None:
+    """E1-fix1: committed A.mp4 holds exactly the decoded source frames.
+
+    Frame count equals the source's decoded count and no duplicate runs
+    were inserted by the re-encode. Runs on the committed file, so it
+    decodes the whole clip (slow).
+    """
+    clip = REPO / "examples" / "moon" / "A.mp4"
+    assert video.probe(clip).frame_count == SOURCE_FRAMES
+    assert video.duplicate_runs(video.frame_diffs(clip)) == []
 
 
 def test_dry_run_prints_commands(tmp_path: Path) -> None:
