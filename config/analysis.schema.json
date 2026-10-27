@@ -186,7 +186,8 @@
             "properties": {
               "frame": {"type": "integer", "minimum": 0},
               "x": {"type": "number"},
-              "y": {"type": "number"}
+              "y": {"type": "number"},
+              "px": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2, "description": "Pixel position [x, y] in px for drawing on the video. The agent writes it from now on, so ref-unit tracks can be drawn without converting from reference sizes."}
             }
           }
         }

@@ -1,4 +1,4 @@
-"""M8/M12 command surface: ``python -m physics_proof run <video> ...``."""
+"""M8/M12 command surface: ``run``, M10: ``build`` and ``gallery``."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ def _slug(video: Path, tag: str | None) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Entry point for ``python -m physics_proof`` (only ``run`` for now)."""
+    """Entry point for ``python -m physics_proof``."""
     parser = argparse.ArgumentParser(prog="physics_proof")
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run", help="run one analysis on a video")
@@ -31,7 +31,24 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--turns", type=int, default=60)
     run.add_argument("--effort", type=str, default="high")
     run.add_argument("--resume", action="store_true")
+    build = sub.add_parser("build", help="build a static page from a run directory")
+    build.add_argument("run_dir", help="run directory holding analysis.json")
+    build.add_argument("--out", default=None,
+                       help="output directory; default site/<run tag>")
+    gallery = sub.add_parser("gallery", help="regenerate the gallery index")
+    gallery.add_argument("--site", default="site", help="site directory")
     args = parser.parse_args(argv)
+
+    if args.command == "build":
+        from .page import build_page
+        info = build_page(args.run_dir, args.out)
+        print("page: " + str(info["out"]), flush=True)
+        return 0
+    if args.command == "gallery":
+        from .page import build_gallery
+        info = build_gallery(args.site)
+        print("cards: " + str(info["cards"]), flush=True)
+        return 0
 
     if args.command == "run":
         video = Path(args.video)

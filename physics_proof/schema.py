@@ -625,6 +625,14 @@ def validate(
                 fr = _req_int(point, base, "frame", issues)
                 x = _req_num(point, base, "x", issues)
                 y = _req_num(point, base, "y", issues)
+                if "px" in point:
+                    here = point["px"]
+                    if (
+                        not isinstance(here, list)
+                        or len(here) != 2
+                        or not all(_is_num(v) for v in here)
+                    ):
+                        issues.append(Issue(_ptr(base, "px"), "expected [x, y] in px"))
                 if fr is not None and n_frames is not None:
                     _check_frame(fr, base, "frame", n_frames, issues)
                 if fr is not None and x is not None and y is not None and fr not in track_points:
@@ -968,7 +976,10 @@ def schema_doc() -> str:
         "m_per_ref [m per reference size], m_per_ref_err. "
         "Track unit must match: image uses px, moving uses ref.",
         "track (required): what, method, unit [px|ref], "
-        "points[] {frame, x, y} (at least 2 points, frames inside clip).",
+        "points[] {frame, x, y} (at least 2 points, frames inside clip). "
+        "Each point may carry px [x, y] in px: the video-pixel position of "
+        "the tracked point that frame; write it from now on, so the page "
+        "can draw ref-unit tracks on the video without converting.",
         "masks (required, at least 1 object): "
         "{object_name: {frame: spans [[y, x0, x1], ...]}}; "
         "only frames the page draws, spans_of format, x1 > x0.",
