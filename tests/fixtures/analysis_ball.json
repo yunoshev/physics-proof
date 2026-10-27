@@ -63,6 +63,7 @@
     "m_per_px": 0.01,
     "m_per_px_err": 0.0005,
     "second": null,
+    "second_missing": "No second object of known size is visible at the same depth as the ball.",
     "frame_of_reference": "image"
   },
   "track": {

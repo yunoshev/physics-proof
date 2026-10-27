@@ -308,3 +308,32 @@ def test_schema_doc_short_and_complete() -> None:
         "verdict", "overall", "page_texts",
     ):
         assert section in doc, section
+
+
+# Probe M8-fix3: scale.second names its reference; null needs second_missing.
+def test_second_null_needs_second_missing() -> None:
+    """second:null without second_missing names its path; with it validates."""
+    broken = load("analysis_ball.json")
+    assert broken["scale"]["second"] is None
+    del broken["scale"]["second_missing"]
+    issues = validate(broken)
+    assert any(i.path == "/scale/second_missing" for i in issues)
+    fixed = load("analysis_ball.json")
+    assert validate(fixed) == []
+
+
+def test_second_reference_index_validated() -> None:
+    """A bad reference_index names its path; a good one validates."""
+    broken = copy.deepcopy(load("analysis_ramp.json"))
+    broken["scale"]["second"]["reference_index"] = 5
+    issues = validate(broken)
+    assert any(i.path == "/scale/second/reference_index" for i in issues)
+    broken["scale"]["second"]["reference_index"] = "0"
+    issues = validate(broken)
+    assert any(i.path == "/scale/second/reference_index" for i in issues)
+    fixed = copy.deepcopy(load("analysis_ramp.json"))
+    fixed["scale"]["second"]["reference_index"] = 0
+    assert validate(fixed) == []
+    doc = schema_doc()
+    assert "reference_index" in doc
+    assert "second_missing" in doc

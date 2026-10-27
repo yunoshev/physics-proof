@@ -594,14 +594,22 @@ def test_finish_coerces_type_slips(tmp_path: Path) -> None:
     assert "/reference/0/mask/object" in turns[-1]["result_text"]
 
 
-def test_finish_second_reference_asked_once(tmp_path: Path) -> None:
-    """Probe 5 (fix1): first finish without scale.second asks; the next passes."""
+def test_finish_second_null_needs_second_missing(tmp_path: Path) -> None:
+    """Probe (fix3): second:null needs second_missing; neither is a schema issue."""
     import copy
 
     from physics_proof.agent import run_analysis as local_run
 
-    analysis = copy.deepcopy(_analysis(CLIP, NPZ))
-    analysis["scale"]["second"] = None
+    neither = copy.deepcopy(_analysis(CLIP, NPZ))
+    neither["scale"]["second"] = None
+    fixed = copy.deepcopy(neither)
+    fixed["scale"]["second_missing"] = (
+        "No second object of known size is visible at the same depth."
+    )
+    assert any(
+        issue.path == "/scale/second_missing" for issue in validate(neither)
+    )
+    assert validate(fixed) == []
     script = [
         ("call", "sam", {"phrase": "red square", "start": 0, "stop": 10}),
         (
@@ -614,8 +622,100 @@ def test_finish_second_reference_asked_once(tmp_path: Path) -> None:
                 "claim": "the mask covers only the red square",
             },
         ),
-        ("call", "python", {"code": _code(analysis)}),
+        ("call", "python", {"code": _code(neither, "neither.json")}),
+        ("call", "finish", {"analysis_file": "neither.json", "page_texts": ""}),
+        ("call", "python", {"code": _code(fixed)}),
         ("call", "finish", {"analysis_file": "draft.json", "page_texts": ""}),
+    ]
+    spark = ScriptSpark(script)
+    run_dir = tmp_path / "run"
+    summary = local_run(CLIP, run_dir, spark=spark, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    assert summary.status == "ok"
+    turns = _turns(run_dir)
+    assert len(turns) == 6
+    assert "/scale/second_missing" in turns[3]["result_text"]
+    assert "valid" in turns[5]["result_text"]
+    saved = json.loads((run_dir / "analysis.json").read_text(encoding="utf-8"))
+    assert validate(saved) == []
+    assert saved["scale"]["second"] is None
+
+
+def _rect_mask(height: int, width: int, box: tuple[int, int, int, int]) -> np.ndarray:
+    """One 2D bool mask with a filled rectangle (y0, y1, x0, x1)."""
+    mask = np.zeros((height, width), dtype=bool)
+    y0, y1, x0, x1 = box
+    mask[y0:y1, x0:x1] = True
+    return mask
+
+
+def _write_ref_npz(path: Path, frames: list[int], ids: list[int], tracks: list[list[np.ndarray]]) -> None:
+    """Save one synthetic reference-mask archive for the finish gate."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    arr = np.stack([np.stack(track, axis=0) for track in tracks], axis=1)
+    blocks.save_masks(path, frames, ids, arr, [0.9] * len(ids))
+
+
+def _ref_entry(name: str, npz: str, obj: str, extent: str = "height") -> dict[str, Any]:
+    """One reference entry pointing at a synthetic mask."""
+    return {
+        "name": name,
+        "extent": extent,
+        "value_m": 0.5,
+        "tolerance_m": 0.02,
+        "source_url": "https://example.org/object",
+        "quote": "The object is 50 cm.",
+        "source_type": "primary",
+        "mask": {"file": npz, "object": obj},
+        "mask_check": {"verdict": "agrees", "covers": "the whole object"},
+    }
+
+
+def test_finish_second_same_mask_refused_then_fixed(tmp_path: Path) -> None:
+    """Probe (fix3): height and width of one mask are refused with the IoU."""
+    import copy
+
+    from physics_proof.agent import run_analysis as local_run
+
+    pack_npz = "sam/pack.0-10.npz"
+    frames = list(range(10))
+    _write_ref_npz(
+        tmp_path / "run" / "workspace" / pack_npz,
+        frames,
+        [0],
+        [[_rect_mask(256, 256, (100, 180, 50, 90)) for _ in frames]],
+    )
+    bad = copy.deepcopy(_analysis(CLIP, pack_npz))
+    bad["reference"] = [
+        _ref_entry("backpack", pack_npz, "0", "height"),
+        _ref_entry("backpack width", pack_npz, "0", "width"),
+    ]
+    bad["scale"]["second"] = {
+        "name": "backpack width",
+        "m_per_px": 0.002,
+        "m_per_px_err": 0.0001,
+        "agree_sigma": 0.08,
+        "reference_index": 1,
+    }
+    assert validate(bad) == []
+    good = copy.deepcopy(bad)
+    good["scale"]["second"] = None
+    good["scale"]["second_missing"] = (
+        "Only the backpack has a known size; no independent reference exists."
+    )
+    script = [
+        (
+            "call",
+            "mask_check",
+            {
+                "file": pack_npz,
+                "object": 0,
+                "frames": [0, 5, 9],
+                "claim": "the mask covers only the backpack",
+            },
+        ),
+        ("call", "python", {"code": _code(bad, "bad.json")}),
+        ("call", "finish", {"analysis_file": "bad.json", "page_texts": ""}),
+        ("call", "python", {"code": _code(good)}),
         ("call", "finish", {"analysis_file": "draft.json", "page_texts": ""}),
     ]
     spark = ScriptSpark(script)
@@ -624,11 +724,102 @@ def test_finish_second_reference_asked_once(tmp_path: Path) -> None:
     assert summary.status == "ok"
     turns = _turns(run_dir)
     assert len(turns) == 5
-    assert "second" in turns[3]["result_text"]
-    assert "scale.notes" in turns[3]["result_text"]
+    assert "the second reference is the same object as the first" in turns[2]["result_text"]
+    assert "IoU 1.00" in turns[2]["result_text"]
+    assert "second_missing" in turns[2]["result_text"]
     assert "valid" in turns[4]["result_text"]
     saved = json.loads((run_dir / "analysis.json").read_text(encoding="utf-8"))
     assert validate(saved) == []
+
+
+def test_finish_second_independent_mask_accepted(tmp_path: Path) -> None:
+    """Probe (fix3): a small mask inside a large one (IoU ~0.2) is accepted."""
+    import copy
+
+    from physics_proof.agent import _second_independence_error, run_analysis as local_run
+
+    suit_npz = "sam/suit.0-10.npz"
+    frames = list(range(10))
+    suit = [_rect_mask(256, 256, (20, 120, 30, 130)) for _ in frames]
+    pack = [_rect_mask(256, 256, (40, 80, 60, 110)) for _ in frames]
+    _write_ref_npz(tmp_path / "run" / "workspace" / suit_npz, frames, [0, 1], [suit, pack])
+    refs = [
+        _ref_entry("suit", suit_npz, "0"),
+        _ref_entry("backpack", suit_npz, "1"),
+    ]
+    scale = {
+        "second": {
+            "name": "backpack",
+            "m_per_px": 0.002,
+            "m_per_px_err": 0.0001,
+            "agree_sigma": 0.2,
+            "reference_index": 1,
+        }
+    }
+    workspace = tmp_path / "run" / "workspace"
+    assert _second_independence_error(workspace, scale, refs) is None
+    analysis = copy.deepcopy(_analysis(CLIP, suit_npz))
+    analysis["reference"] = refs
+    analysis["scale"]["second"] = dict(scale["second"])
+    script = [
+        (
+            "call",
+            "mask_check",
+            {
+                "file": suit_npz,
+                "object": 0,
+                "frames": [0, 5, 9],
+                "claim": "the mask covers the whole suit",
+            },
+        ),
+        ("call", "python", {"code": _code(analysis)}),
+        ("call", "finish", {"analysis_file": "draft.json", "page_texts": ""}),
+    ]
+    spark = ScriptSpark(script)
+    run_dir = tmp_path / "run"
+    summary = local_run(CLIP, run_dir, spark=spark, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    assert summary.status == "ok"
+    saved = json.loads((run_dir / "analysis.json").read_text(encoding="utf-8"))
+    assert validate(saved) == []
+
+
+def test_second_independence_no_shared_frame_and_same_file(tmp_path: Path) -> None:
+    """Probe (fix3): masks sharing no frame are independent; identical masks are not."""
+    from physics_proof.agent import _second_independence_error
+
+    workspace = tmp_path / "workspace"
+    early = "sam/early.0-5.npz"
+    late = "sam/late.5-10.npz"
+    rect = _rect_mask(256, 256, (100, 180, 50, 90))
+    _write_ref_npz(workspace / early, [0, 1, 2, 3, 4], [0], [[rect] * 5])
+    _write_ref_npz(workspace / late, [5, 6, 7, 8, 9], [0], [[rect] * 5])
+    refs = [_ref_entry("early", early, "0"), _ref_entry("late", late, "0")]
+    scale = {
+        "second": {
+            "name": "late",
+            "m_per_px": 0.002,
+            "m_per_px_err": 0.0001,
+            "agree_sigma": 0.1,
+            "reference_index": 1,
+        }
+    }
+    assert _second_independence_error(workspace, scale, refs) is None
+    twin = "sam/twin.0-10.npz"
+    _write_ref_npz(workspace / twin, list(range(10)), [0], [[rect] * 10])
+    twin_refs = [_ref_entry("early", early, "0"), _ref_entry("twin", twin, "0")]
+    twin_scale = {
+        "second": {
+            "name": "twin",
+            "m_per_px": 0.002,
+            "m_per_px_err": 0.0001,
+            "agree_sigma": 0.0,
+            "reference_index": 1,
+        }
+    }
+    refused = _second_independence_error(workspace, twin_scale, twin_refs)
+    assert refused is not None
+    assert "the second reference is the same object as the first" in refused
+    assert "IoU 1.00" in refused
 
 
 def test_tool_results_name_workspace_files(tmp_path: Path) -> None:

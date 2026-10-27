@@ -666,6 +666,38 @@ def validate(
                 agree = _req_num(second, "/scale/second", "agree_sigma", issues)
                 if agree is not None and agree < 0:
                     issues.append(Issue("/scale/second/agree_sigma", "must be >= 0"))
+                if "reference_index" in second:
+                    idx = second["reference_index"]
+                    if (
+                        isinstance(idx, bool)
+                        or not isinstance(idx, int)
+                        or idx < 0
+                    ):
+                        issues.append(
+                            Issue(
+                                "/scale/second/reference_index",
+                                "expected an integer index into reference[]",
+                            )
+                        )
+                    elif isinstance(reference, list) and not 0 <= idx < len(reference):
+                        issues.append(
+                            Issue(
+                                "/scale/second/reference_index",
+                                "index " + str(idx) + " is outside reference[]",
+                            )
+                        )
+        missing = scale.get("second_missing")
+        if has_second and second is None:
+            if not isinstance(missing, str) or not missing.strip():
+                issues.append(
+                    Issue(
+                        "/scale/second_missing",
+                        "required when second is null: "
+                        "why no independent reference exists",
+                    )
+                )
+        elif missing is not None and not isinstance(missing, str):
+            issues.append(Issue("/scale/second_missing", "expected a string"))
 
     track = _req_dict(analysis, "", "track", issues)
     track_points: dict[int, tuple[float, float]] = {}
@@ -1084,7 +1116,11 @@ def schema_doc() -> str:
         "covers [which part of the object the mask covers]}.",
         "scale (required, two forms): frame [frame], extent_px [px], "
         "extent_px_err [px], second [{name, m_per_px [m/px], "
-        "m_per_px_err, agree_sigma} or null]; "
+        "m_per_px_err, agree_sigma, reference_index [index into "
+        "reference[]: which reference this cross-check uses]} or null]; "
+        "second_missing [string: why no independent reference exists; "
+        "required when second is null; the page shows "
+        "'no independent cross-check: ' plus this text]; "
         "form image: frame_of_reference=image, m_per_px [m/px], "
         "m_per_px_err; "
         "form moving: frame_of_reference {object, anchor [top|bottom], "

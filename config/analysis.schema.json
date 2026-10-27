@@ -158,14 +158,19 @@
         "m_per_ref_err": {"type": "number", "exclusiveMinimum": 0},
         "second": {
           "type": ["object", "null"],
-          "description": "Second independent reference and their agreement, or null.",
+          "description": "Second independent reference and their agreement, or null (then second_missing is required).",
           "required": ["name", "m_per_px", "m_per_px_err", "agree_sigma"],
           "properties": {
             "name": {"type": "string"},
             "m_per_px": {"type": "number", "exclusiveMinimum": 0},
             "m_per_px_err": {"type": "number", "exclusiveMinimum": 0},
-            "agree_sigma": {"type": "number", "minimum": 0}
+            "agree_sigma": {"type": "number", "minimum": 0},
+            "reference_index": {"type": "integer", "minimum": 0, "description": "Index into reference[] naming the reference this cross-check uses; old analyses omit it and match by name."}
           }
+        },
+        "second_missing": {
+          "type": "string",
+          "description": "Why no independent reference exists; required when second is null. The page shows 'no independent cross-check: ' plus this text."
         }
       }
     },

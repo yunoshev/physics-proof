@@ -819,6 +819,13 @@ def _coerce_analysis(analysis: dict[str, Any]) -> list[str]:
         elif isinstance(raw, list) and len(raw) == 1:
             scale["second"] = raw[0]
             note("/scale/second", raw, raw[0])
+    if isinstance(scale, dict) and isinstance(scale.get("second"), dict):
+        raw_idx = scale["second"].get("reference_index")
+        if isinstance(raw_idx, str):
+            fixed_idx = _int_like(raw_idx)
+            if fixed_idx is not None and fixed_idx >= 0:
+                scale["second"]["reference_index"] = fixed_idx
+                note("/scale/second/reference_index", raw_idx, fixed_idx)
 
     verdict = analysis.get("verdict")
     if isinstance(verdict, dict):
@@ -916,33 +923,148 @@ def _fill_computed(analysis: dict[str, Any]) -> None:
             pass
 
 
-#: Workspace marker: the second-reference ask was already sent once.
-SECOND_ASK_MARKER = ".second_reference_asked"
+#: Two extents of one mask are not independent (SPEC section 4 rule 2).
+#: Above this IoU on any shared frame the references count as one object.
+SAME_OBJECT_IOU = 0.5
 
 
-def _second_gate(workspace: Path, scale: Any) -> str | None:
-    """Ask-once gate for SPEC rule 2 (two independent references).
+def _object_id(value: Any) -> int | None:
+    """Int object id of a reference mask object, else None."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(value.strip())
+        except ValueError:
+            return None
+    return None
 
-    Returns None when the gate is satisfied (a second reference or a
-    written reason in scale.notes, or the ask already went out once);
-    otherwise writes the marker and returns the refusal text.
+
+def _reference_masks(
+    workspace: Path, mask: Any
+) -> tuple[list[int], Any] | None:
+    """Frame numbers plus the bool track of one reference mask, else None.
+
+    Returns None when the mask entry is unusable (unknown file, unknown
+    object id, unreadable archive) so the caller skips the comparison.
+    """
+    if not isinstance(mask, dict):
+        return None
+    claimed = mask.get("file")
+    if not isinstance(claimed, str) or not claimed.strip():
+        return None
+    oid = _object_id(mask.get("object"))
+    if oid is None:
+        return None
+    try:
+        mask_set = load_masks(workspace / claimed.strip())
+        track = mask_set.of(oid)
+    except (OSError, ValueError, KeyError):
+        return None
+    return [int(v) for v in mask_set.frames], track
+
+
+def _resolve_second_reference(second: dict[str, Any], references: Any) -> Any:
+    """The reference entry scale.second uses, else None (skip the check).
+
+    New analyses name it with reference_index; old analyses lack it, so
+    fall back to matching second.name against the reference names.
+    """
+    if not isinstance(references, list) or not references:
+        return None
+    idx = second.get("reference_index")
+    if isinstance(idx, bool):
+        idx = None
+    if isinstance(idx, int) and 0 <= idx < len(references):
+        cand = references[idx]
+        return cand if isinstance(cand, dict) else None
+    if isinstance(idx, int):
+        return None
+    name = second.get("name")
+    if isinstance(name, str):
+        for ref in references:
+            if isinstance(ref, dict) and ref.get("name") == name:
+                return ref
+    return None
+
+
+def _second_independence_error(
+    workspace: Path, scale: Any, references: Any
+) -> str | None:
+    """Refusal text when scale.second reuses the primary reference mask.
+
+    Compares the primary reference (reference[0], the size reference the
+    scale is built on) with the reference scale.second names, on frames
+    both masks cover. IoU above SAME_OBJECT_IOU on any shared frame, or
+    both entries pointing at the same file and object, means the second
+    reference is the same object, not an independent check. Returns None
+    when the pair is independent or cannot be compared (no shared frame,
+    old analysis without a matching name, unreadable masks).
     """
     if not isinstance(scale, dict):
         return None
-    if scale.get("second") is not None:
+    second = scale.get("second")
+    if second is None or not isinstance(second, dict):
         return None
-    notes = scale.get("notes")
-    if isinstance(notes, str) and notes.strip():
+    if not isinstance(references, list) or not references:
         return None
-    marker = workspace / SECOND_ASK_MARKER
-    if marker.exists():
+    primary = references[0]
+    if not isinstance(primary, dict):
         return None
-    marker.write_text("asked\n", encoding="utf-8")
+    other = _resolve_second_reference(second, references)
+    if not isinstance(other, dict):
+        return None
+    prim_mask = primary.get("mask")
+    other_mask = other.get("mask")
+    if not isinstance(prim_mask, dict) or not isinstance(other_mask, dict):
+        return None
+    prim_file = prim_mask.get("file")
+    other_file = other_mask.get("file")
+    prim_obj = prim_mask.get("object")
+    other_obj = other_mask.get("object")
+    same_pointer = (
+        isinstance(prim_file, str)
+        and isinstance(other_file, str)
+        and prim_file == other_file
+        and isinstance(prim_obj, str)
+        and isinstance(other_obj, str)
+        and prim_obj == other_obj
+    )
+    best: tuple[float, int | None] | None = None
+    prim = _reference_masks(workspace, prim_mask)
+    other_pair = _reference_masks(workspace, other_mask)
+    if prim is not None and other_pair is not None:
+        prim_frames, prim_track = prim
+        other_frames, other_track = other_pair
+        if prim_track.shape[1:] == other_track.shape[1:]:
+            prim_index = {frame: pos for pos, frame in enumerate(prim_frames)}
+            other_index = {frame: pos for pos, frame in enumerate(other_frames)}
+            for frame in sorted(set(prim_index) & set(other_index)):
+                first = prim_track[prim_index[frame]].astype(bool)
+                again = other_track[other_index[frame]].astype(bool)
+                union = int((first | again).sum())
+                if union == 0:
+                    continue
+                iou = float((first & again).sum()) / union
+                if best is None or iou > best[0]:
+                    best = (iou, frame)
+    if best is None and same_pointer:
+        best = (1.0, None)
+    if best is None:
+        return None
+    iou, frame = best
+    if iou <= SAME_OBJECT_IOU:
+        return None
+    where = "frame " + str(frame) if frame is not None else "the shared mask"
     return (
-        "finish: scale has no second reference (the rules of evidence "
-        "want two independent references at about the same depth). "
-        "Add scale.second, or write the reason in scale.notes, then call "
-        "finish again; the next finish is accepted either way."
+        "finish refused: the second reference is the same object as the "
+        "first (IoU %.2f on %s); use a different object or body, or set "
+        "scale.second to null and give scale.second_missing (why no "
+        "independent reference exists)." % (iou, where)
     )
 
 
@@ -1001,9 +1123,11 @@ def _run_finish(tools: _Tools, args: dict[str, Any], run_dir: Path) -> tuple[boo
             "Run mask_check on the reference mask file first.",
             None,
         )
-    ask = _second_gate(tools.workspace, analysis.get("scale"))
-    if ask is not None:
-        return False, ask, None
+    same_object = _second_independence_error(
+        tools.workspace, analysis.get("scale"), analysis.get("reference")
+    )
+    if same_object is not None:
+        return False, same_object, None
     dest = run_dir / "analysis.json"
     dest.write_text(json.dumps(analysis, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     tail = ""
