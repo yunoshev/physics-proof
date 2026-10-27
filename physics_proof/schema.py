@@ -179,8 +179,44 @@ def _retime_consistent(timescale: Any, verdict: dict[str, Any]) -> bool:
     return observed_lo <= float(k) + half + 1e-9 and float(k) - half - 1e-9 <= observed_hi
 
 
+def _clock_numbers(timescale: Any) -> tuple[float, float, float, float, str] | None:
+    """Numeric clock reading (value, err, lo, hi, unit); None when unusable.
+
+    Returns None when the timescale section is missing, not an object, or its
+    numbers are missing, non-finite, or meaningless (non-positive value or
+    error, or a malformed expected_range), in which case combine falls back
+    to the agent's own verdict reading as before.
+    """
+    if not isinstance(timescale, dict):
+        return None
+    value = timescale.get("value")
+    err = timescale.get("err")
+    span = timescale.get("expected_range")
+    if not _is_num(value) or not _is_num(err):
+        return None
+    if float(value) <= 0 or float(err) <= 0:
+        return None
+    if not isinstance(span, list) or len(span) != 2:
+        return None
+    if not all(_is_num(v) for v in span):
+        return None
+    lo, hi = min(float(span[0]), float(span[1])), max(float(span[0]), float(span[1]))
+    unit = timescale.get("unit")
+    unit_text = unit if isinstance(unit, str) and unit else ""
+    return float(value), float(err), lo, hi, unit_text
+
+
 def combine(verdict: dict[str, Any], timescale: Any) -> dict[str, str]:
-    """Overall page verdict from a decide dict and the timescale section."""
+    """Overall page verdict from a decide dict and the timescale section.
+
+    For none_fits with a numeric timescale the retime explanation is tested
+    against the clock (SPEC section 4 rule 8): at true speed the clock would
+    run at value x k with error err x k. Inside the natural range within
+    2 sigma gives retimed, outside gives impossible; a clock error whose
+    2-sigma band reaches zero carries no usable rate and keeps none_fits.
+    The timescale verdict stays the agent's own reading; only the
+    numbers decide here.
+    """
     state = verdict.get("state") if isinstance(verdict, dict) else None
     k = verdict.get("k") if isinstance(verdict, dict) else None
     if isinstance(state, str) and state.startswith("fits:"):
@@ -195,6 +231,43 @@ def combine(verdict: dict[str, Any], timescale: Any) -> dict[str, str]:
             "text": "The motion is consistent with more than one world, "
             "so no single verdict is possible.",
         }
+    k_num = float(k) if (_is_num(k) and float(k) > 0) else None
+    clock = _clock_numbers(timescale)
+    if state == "none_fits" and k_num is not None and clock is not None:
+        value, err, lo, hi, unit = clock
+        true = value * k_num
+        true_err = err * k_num
+        with_unit = " " + unit if unit else ""
+        band = "[" + f"{lo:g}" + "-" + f"{hi:g}" + "]" + with_unit
+        if k_num >= 1:
+            pace = "slowed by ×" + f"{k_num:.2f}"
+        else:
+            pace = "sped up by ×" + f"{1.0 / k_num:.2f}"
+        lo_band, hi_band = true - 2.0 * true_err, true + 2.0 * true_err
+        if lo_band <= 0:
+            if k_num >= 1:
+                pace_today = "running slow by a factor of " + f"{k_num:.2f}"
+            else:
+                pace_today = "running fast by a factor of " + f"{1.0 / k_num:.2f}"
+            return {
+                "label": "none_fits",
+                "text": "The motion fits no listed world; the clip would have to be "
+                + pace_today + ".",
+            }
+        if lo_band <= hi and hi_band >= lo:
+            return {
+                "label": "retimed",
+                "text": "Consistent with a clip " + pace + ": the clock would then run at "
+                + f"{true:.2f}" + " ± " + f"{true_err:.2f}" + with_unit
+                + ", which is natural (" + band + ").",
+            }
+        else:
+            return {
+                "label": "impossible",
+                "text": "No playback speed explains it: " + pace + " the clock would run at "
+                + f"{true:.2f}" + " ± " + f"{true_err:.2f}" + with_unit
+                + ", outside the natural range " + band + ".",
+            }
     mark = timescale.get("verdict") if isinstance(timescale, dict) else None
     if mark == "normal":
         return {
@@ -911,8 +984,11 @@ def schema_doc() -> str:
         "= blocks.decide(g, g_err, worlds) checked on state/consistent/k, "
         "ghost[] {frame, y}, notes.",
         "timescale (required, null allowed): method, value, err, unit, "
-        "expected_range [lo, hi], "
-        "verdict [normal|slow|fast|undetermined].",
+        "expected_range [lo, hi] [same unit as value: the natural range "
+        "of the clock rhythm (e.g. the run-up step rate), source in "
+        "method/notes], "
+        "verdict [normal|slow|fast|undetermined: the agent's own reading; "
+        "combine tests value x k against the range].",
         "error_budget (required, at least 1 term): "
         "{term: relative fraction, e.g. 0.05}.",
         "verdict (required) = blocks.decide(g, g_err, worlds) plus "

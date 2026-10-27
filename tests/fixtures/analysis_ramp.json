@@ -509,7 +509,7 @@
     }
   },
   "overall": {
-    "label": "impossible",
-    "text": "The motion ignores gravity at normal speed and is physically impossible."
+    "label": "retimed",
+    "text": "Consistent with a clip slowed by \u00d71.57: the clock would then run at 5.01 \u00b1 0.47 steps/s, which is natural ([2.5-5] steps/s)."
   }
 }

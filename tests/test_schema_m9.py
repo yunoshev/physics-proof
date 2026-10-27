@@ -225,6 +225,53 @@ def test_combine_retimed() -> None:
     assert "slowed" in out["text"]
 
 
+# Probe M9-fix2: combine tests the retime explanation against the clock.
+def _none_fits(k: float) -> dict:
+    """A none_fits verdict dict with the given slowdown factor."""
+    return {"state": "none_fits", "k": k}
+
+
+def _clock(value: float, err: float, lo: float, hi: float, mark: str = "slow") -> dict:
+    """A numeric timescale section with the given clock reading."""
+    return {
+        "method": "step rate", "value": value, "err": err, "unit": "steps/s",
+        "expected_range": [lo, hi], "verdict": mark,
+    }
+
+
+def test_combine_clock_outside_is_impossible() -> None:
+    """k=2.3, 2.6 +- 0.2 against 2.5-4.5: true rate 5.98, outside."""
+    out = combine(_none_fits(2.3), _clock(2.6, 0.2, 2.5, 4.5))
+    assert out["label"] == "impossible"
+    assert "5.98" in out["text"] and "0.46" in out["text"]
+    assert "2.5" in out["text"] and "4.5" in out["text"]
+
+
+def test_combine_clock_inside_is_retimed() -> None:
+    """k=1.5, 2.2 +- 0.2 against 2.5-4.5: true rate 3.3, natural.
+
+    The agent's own mark (here normal) does not decide; the numbers do.
+    """
+    out = combine(_none_fits(1.5), _clock(2.2, 0.2, 2.5, 4.5, mark="normal"))
+    assert out["label"] == "retimed"
+    assert "1.50" in out["text"] and "3.30" in out["text"]
+    assert "natural" in out["text"]
+
+
+def test_combine_clock_error_too_large_is_none_fits() -> None:
+    """k=1.5, 2.2 +- 2.0: the 2-sigma band reaches zero, undecidable."""
+    out = combine(_none_fits(1.5), _clock(2.2, 2.0, 2.5, 4.5))
+    assert out["label"] == "none_fits"
+    assert "1.50" in out["text"]
+
+
+def test_combine_clock_sped_up() -> None:
+    """k < 1 reads as sped up: 4.4 * 0.5 = 2.2, outside 2.5-4.5."""
+    out = combine(_none_fits(0.5), _clock(4.4, 0.2, 2.5, 4.5, mark="fast"))
+    assert out["label"] == "impossible"
+    assert "sped up" in out["text"] and "2.20" in out["text"]
+
+
 # Probe 5: schema_doc is short and complete.
 def test_schema_doc_short_and_complete() -> None:
     """schema_doc fits 6000 chars and names every top-level section."""
