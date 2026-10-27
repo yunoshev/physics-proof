@@ -72,8 +72,14 @@ class BlindnessRules:
     always_terms: list[str] = field(default_factory=list)
     event_terms: list[str] = field(default_factory=list)
     quantity_terms: list[str] = field(default_factory=list)
+    pronoun_terms: list[str] = field(default_factory=list)
+    generative_terms: list[str] = field(default_factory=list)
+    feasibility_action_terms: list[str] = field(default_factory=list)
     measurement_pattern: str = ""
     authenticity_patterns: list[str] = field(default_factory=list)
+    generative_patterns: list[str] = field(default_factory=list)
+    event_name_patterns: list[str] = field(default_factory=list)
+    feasibility_patterns: list[str] = field(default_factory=list)
     event_quantity_patterns: list[str] = field(default_factory=list)
 
 
@@ -89,8 +95,14 @@ def load_rules(path: str | Path = BLINDNESS_PATH) -> BlindnessRules:
         always_terms=[str(v) for v in raw.get("always_refuse_terms", [])],
         event_terms=[str(v) for v in raw.get("event_terms", [])],
         quantity_terms=[str(v) for v in raw.get("quantity_terms", [])],
+        pronoun_terms=[str(v) for v in raw.get("pronoun_terms", [])],
+        generative_terms=[str(v) for v in raw.get("generative_terms", [])],
+        feasibility_action_terms=[str(v) for v in raw.get("feasibility_action_terms", [])],
         measurement_pattern=str(raw.get("measurement_pattern", "")),
         authenticity_patterns=[str(v) for v in raw.get("authenticity_patterns", [])],
+        generative_patterns=[str(v) for v in raw.get("generative_patterns", [])],
+        event_name_patterns=[str(v) for v in raw.get("event_name_patterns", [])],
+        feasibility_patterns=[str(v) for v in raw.get("feasibility_patterns", [])],
         event_quantity_patterns=[str(v) for v in raw.get("event_quantity_patterns", [])],
     )
 
@@ -113,9 +125,18 @@ def _refusal_reason(text: str, rules: BlindnessRules) -> str | None:
     for term in rules.always_terms:
         if re.search(_term_regex(term), text, re.IGNORECASE):
             return "refused: asks about authenticity or the event itself (" + term + ")"
+    for term in rules.generative_terms:
+        if re.search(_term_regex(term), text, re.IGNORECASE):
+            return "refused: asks about generative video (" + term + ")"
     for pattern in rules.authenticity_patterns:
         if re.search(pattern, text, re.IGNORECASE):
             return "refused: matches an authenticity pattern (" + pattern + ")"
+    for pattern in rules.generative_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return "refused: matches a generative-video pattern (" + pattern + ")"
+    for pattern in rules.event_name_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return "refused: names the filmed event or stunt (" + pattern + ")"
     event_hit = next(
         (t for t in rules.event_terms if re.search(_term_regex(t), text, re.IGNORECASE)),
         None,
@@ -129,11 +150,53 @@ def _refusal_reason(text: str, rules: BlindnessRules) -> str | None:
             "refused: asks about the event's own quantities "
             + "(quantity " + quantity_hit + ", event " + event_hit + ")"
         )
-    if event_hit is not None and rules.measurement_pattern:
-        if re.search(rules.measurement_pattern, text, re.IGNORECASE):
+    pronoun_hit = next(
+        (t for t in rules.pronoun_terms if re.search(_term_regex(t), text, re.IGNORECASE)),
+        None,
+    )
+    if pronoun_hit is not None and quantity_hit is not None:
+        return (
+            "refused: asks about the filmed subject's own quantities "
+            + "(quantity " + quantity_hit + ", pronoun " + pronoun_hit + ")"
+        )
+    feasibility_hit = next(
+        (p for p in rules.feasibility_patterns if re.search(p, text, re.IGNORECASE)),
+        None,
+    )
+    if feasibility_hit is not None:
+        action_hit = next(
+            (
+                t
+                for t in rules.feasibility_action_terms
+                if re.search(_term_regex(t), text, re.IGNORECASE)
+            ),
+            None,
+        )
+        if action_hit is not None:
+            return (
+                "refused: asks for a verdict on the filmed action "
+                + "(feasibility pattern, action " + action_hit + ")"
+            )
+    if rules.measurement_pattern and re.search(
+        rules.measurement_pattern, text, re.IGNORECASE
+    ):
+        if event_hit is not None:
             return (
                 "refused: states a measured quantity of the event "
                 + "(event " + event_hit + ")"
+            )
+        pronoun_for_measure = next(
+            (
+                t
+                for t in rules.pronoun_terms
+                if re.search(_term_regex(t), text, re.IGNORECASE)
+            ),
+            None,
+        )
+        if pronoun_for_measure is not None:
+            return (
+                "refused: states a measured quantity of the filmed subject "
+                + "(pronoun " + pronoun_for_measure + ")"
             )
     for pattern in rules.event_quantity_patterns:
         if re.search(pattern, text, re.IGNORECASE):
