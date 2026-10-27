@@ -36,6 +36,7 @@ __all__ = [
     "decide",
     "relative_track",
     "step_rate",
+    "gait_signal",
     "ghost",
 ]
 
@@ -623,21 +624,38 @@ def fit_parabola(frames: Any, y_px: Any, fps: Any) -> dict[str, Any]:
     }
 
 
-def step_rate(series: Any, fps: Any, *, min_hz: float = 1.0, max_hz: float = 8.0) -> dict[str, Any]:
-    """Dominant rhythm of a periodic signal, e.g. mask-top bobbing in steps/s.
+def step_rate(
+    series: Any,
+    fps: Any,
+    *,
+    min_hz: float = 1.0,
+    max_hz: float = 8.0,
+    detrend: str = "median",
+) -> dict[str, Any]:
+    """Dominant rhythm of a periodic signal, e.g. a runner's step rate.
 
     Argument shapes: series holds N samples (one per frame) in px, e.g. the
-    runner mask top row wobbling on the run-up; fps is the frame rate in
-    frames/s; min_hz/max_hz bound the search in steps/s (Hz). Detrends by
-    subtracting a quadratic, applies a Hann window, then takes the
-    periodogram; hz is the peak bin refined by parabolic interpolation in
-    steps/s, hz_err is half one DFT bin (fps / n) in steps/s, period_frames
-    is fps / hz in frames, n is the sample count, and peak_ratio is the peak
-    power over the median in-band power (unit-free; low means no clear
-    rhythm). Needs at least 2 periods inside the series. Raises TypeError
-    for a MaskSet/dict instead of the sequence, ValueError for bad rates, a
-    band with no bins, non-finite samples, or a series too short for 2
-    periods at min_hz.
+    output of gait_signal; fps is the frame rate in frames/s; min_hz/max_hz
+    bound the search in steps/s (Hz); detrend picks the trend removal:
+    "median" (default) subtracts a running median over ~1 s, "quadratic"
+    subtracts a quadratic fit (the pre-M6c behaviour). Applies a Hann
+    window, then takes the periodogram; hz is the peak bin refined by
+    parabolic interpolation in steps/s, hz_err is half one DFT bin
+    (fps / n) in steps/s, period_frames is fps / hz in frames, n is the
+    sample count, peak_ratio is the peak power over the median in-band
+    power (unit-free; low means no clear rhythm), and edge is True when the
+    strongest in-band power sits at an edge bin (a slow perspective trend,
+    not a rhythm). When edge is True the reported hz is the best interior
+    peak instead, so hz always stays inside [min_hz, max_hz] and
+    period_frames is always finite and positive. For people, pass the leg
+    spread from gait_signal, not the raw mask-top row: the top row carries
+    the slow perspective trend of a receding runner and gives a trend peak,
+    while the leg spread peaks once per step and is insensitive to a
+    receding runner and a panning camera. Needs at least 2 periods inside
+    the series. Raises TypeError for a MaskSet/dict instead of the
+    sequence, ValueError for bad rates, a band with no bins, non-finite
+    samples, an unknown detrend, or a series too short for 2 periods at
+    min_hz.
     """
     _need_single("step_rate.series", series, "a 1-D sequence of N samples")
     if isinstance(series, (str, bytes)):
@@ -650,6 +668,8 @@ def step_rate(series: Any, fps: Any, *, min_hz: float = 1.0, max_hz: float = 8.0
         raise ValueError("step_rate: series must be a 1-D sequence of N samples.")
     if x.size == 0 or not np.all(np.isfinite(x)):
         raise ValueError("step_rate: series must hold finite samples.")
+    if detrend not in ("median", "quadratic"):
+        raise ValueError('step_rate: detrend must be "median" or "quadratic".')
     n = int(x.size)
     rate = float(fps)
     lo_hz, hi_hz = float(min_hz), float(max_hz)
@@ -666,16 +686,34 @@ def step_rate(series: Any, fps: Any, *, min_hz: float = 1.0, max_hz: float = 8.0
             "step_rate: the series holds fewer than 2 periods at min_hz; "
             + "use a longer series or a higher min_hz."
         )
-    t = np.arange(n) / rate
-    trend = np.polyval(np.polyfit(t, x, 2), t)
-    windowed = (x - trend) * np.hanning(n)
+    if detrend == "quadratic":
+        t = np.arange(n) / rate
+        trend = np.polyval(np.polyfit(t, x, 2), t)
+    else:
+        win = int(round(rate))
+        if win < 3:
+            win = 3
+        if win % 2 == 0:
+            win += 1
+        if win > n:
+            win = n if n % 2 == 1 else n - 1
+        trend = ndimage.median_filter(x, size=win, mode="nearest")
+    detrended = x - trend
+    detrended = detrended - detrended.mean()
+    windowed = detrended * np.hanning(n)
     spectrum = np.fft.rfft(windowed)
     power = spectrum.real * spectrum.real + spectrum.imag * spectrum.imag
     freqs = np.fft.rfftfreq(n, 1.0 / rate)
     band = np.flatnonzero((freqs >= lo_hz) & (freqs <= hi_hz))
     if band.size < 3:
         raise ValueError("step_rate: the search band holds no usable bins.")
-    peak = int(band[int(np.argmax(power[band]))])
+    top = int(band[int(np.argmax(power[band]))])
+    edge = top == int(band[0]) or top == int(band[-1])
+    if edge:
+        interior = band[1:-1]
+        peak = int(interior[int(np.argmax(power[interior]))])
+    else:
+        peak = top
     peak_power = float(power[peak])
     median = float(np.median(power[band]))
     if median > 0:
@@ -687,16 +725,54 @@ def step_rate(series: Any, fps: Any, *, min_hz: float = 1.0, max_hz: float = 8.0
         left, mid, right = (float(power[peak - 1]), peak_power, float(power[peak + 1]))
         denom = left - 2.0 * mid + right
         shift = 0.5 * (left - right) / denom if denom < 0 else 0.0
+        shift = max(-0.5, min(0.5, shift))
     else:
         shift = 0.0
     hz = float(freqs[peak] + shift * df)
+    hz = min(max(hz, lo_hz), hi_hz)
     return {
         "hz": hz,
         "hz_err": df / 2.0,
-        "period_frames": rate / hz if hz > 0 else math.inf,
+        "period_frames": rate / hz,
         "n": n,
         "peak_ratio": peak_ratio,
+        "edge": edge,
     }
+
+
+def gait_signal(obj_masks: Any, *, band: float = 0.3) -> np.ndarray:
+    """Per-frame leg spread of one person's mask, one value per frame.
+
+    Argument shapes: obj_masks is a single-object bool array with shape
+    [N, H, W] (px on/off), one entry per frame; band is the unit-free
+    fraction of the mask (measured up from the bottom) used for the legs.
+    Returns: float array with shape [N] holding the width of the lowest
+    band of the mask divided by the mask height (unit-free; nan where the
+    frame is empty). The spread peaks once per step: the legs are widest
+    apart at each foot strike and pass each other mid-step. Dividing by
+    the mask height cancels the size change of a receding runner, and the
+    width is translation invariant, so a panning camera does not move it
+    either. Feed the result to step_rate for the step rate in steps/s.
+    Raises TypeError for a MaskSet/dict instead of the single-object
+    array, ValueError for a band outside (0, 1].
+    """
+    track = _as_bool_3d("gait_signal", obj_masks)
+    frac = float(band)
+    if not math.isfinite(frac) or not 0.0 < frac <= 1.0:
+        raise ValueError("gait_signal: band must be within (0, 1].")
+    n = int(track.shape[0])
+    out = np.full(n, math.nan)
+    for i in range(n):
+        frame = track[i]
+        ys = np.flatnonzero(frame.any(axis=1))
+        if ys.size == 0:
+            continue
+        y0, y1 = int(ys[0]), int(ys[-1])
+        height = y1 - y0 + 1
+        rows = max(1, int(round(frac * height)))
+        spread = frame[y1 + 1 - rows : y1 + 1].any(axis=0).sum()
+        out[i] = float(spread) / float(height)
+    return out
 
 
 def ghost(y0: Any, v0: Any, a: Any, frames: Any, fps: Any) -> list[float]:

@@ -13,6 +13,7 @@ from physics_proof.blocks import (
     mask_stats,
     read_frames,
     relative_track,
+    gait_signal,
     save_masks,
     scale_from_reference,
     spans_of,
@@ -40,5 +41,6 @@ __all__ = [
     "decide",
     "relative_track",
     "step_rate",
+    "gait_signal",
     "ghost",
 ]
