@@ -389,21 +389,83 @@ def test_profile_multi_filter_denies_use_require_all() -> None:
     assert wrapped >= 2
 
 
-# Seatbelt finding: deny beats allow no matter the rule order, so the
-# profile must not depend on ordering (it uses require-not carve-outs).
+# Offline: the last matching rule wins (shown on the Mac), so every deny
+# must come after `(allow default)` in the generated profile.
+def test_profile_denies_come_last() -> None:
+    from physics_proof.sandbox import _sandbox_profile
+
+    profile = _sandbox_profile(
+        Path(__file__).resolve().parent,
+        Path(__file__).resolve().parent.parent,
+        sys.executable,
+        ["ffmpeg"],
+    )
+    forms = _split_forms(profile)
+    assert "(allow default)" in forms
+    allow_at = forms.index("(allow default)")
+    denies = [form for form in forms if form.startswith("(deny ")]
+    assert denies, "profile has no deny rules"
+    for block in denies:
+        assert forms.index(block) > allow_at, "deny before (allow default): " + block
+
+
+# Offline: on a framework-Python layout the launcher shim's app binary is
+# carved out of the process-exec deny (otherwise the shim dies with
+# "posix_spawn: ... Undefined error: 0"; seen on the Mac).
+def test_profile_carves_out_shim_target(tmp_path: Path) -> None:
+    from physics_proof.sandbox import _sandbox_profile, _shim_targets
+
+    tmp_path = tmp_path.resolve()
+    app_bin = (
+        tmp_path
+        / "Frameworks/Python.framework/Versions/3.13/bin/python3.13"
+    )
+    app_bin.parent.mkdir(parents=True)
+    app_bin.touch()
+    target = (
+        tmp_path
+        / "Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python"
+    )
+    target.parent.mkdir(parents=True)
+    target.touch()
+    found = _shim_targets(
+        app_bin, tmp_path / "Frameworks/Python.framework/Versions/3.13"
+    )
+    assert str(target) in found
+    profile = _sandbox_profile(tmp_path / "ws", tmp_path, str(app_bin), [])
+    assert str(target) in profile
+    # A plain layout with no app bundle needs no extra carve-out.
+    lone = tmp_path / "bin/python3"
+    lone.parent.mkdir(parents=True, exist_ok=True)
+    lone.touch()
+    assert _shim_targets(lone, tmp_path / "other") == []
+
+
+# Seatbelt finding (shown on the Mac): when several rules match, the last
+# matching rule wins — deny-then-allow permits the read, allow-then-deny
+# refuses it. The generated profile therefore puts every deny after
+# `(allow default)` (see test_profile_denies_come_last below).
 @needs_sandbox
-def test_seatbelt_deny_wins_either_order(tmp_path: Path) -> None:
+def test_seatbelt_last_matching_rule_wins(tmp_path: Path) -> None:
     secret = tmp_path / "secret.txt"
     secret.write_text("x", encoding="utf-8")
-    first = '(version 1)\n(allow default)\n(allow file-read* (subpath "' + str(tmp_path) + '"))\n(deny file-read* (subpath "' + str(tmp_path) + '"))\n'
-    second = '(version 1)\n(allow default)\n(deny file-read* (subpath "' + str(tmp_path) + '"))\n(allow file-read* (subpath "' + str(tmp_path) + '"))\n'
-    for index, body in enumerate((first, second)):
-        profile = tmp_path / ("order" + str(index) + ".sb")
-        profile.write_text(body, encoding="utf-8")
-        proc = subprocess.run(
-            ["sandbox-exec", "-f", str(profile), "/bin/cat", str(secret)],
-            capture_output=True,
-            timeout=30,
-        )
-        assert proc.returncode != 0, body
-        assert proc.stdout == b""
+    deny_last = '(version 1)\n(allow default)\n(allow file-read* (subpath "' + str(tmp_path) + '"))\n(deny file-read* (subpath "' + str(tmp_path) + '"))\n'
+    allow_last = '(version 1)\n(allow default)\n(deny file-read* (subpath "' + str(tmp_path) + '"))\n(allow file-read* (subpath "' + str(tmp_path) + '"))\n'
+    profile = tmp_path / "deny_last.sb"
+    profile.write_text(deny_last, encoding="utf-8")
+    proc = subprocess.run(
+        ["sandbox-exec", "-f", str(profile), "/bin/cat", str(secret)],
+        capture_output=True,
+        timeout=30,
+    )
+    assert proc.returncode != 0, deny_last
+    assert proc.stdout == b""
+    profile = tmp_path / "allow_last.sb"
+    profile.write_text(allow_last, encoding="utf-8")
+    proc = subprocess.run(
+        ["sandbox-exec", "-f", str(profile), "/bin/cat", str(secret)],
+        capture_output=True,
+        timeout=30,
+    )
+    assert proc.returncode == 0, allow_last
+    assert proc.stdout == b"x"

@@ -294,6 +294,27 @@ def _site_dirs() -> list[Path]:
     return found
 
 
+def _shim_targets(exe: Path, base_prefix: Path) -> list[str]:
+    """Binaries a framework-Python launcher shim spawns at startup.
+
+    Homebrew/python.org framework builds ship ``bin/pythonX.Y`` as a
+    small launcher that ``posix_spawn``s
+    ``Resources/Python.app/Contents/MacOS/Python`` next to itself. The
+    sandbox checks that spawn too, so the target needs its own
+    process-exec carve-out: without it the shim dies with
+    ``posix_spawn: ... Undefined error: 0`` and exit 1 (seen on the
+    Mac). Returns existing paths only; empty on other layouts.
+    """
+    found: list[str] = []
+    for root in (exe.parent.parent, base_prefix):
+        candidate = root / "Resources/Python.app/Contents/MacOS/Python"
+        if candidate.is_file():
+            for form in (str(candidate), str(candidate.resolve())):
+                if form not in found:
+                    found.append(form)
+    return found
+
+
 def _deny_rule(operation: str, filters: list[str]) -> list[str]:
     """One ``(deny <operation> ...)`` rule; several filters are AND-ed.
 
@@ -316,14 +337,17 @@ def _sandbox_profile(
 
     Without the leading ``(allow default)`` Seatbelt denies everything,
     including the interpreter exec itself (exit 71, Operation not
-    permitted). Filters inside one rule are combined with OR, so every
-    deny rule with more than one filter wraps them in ``(require-all ...)``
-    for the intended AND meaning.
+    permitted). When several rules match, the last matching rule wins
+    (shown on the Mac: an allow after a deny permits the read), so the
+    deny rules come after ``(allow default)``. Filters inside one rule
+    are combined with OR, so every deny rule with more than one filter
+    wraps them in ``(require-all ...)`` for the intended AND meaning.
 
     Seatbelt checks both the path being executed and the resolved file,
     so the caller passes the venv interpreter path and its realpath (and
     both forms of each tool path); every one of them is carved out of the
-    exec deny.
+    exec deny. A framework-Python launcher shim spawns its own app
+    binary at startup (see ``_shim_targets``), which is carved out too.
     """
     home = Path.home()
     exe = Path(interpreter).resolve()
@@ -358,6 +382,7 @@ def _sandbox_profile(
         )
     )
     literals = [interpreter, str(exe)]
+    literals.extend(_shim_targets(exe, Path(sys.base_prefix).resolve()))
     literals.extend(tools)
     lines.extend(
         _deny_rule(
