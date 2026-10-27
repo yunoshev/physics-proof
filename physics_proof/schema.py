@@ -381,6 +381,74 @@ def _check_timescale(obj: Any, path: str, issues: list[Issue]) -> Any:
     return obj
 
 
+def _check_worlds_tested(
+    raw: Any, verdict: dict[str, Any], issues: list[Issue]
+) -> list[str] | None:
+    """Validate verdict.worlds_tested; return the names when usable.
+
+    A non-empty list of world names from /verdict/worlds, naming exactly
+    the worlds decide was run against. Required when verdict.state is
+    none_fits; optional otherwise.
+    """
+    state = verdict.get("state")
+    if raw is None:
+        if state == "none_fits":
+            issues.append(
+                Issue(
+                    "/verdict/worlds_tested",
+                    "required when state is none_fits: the worlds decide was run against",
+                )
+            )
+        return None
+    if (
+        not isinstance(raw, list)
+        or not raw
+        or any(not isinstance(name, str) or not name for name in raw)
+    ):
+        issues.append(
+            Issue("/verdict/worlds_tested", "expected a non-empty list of world names")
+        )
+        return None
+    return [str(name) for name in raw]
+
+
+def _check_worlds_ruled_out(
+    raw: Any, verdict: dict[str, Any], issues: list[Issue]
+) -> None:
+    """Validate verdict.worlds_ruled_out: list of {world, by}.
+
+    Each entry names a world the scene rules out and the visible cue that
+    rules it out. Required when verdict.state is none_fits (it may be an
+    empty list when every listed world was tested); optional otherwise.
+    """
+    state = verdict.get("state")
+    if raw is None:
+        if state == "none_fits":
+            issues.append(
+                Issue(
+                    "/verdict/worlds_ruled_out",
+                    "required when state is none_fits: the worlds the scene rules out",
+                )
+            )
+        return
+    if not isinstance(raw, list):
+        issues.append(
+            Issue("/verdict/worlds_ruled_out", "expected a list of {world, by}")
+        )
+        return
+    for i, entry in enumerate(raw):
+        base = _ptr("/verdict/worlds_ruled_out", i)
+        if not isinstance(entry, dict):
+            issues.append(Issue(base, "expected an object"))
+            continue
+        world = entry.get("world")
+        by = entry.get("by")
+        if not isinstance(world, str) or not world:
+            issues.append(Issue(_ptr(base, "world"), "expected a world name"))
+        if not isinstance(by, str) or not by:
+            issues.append(Issue(_ptr(base, "by"), "expected the visible cue that rules it out"))
+
+
 def validate(
     analysis: Any, *, clip_frames: int | None = None, fps: float | None = None
 ) -> list[Issue]:
@@ -864,9 +932,24 @@ def validate(
                         )
                     else:
                         clean_worlds[str(name)] = float(val)
+        tested = _check_worlds_tested(verdict.get("worlds_tested"), verdict, issues)
+        _check_worlds_ruled_out(verdict.get("worlds_ruled_out"), verdict, issues)
+        decide_worlds = clean_worlds
+        if tested is not None and clean_worlds is not None:
+            missing = [name for name in tested if name not in clean_worlds]
+            if missing:
+                issues.append(
+                    Issue(
+                        "/verdict/worlds_tested",
+                        "unknown worlds " + repr(missing) + ": not keys of /verdict/worlds",
+                    )
+                )
+                decide_worlds = None
+            else:
+                decide_worlds = {name: clean_worlds[name] for name in tested}
         _check_decide_match(
             {k: v for k, v in verdict.items() if k != "worlds"},
-            g, g_err, clean_worlds, "/verdict", issues,
+            g, g_err, decide_worlds, "/verdict", issues,
         )
 
     overall = analysis.get("overall")
@@ -983,7 +1066,10 @@ def schema_doc() -> str:
         "masks (required, at least 1 object): "
         "{object_name: {frame: spans [[y, x0, x1], ...]}}; "
         "only frames the page draws, spans_of format, x1 > x0.",
-        "flights[] (required, at least 1): kind [flight|wall], "
+        "flights[] (required, at least 1): kind [flight = no contact at all; "
+        "wall = the body touches a vertical surface through the segment, "
+        "so the normal force is ~0, friction cannot hold it up and the "
+        "vertical motion must follow g], "
         "start [frame], apex [frame or null], end [frame], rise_m [m], "
         "duration_s [s]=(end-start)/fps, "
         "fit {a [track units/s2, down positive], a_err, rms, v0, "
@@ -1002,10 +1088,14 @@ def schema_doc() -> str:
         "combine tests value x k against the range].",
         "error_budget (required, at least 1 term): "
         "{term: relative fraction, e.g. 0.05}.",
-        "verdict (required) = blocks.decide(g, g_err, worlds) plus "
+        "verdict (required) = blocks.decide(g, g_err, worlds_tested) plus "
         "g [m/s2], g_err [m/s2], worlds {name: g [m/s2]}: "
         "state, world, consistent[], sigmas{}, nearest, k, text, "
-        "g, g_err, worlds.",
+        "g, g_err, worlds, worlds_tested [names from worlds that decide "
+        "was run against: only the worlds the scene allows], "
+        "worlds_ruled_out [{world, by: the visible cue that rules it out}]. "
+        "worlds_tested and worlds_ruled_out are required when state is "
+        "none_fits.",
         "overall (required) = combine(verdict, timescale): label, text.",
         "page_texts (optional): {key: replacement string}.",
     ]

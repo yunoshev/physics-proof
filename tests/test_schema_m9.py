@@ -272,6 +272,31 @@ def test_combine_clock_sped_up() -> None:
     assert "sped up" in out["text"] and "2.20" in out["text"]
 
 
+# Probe M8-fix2: none_fits requires the worlds the scene allows.
+def test_none_fits_requires_worlds_tested() -> None:
+    """none_fits without worlds_tested names its path."""
+    broken = load("analysis_ramp.json")
+    del broken["verdict"]["worlds_tested"]
+    issues = validate(broken)
+    assert any(i.path == "/verdict/worlds_tested" for i in issues)
+
+
+def test_none_fits_requires_worlds_ruled_out() -> None:
+    """none_fits without worlds_ruled_out names its path."""
+    broken = load("analysis_ramp.json")
+    del broken["verdict"]["worlds_ruled_out"]
+    issues = validate(broken)
+    assert any(i.path == "/verdict/worlds_ruled_out" for i in issues)
+
+
+def test_worlds_tested_names_must_come_from_worlds() -> None:
+    """A tested name outside verdict.worlds names its path."""
+    broken = load("analysis_ramp.json")
+    broken["verdict"]["worlds_tested"] = ["Mars"]
+    issues = validate(broken)
+    assert any(i.path == "/verdict/worlds_tested" for i in issues)
+
+
 # Probe 5: schema_doc is short and complete.
 def test_schema_doc_short_and_complete() -> None:
     """schema_doc fits 6000 chars and names every top-level section."""

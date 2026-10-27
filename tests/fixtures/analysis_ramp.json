@@ -476,12 +476,12 @@
   ],
   "timescale": {
     "method": "step rate on the run-up",
-    "value": 3.2,
-    "err": 0.3,
+    "value": 5.1,
+    "err": 0.17,
     "unit": "steps/s",
     "expected_range": [
       2.5,
-      5.0
+      4.5
     ],
     "verdict": "normal"
   },
@@ -506,10 +506,19 @@
     "k_sigma": 2.0,
     "worlds": {
       "unsupported on Earth": 9.81
-    }
+    },
+    "worlds_tested": [
+      "unsupported on Earth"
+    ],
+    "worlds_ruled_out": [
+      {
+        "world": "Moon",
+        "by": "outdoor daylight scene with buildings and people walking normally in the background"
+      }
+    ]
   },
   "overall": {
-    "label": "retimed",
-    "text": "Consistent with a clip slowed by \u00d71.57: the clock would then run at 5.01 \u00b1 0.47 steps/s, which is natural ([2.5-5] steps/s)."
+    "label": "impossible",
+    "text": "No playback speed explains it: slowed by \u00d71.57 the clock would run at 7.99 \u00b1 0.27 steps/s, outside the natural range [2.5-4.5] steps/s."
   }
 }

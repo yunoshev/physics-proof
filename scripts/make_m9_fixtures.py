@@ -123,10 +123,21 @@ def make_ramp() -> dict:
     fps = 24.0
     flight_decide = blocks.decide(4.0, 0.5, {"unsupported on Earth": 9.81})
     top_decide = blocks.decide(4.0, 0.5, {"unsupported on Earth": 9.81})
-    verdict = dict(top_decide, worlds={"unsupported on Earth": 9.81})
+    verdict = dict(
+        top_decide,
+        worlds={"unsupported on Earth": 9.81},
+        worlds_tested=["unsupported on Earth"],
+        worlds_ruled_out=[
+            {
+                "world": "Moon",
+                "by": "outdoor daylight scene with buildings and people "
+                "walking normally in the background",
+            }
+        ],
+    )
     timescale = {
-        "method": "step rate on the run-up", "value": 3.2, "err": 0.3,
-        "unit": "steps/s", "expected_range": [2.5, 5.0], "verdict": "normal",
+        "method": "step rate on the run-up", "value": 5.1, "err": 0.17,
+        "unit": "steps/s", "expected_range": [2.5, 4.5], "verdict": "normal",
     }
     overall = combine(verdict, timescale)
     assert overall["label"] == "impossible", overall

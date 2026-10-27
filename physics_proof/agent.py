@@ -251,7 +251,9 @@ def tools_doc(
         "- finish(analysis_file, page_texts): analysis_file is a workspace path; "
         "page_texts is a JSON object string (or empty). finish computes "
         "flights[i].decide, verdict and overall itself from your accel/g/g_err "
-        "measurements and worlds — supply only the measurements plus page_texts "
+        "measurements, worlds, worlds_tested (only the worlds the scene "
+        "allows) and worlds_ruled_out (each ruled-out world with its visible "
+        "cue) — supply only the measurements plus page_texts "
         "and notes prose, never hand-written decide/verdict/overall texts.\n"
         "Workspace layout (all tool paths are relative to the workspace): "
         "sam/ holds sam/<phrase>.<start>-<stop>.npz masks plus its overlay "
@@ -825,6 +827,14 @@ def _fill_computed(analysis: dict[str, Any]) -> None:
                     worlds = None
                     break
                 worlds[name] = fixed
+        raw_tested = verdict.get("worlds_tested")
+        if isinstance(raw_tested, list) and worlds:
+            if not raw_tested or any(
+                not isinstance(name, str) or name not in worlds for name in raw_tested
+            ):
+                worlds = None
+            else:
+                worlds = {name: worlds[name] for name in raw_tested}
         if g is not None and g_err is not None and g_err > 0 and worlds:
             try:
                 got = blocks.decide(g, g_err, worlds, k_sigma=_k_sigma_of(verdict))

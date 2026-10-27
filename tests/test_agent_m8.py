@@ -672,6 +672,54 @@ def test_blocks_doc_has_full_signatures() -> None:
     assert "sam/<phrase>.<start>-<stop>.npz" in prompt
 
 
+def test_finish_worlds_tested_earth_only(tmp_path: Path) -> None:
+    """Probe (fix2): worlds_tested ["Earth"] on the r3 numbers.
+
+    g 3.75 ± 0.72 with the clock at 5.10 ± 0.17 steps/s against a natural
+    range of 2.5-4.5: finish runs decide against Earth alone, so none_fits
+    with k = sqrt(9.81 / 3.75) ≈ 1.62, and the true rate ≈ 8.3 steps/s is
+    outside the natural range, so overall is impossible. The Moon stays in
+    verdict.worlds but out of the decide table.
+    """
+    from physics_proof.agent import run_analysis as local_run
+
+    analysis = _no_computed(_analysis(CLIP, NPZ))
+    flight = analysis["flights"][0]
+    flight["accel"] = 3.75
+    flight["accel_err"] = 0.72
+    flight["hypothesis"] = {"name": "Earth", "value": 9.81}
+    verdict = analysis["verdict"]
+    verdict["g"] = 3.75
+    verdict["g_err"] = 0.72
+    verdict["worlds"] = {"Earth": 9.81, "Moon": 1.62}
+    verdict["worlds_tested"] = ["Earth"]
+    verdict["worlds_ruled_out"] = [
+        {
+            "world": "Moon",
+            "by": "street scene with buildings and people walking normally",
+        }
+    ]
+    analysis["timescale"] = {
+        "method": "step rate on the run-up",
+        "value": 5.10,
+        "err": 0.17,
+        "unit": "steps/s",
+        "expected_range": [2.5, 4.5],
+        "verdict": "normal",
+    }
+    spark = ScriptSpark(_full_script(analysis, NPZ))
+    run_dir = tmp_path / "run"
+    summary = local_run(CLIP, run_dir, spark=spark, python_runner=_local_python, cache_dir=tmp_path / "samcache")
+    assert summary.status == "ok"
+    saved = json.loads((run_dir / "analysis.json").read_text(encoding="utf-8"))
+    assert validate(saved) == []
+    assert saved["verdict"]["state"] == "none_fits"
+    assert saved["verdict"]["worlds_tested"] == ["Earth"]
+    assert saved["verdict"]["k"] == pytest.approx(1.62, abs=0.01)
+    assert saved["verdict"]["nearest"] == "Earth"
+    assert saved["overall"]["label"] == "impossible"
+
+
 def test_effort_high_default_and_logged(tmp_path: Path) -> None:
     """Defaults: 60 turns, high reasoning effort, logged in the summary."""
     import inspect

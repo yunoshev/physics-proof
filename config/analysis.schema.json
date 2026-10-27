@@ -293,6 +293,24 @@
           "minProperties": 1,
           "description": "World or hypothesis name to g in m/s^2."
         },
+        "worlds_tested": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"},
+          "description": "Names from worlds that decide was run against: only the worlds the scene allows. Required when state is none_fits."
+        },
+        "worlds_ruled_out": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["world", "by"],
+            "properties": {
+              "world": {"type": "string"},
+              "by": {"type": "string", "description": "The visible cue that rules this world out."}
+            }
+          },
+          "description": "Worlds the scene rules out with their visible cues. Required when state is none_fits."
+        },
         "g": {"type": "number"},
         "g_err": {"type": "number", "exclusiveMinimum": 0}
       }

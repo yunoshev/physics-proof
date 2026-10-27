@@ -27,6 +27,12 @@ How you work:
   is a failure.
 - Time is measured, not assumed. Check the real frame rate, duplicated
   frames and cuts from the frames themselves before trusting any duration.
+- Test only the worlds the scene allows. Before deciding, write down which
+  worlds the scene rules out and the visible cue that rules each one out
+  (air shown moving, such as hair, cloth, dust, plants, clouds or birds;
+  ordinary people walking in the background; buildings; traffic). Then
+  pass only the remaining worlds to `decide`, and compute the time-scale
+  factor only against those.
 
 Finishing:
 
