@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physics Proof</title>
+<meta name="description" content="Drop in any video; it asks what is worth proving, measures it, and shows every step on the footage.">
+<style>
+:root{
+--page:#04070C;
+--panel:#070C14;
+--card:#05090F;
+--line:#1B2A3C;
+--line2:#22344A;
+--txt:#E8EEF4;
+--txt2:#9AA8B8;
+--mut:#66788C;
+--cyan:#4FE3F0;
+--amber:#FFB54D;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+background:var(--page);
+color:var(--txt);
+font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+line-height:1.6;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 64px}
+.eyebrow{
+font-size:0.8rem;
+letter-spacing:0.08em;
+text-transform:uppercase;
+color:var(--mut);
+margin:32px 0 8px;
+}
+h1{font-size:clamp(2.5rem,5vw,3.5rem);line-height:1.05;margin:0 0 12px;letter-spacing:-0.01em}
+.tagline{color:var(--cyan);font-size:1.25rem;font-weight:600;line-height:1.4;margin:0 0 16px;max-width:38em}
+.lede{color:var(--txt2);font-size:1.02rem;max-width:70em;margin:0 0 8px}
+.highlight{
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:12px;
+padding:24px;
+margin:24px 0 0;
+}
+.highlight h2{margin:0 0 12px;font-size:1.35rem;line-height:1.3}
+.highlight p{color:var(--txt2);margin:0 0 12px;max-width:70em}
+.highlight p:last-of-type{margin-bottom:0}
+.price{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:18px}
+.price-num{font-size:44px;font-weight:800;line-height:1;letter-spacing:-0.01em}
+.price-num.cyan{color:var(--cyan)}
+.price-num.amber{color:var(--amber)}
+.price-label{color:var(--txt);font-size:1rem}
+.breakdown-wrap{margin-top:10px}
+code,.mono{
+font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+.breakdown{
+font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+font-size:0.9rem;
+color:var(--txt);
+background:var(--card);
+border:1px solid var(--line);
+border-radius:8px;
+padding:8px 12px;
+display:inline-block;
+max-width:100%;
+overflow-wrap:anywhere;
+}
+.small-muted{color:var(--mut);font-size:0.85rem;margin:8px 0 0}
+.section-title{font-size:1.35rem;margin:32px 0 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:0;padding:0}
+@media(max-width:700px){
+.grid{grid-template-columns:1fr}
+.highlight{padding:20px}
+}
+.card{
+display:block;
+background:var(--card);
+border:1px solid var(--line);
+border-radius:12px;
+overflow:hidden;
+text-decoration:none;
+color:inherit;
+}
+.card:hover{border-color:var(--line2)}
+.card:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.card img{
+width:100%;
+aspect-ratio:352/240;
+object-fit:cover;
+display:block;
+border-radius:11px 11px 0 0;
+background:var(--panel);
+}
+.card-body{padding:16px 18px 18px}
+.card-title{margin:0 0 4px;font-size:1.12rem;line-height:1.35;color:var(--txt)}
+.card-source{margin:0 0 10px;font-size:0.88rem;color:var(--mut)}
+.card-q{margin:0 0 12px;font-size:0.95rem;color:var(--txt2)}
+.badge{
+display:inline-block;
+font-size:0.85rem;
+font-weight:700;
+line-height:1.4;
+padding:4px 12px;
+border-radius:999px;
+border:1px solid;
+margin:0 0 10px;
+}
+.badge-realistic{color:var(--cyan);border-color:var(--cyan)}
+.badge-not{color:var(--amber);border-color:var(--amber)}
+.card-number{
+font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+font-size:0.9rem;
+color:var(--txt);
+margin:0 0 12px;
+overflow-wrap:anywhere;
+}
+.card-cta{margin:0;font-size:0.9rem;font-weight:600;color:var(--cyan)}
+footer{margin-top:48px;border-top:1px solid var(--line);padding-top:24px;color:var(--mut);font-size:0.9rem}
+footer a{color:var(--cyan)}
+footer p{margin:0 0 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<p class="eyebrow">Meta hackathon · Physics check of any video</p>
+<h1>Physics Proof</h1>
+<p class="tagline">Drop in any video; it asks what is worth proving, measures it, and shows every step on the footage.</p>
+<p class="lede">Physics Proof answers one question about a clip: is what it shows physically realistic, in the world the scene shows? It works out what is worth proving, segments the moving body and objects of known size, sizes the scene from sourced references, fits the motion, and gives one of three answers: realistic, not realistic, or undetermined with the reason. Each page below is a precomputed analysis: press Play and the original footage pauses at every step of the measurement.</p>
+</header>
+
+<main>
+<section class="highlight" aria-labelledby="h-system">
+<h2 id="h-system">One system for any clip</h2>
+<p>It is one general system, not a script for one clip. Nothing in the code is tuned to a particular video: for each clip Muse Spark works out from the frames what a viewer would doubt, finds objects of known size and their sourced sizes, and plans the checks (a free flight against the world&#8217;s gravity, a size or speed against a sourced human range, a step rate against a natural clock). During the hackathon we verified it end to end on a limited set of clips: the ones below.</p>
+<p><strong>Limits.</strong> This is a working concept, not yet proven on every kind of clip. It reached right verdicts end to end on three clips: the Apollo clip, our sped-up copy and a handheld street jump. The street jump needed several runs and two new general rules: the agent first took a hand on the car from small frames without checking its own masks, and the jumper&#8217;s tucked legs needed a wider error budget. With both rules in the briefs, the regenerated code measured the flight. A new kind of clip may still need new rules.</p>
+<div class="price" role="text">
+<span class="price-num cyan">$0.36</span>
+<span class="price-label">per clip, on average</span>
+</div>
+<div class="breakdown-wrap">
+<span class="breakdown">Muse Spark $0.24 + SAM 3.1 $0.11 + web search $0.01</span>
+<p class="small-muted">average of 53 live runs</p>
+</div>
+</section>
+
+<section class="highlight" aria-labelledby="h-rebuilt">
+<h2 id="h-rebuilt">Rebuilt from text</h2>
+<p>There is no hand-written code. The only human-written part is a plain-English specification, 15 briefs (the owner&#8217;s requests, turned into briefs by Muse Wonder). Muse Spark (Meta) generates every part of the system from them through Muse Code, one part at a time, and the full test suite (1,000+ tests) checks each generation. Anyone can rebuild the whole system from the briefs with <code>tools/dev_loop --part NN</code>. When a run went wrong, we changed the brief, not the code.</p>
+<div class="price" role="text">
+<span class="price-num amber">$0.32</span>
+<span class="price-label">full rebuild of all 13 parts by Muse Spark</span>
+</div>
+<p class="small-muted">last generation of each part</p>
+</section>
+
+<h2 class="section-title">Analysed clips</h2>
+<div class="grid">
+<a class="card" href="moon/index.html">
+<img src="moon/poster.jpg" alt="Still from the Apollo 16 salute hop clip: astronaut in spacesuit on the Moon" width="352" height="240" loading="lazy">
+<div class="card-body">
+<h3 class="card-title">Apollo 16, the salute hop</h3>
+<p class="card-source">NASA footage, public domain</p>
+<p class="card-q">&quot;Do the bouncing and hopping motions fall the way they should in Moon gravity?&quot;</p>
+<span class="badge badge-realistic">Realistic on the Moon</span>
+<p class="card-number">g = 1.65 ± 0.10 m/s² · Moon 1.62</p>
+<p class="card-cta">Open the analysis →</p>
+</div>
+</a>
+<a class="card" href="moon-fast/index.html">
+<img src="moon-fast/poster.jpg" alt="Still from the sped-up test copy of the Apollo 16 salute hop clip" width="352" height="240" loading="lazy">
+<div class="card-body">
+<h3 class="card-title">The same clip, sped up ×2.46</h3>
+<p class="card-source">Our own test fake, made from the NASA clip</p>
+<p class="card-q">&quot;Is this hopping motion realistic on the Moon?&quot;</p>
+<span class="badge badge-not">Not real speed · sped up ×2.43</span>
+<p class="card-number">on its own the clip fits Earth: g = 9.58 ± 0.65 m/s²</p>
+<p class="card-cta">Open the analysis →</p>
+</div>
+</a>
+<a class="card" href="speed/index.html">
+<img src="speed/poster.jpg" alt="Still from the IShowSpeed clip: a man in a red shirt about to jump over a red sports car on a street" width="352" height="240" loading="lazy">
+<div class="card-body">
+<h3 class="card-title">IShowSpeed jumps over a Lamborghini</h3>
+<p class="card-source">Clip by IShowSpeed, original on Instagram</p>
+<p class="card-q">&quot;Could a person really jump clean over a moving sports car on a street?&quot;</p>
+<span class="badge badge-realistic">Realistic on Earth</span>
+<p class="card-number">g = 10.7 ± 1.1 m/s² · Earth 9.81</p>
+<p class="card-cta">Open the analysis →</p>
+</div>
+</a>
+</div>
+</main>
+
+<footer>
+<p><a href="https://github.com/yunoshev/physics-proof">Source code and specification</a></p>
+<p>Apollo 16 footage: NASA, public domain. The sped-up copy is our own test fake.</p>
+<p>Street-jump clip: IShowSpeed, <a href="https://www.instagram.com/reel/C92oHF_x5Ji/">original on Instagram</a>; shown here only for analysis.</p>
+<p>Built for the Meta hackathon, November 2026.</p>
+</footer>
+</div>
+</body>
+</html>
