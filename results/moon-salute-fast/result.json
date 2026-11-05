@@ -1,0 +1,1981 @@
+{
+  "calculation_steps": [
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "text": "Duplicate frames and cuts are excluded from every fit window.",
+          "type": "text"
+        }
+      ],
+      "id": "time_from_frames",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Frame times come from measured timestamps, never the container rate.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "6.41 s of video",
+            "tone": "intermediate"
+          },
+          "fallback": "measured fps = 29.97 Hz over 192 frames",
+          "latex": "f = 29.97 \\, \\mathrm{Hz}, \\; N = 192 \\, \\mathrm{frames}",
+          "type": "formula"
+        }
+      ],
+      "title": "Time from frames"
+    },
+    {
+      "caveats": [],
+      "frame": 84,
+      "frame_end": null,
+      "full": [],
+      "id": "mask_check",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "A blind check read what the reference mask covers, with no knowledge of the measurement.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "The tinted rectangle on the left covers the pale bulky box-shaped volume carried on the back of the pale-clothed figure on the left. It includes the full top-to-bottom and side-to-side extent of that volume. The top edge sits just above the volume and the left edge sits just left of the volume, so a narrow strip of dark background is included there and the tint extends past the volume onto the background. The right edge follows the right side of the volume, excluding the arm and torso to its right, and the bottom edge follows the bottom of the volume, excluding the lower body and legs below. It covers only that back-mounted volume, not the ground surface nor the other figure and upright pole on the right.",
+            "tone": "intermediate"
+          },
+          "fallback": "measured extent = 70.2 px",
+          "latex": "\\ell = 70.2 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Blind mask check"
+    },
+    {
+      "caveats": [],
+      "frame": 84,
+      "frame_end": null,
+      "full": [],
+      "id": "mask_check",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "A blind check read what the reference mask covers, with no knowledge of the measurement.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "The orange-tinted rectangular region covers the large light-colored upright shape on the left side of the frame, from just above its top to where its feet meet the lower surface. It includes the full height of the bulky upper back portion and the two lower supporting portions and most of the width of the main body. The top edge sits slightly above the shape, the bottom edge sits at the feet-surface contact, the left edge includes a narrow strip of dark background to the left of the shape, and the right edge runs tight along the right side of the main body, just containing or clipping the limb that extends forward to the right. It does not extend far onto the surrounding background.",
+            "tone": "intermediate"
+          },
+          "fallback": "measured extent = 129.6 px",
+          "latex": "\\ell = 129.6 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Blind mask check"
+    },
+    {
+      "caveats": [],
+      "frame": 84,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": null,
+          "fallback": "backpack height: s = 0.914 m / 70.21395872616783 px",
+          "latex": "s = 0.914 \\, \\mathrm{m} / 70.21395872616783 \\, \\mathrm{px}",
+          "type": "formula"
+        },
+        {
+          "chip": null,
+          "fallback": "suited figure height: s = 1.7 m / 129.5569372901351 px",
+          "latex": "s = 1.7 \\, \\mathrm{m} / 129.5569372901351 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "id": "scale",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Metres per pixel from the reference size over its extent.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "0.013089 m/px",
+            "tone": "final"
+          },
+          "fallback": "s = 0.013089 m/px from 2 references (0.013017 m/px, 0.013122 m/px; max ratio 1.008)",
+          "latex": "s = 0.013089 \\, \\mathrm{m/px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Pixel scale"
+    },
+    {
+      "caveats": [],
+      "frame": 100,
+      "frame_end": 114,
+      "full": [
+        {
+          "text": "Contact frames stay outside every gravity fit.",
+          "type": "text"
+        }
+      ],
+      "id": "segment",
+      "segment_id": "hop_mid",
+      "short": [
+        {
+          "text": "Tracked point over the free-flight window.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "centroid of the foreground suited figure mask",
+            "tone": "intermediate"
+          },
+          "fallback": "N = 15 tracked frames",
+          "latex": "N = 15 \\, \\mathrm{frames}",
+          "type": "formula"
+        }
+      ],
+      "title": "Segment Mid-clip hop"
+    },
+    {
+      "caveats": [],
+      "frame": 100,
+      "frame_end": 114,
+      "full": [
+        {
+          "chip": null,
+          "fallback": "residual trend z = 1.20",
+          "latex": "\\rho_z = 1.20",
+          "type": "formula"
+        }
+      ],
+      "id": "fit",
+      "segment_id": "hop_mid",
+      "short": [
+        {
+          "text": "Parabola fit to heights above the takeoff level.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "g = 9.284 m/s2",
+            "tone": "intermediate"
+          },
+          "fallback": "a = 709.3 +/- 49.9 px/s2",
+          "latex": "a = 709.3 \\pm 49.9 \\, \\mathrm{px/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Fit Mid-clip hop"
+    },
+    {
+      "caveats": [],
+      "frame": 135,
+      "frame_end": 150,
+      "full": [
+        {
+          "text": "Contact frames stay outside every gravity fit.",
+          "type": "text"
+        }
+      ],
+      "id": "segment",
+      "segment_id": "hop_late",
+      "short": [
+        {
+          "text": "Tracked point over the free-flight window.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "centroid of the foreground suited figure mask",
+            "tone": "intermediate"
+          },
+          "fallback": "N = 16 tracked frames",
+          "latex": "N = 16 \\, \\mathrm{frames}",
+          "type": "formula"
+        }
+      ],
+      "title": "Segment Late hop"
+    },
+    {
+      "caveats": [],
+      "frame": 135,
+      "frame_end": 150,
+      "full": [
+        {
+          "chip": null,
+          "fallback": "residual trend z = 0.43",
+          "latex": "\\rho_z = 0.43",
+          "type": "formula"
+        }
+      ],
+      "id": "fit",
+      "segment_id": "hop_late",
+      "short": [
+        {
+          "text": "Parabola fit to heights above the takeoff level.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "g = 9.636 m/s2",
+            "tone": "intermediate"
+          },
+          "fallback": "a = 736.3 +/- 49.9 px/s2",
+          "latex": "a = 736.3 \\pm 49.9 \\, \\mathrm{px/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Fit Late hop"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": null,
+          "fallback": "inverse-variance weighted mean of the jumps",
+          "latex": "g = \\sum g_i/\\sigma_i^2 / \\sum 1/\\sigma_i^2",
+          "type": "formula"
+        }
+      ],
+      "id": "measured_g",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Each measured flight gives its own gravity; they agree within the budget.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "Jump 1",
+            "tone": "intermediate"
+          },
+          "fallback": "Jump 1: g = 9.284 +/- 0.605 m/s2",
+          "latex": "g_{1} = 9.284 \\pm 0.605 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "Jump 2",
+            "tone": "intermediate"
+          },
+          "fallback": "Jump 2: g = 9.636 +/- 0.259 m/s2",
+          "latex": "g_{2} = 9.636 \\pm 0.259 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "combined gravity",
+            "tone": "final"
+          },
+          "fallback": "combined g = 9.58 +/- 0.65 m/s2",
+          "latex": "g = 9.58 \\pm 0.65 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Jumps agree"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [],
+      "id": "clock",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "No independent clock in this clip: the speed is taken as filmed.",
+          "type": "text"
+        }
+      ],
+      "title": "Independent clock"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": {
+            "text": "reference_size",
+            "tone": "intermediate"
+          },
+          "fallback": "reference_size: 0.200 m/s2",
+          "latex": "\\sigma_{reference_size} = 0.200",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "pixel_scale",
+            "tone": "intermediate"
+          },
+          "fallback": "pixel_scale: 0.150 m/s2",
+          "latex": "\\sigma_{pixel_scale} = 0.150",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "fit",
+            "tone": "intermediate"
+          },
+          "fallback": "fit: 0.260 m/s2",
+          "latex": "\\sigma_{fit} = 0.260",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "point_vs_com",
+            "tone": "intermediate"
+          },
+          "fallback": "point_vs_com: 0.480 m/s2",
+          "latex": "\\sigma_{point_vs_com} = 0.480",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "repetition_spread",
+            "tone": "intermediate"
+          },
+          "fallback": "repetition_spread: 0.259 m/s2",
+          "latex": "\\sigma_{repetition_spread} = 0.259",
+          "type": "formula"
+        }
+      ],
+      "id": "uncertainty",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Itemised error budget, recombined in quadrature.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "error budget",
+            "tone": "final"
+          },
+          "fallback": "sigma total = 0.654 m/s2",
+          "latex": "\\sigma = 0.654 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        },
+        {
+          "source": "error_budget",
+          "type": "bars"
+        }
+      ],
+      "title": "Uncertainty"
+    },
+    {
+      "caveats": [],
+      "frame": 151,
+      "frame_end": null,
+      "full": [
+        {
+          "text": "Computed deterministically from the evidence by this validator.",
+          "type": "text"
+        }
+      ],
+      "id": "verdict",
+      "segment_id": null,
+      "short": [
+        {
+          "chip": {
+            "text": "Moon",
+            "tone": "final"
+          },
+          "fallback": "sped up x2.43 to Moon; g = 9.58 +/- 0.65 m/s2",
+          "latex": "sped up x2.43 to Moon; g = 9.58 +/- 0.65 m/s2",
+          "type": "formula"
+        }
+      ],
+      "title": "Verdict"
+    }
+  ],
+  "clock": null,
+  "clock_absent_reason": "no visible independent rhythm claimed yet",
+  "contract_version": 3,
+  "error_budget": {
+    "components": [
+      {
+        "basis": "quoted PLSS plus OPS and suit height spreads over fitted gravity",
+        "name": "reference_size",
+        "sigma_contribution": 0.2
+      },
+      {
+        "basis": "endpoint placement 1.5 px per extent",
+        "name": "pixel_scale",
+        "sigma_contribution": 0.15
+      },
+      {
+        "basis": "parabola residuals of late hop fit",
+        "name": "fit",
+        "sigma_contribution": 0.26
+      },
+      {
+        "basis": "centroid versus centre of mass with limbs moving",
+        "name": "point_vs_com",
+        "sigma_contribution": 0.48
+      },
+      {
+        "basis": "spread of the segment g values over \u221an, never below the per-segment fit \u03c3",
+        "name": "repetition_spread",
+        "sigma_contribution": 0.25864223686241433
+      }
+    ],
+    "sigma_relative": 0.06822740840164945,
+    "sigma_total": 0.6537551580593405
+  },
+  "first_look": {
+    "by_eye": {
+      "airborne_s": 0.4,
+      "jump_m": null,
+      "reasoning": "the foreground hop hangs off the ground for a noticeable fraction of a second"
+    },
+    "motions": [
+      {
+        "description": "foreground figure walking phase with small rise",
+        "frame_end": 53,
+        "frame_start": 20,
+        "segment_id": null,
+        "skip_reason": "walking step, rise 23 px over 1.1 s, no clean free flight"
+      },
+      {
+        "description": "foreground mid-clip hop",
+        "frame_end": 113,
+        "frame_start": 101,
+        "segment_id": "hop_mid",
+        "skip_reason": null
+      },
+      {
+        "description": "foreground late hop",
+        "frame_end": 149,
+        "frame_start": 136,
+        "segment_id": "hop_late",
+        "skip_reason": null
+      },
+      {
+        "description": "clip-end movement cut off by frame edge",
+        "frame_end": 191,
+        "frame_start": 187,
+        "segment_id": null,
+        "skip_reason": "cut off by frame edge, too short: 5 frames"
+      }
+    ],
+    "question": "Is this hopping motion realistic on the Moon?",
+    "scene_card": {
+      "confidence": "medium",
+      "objects": [
+        "foreground suited figure",
+        "back-mounted backpack",
+        "distant suited figure",
+        "flag on pole"
+      ],
+      "place_date": null,
+      "scene": "Grey dusty plain under black sky with two figures in bulky white suits with back-mounted packs and a flag on a pole."
+    },
+    "summary": "Two figures in bulky white suits with back-mounted packs move on a grey dusty plain under a black sky, with the foreground figure hopping forward, hanging off the ground and landing with floaty motion. Kept both planned checks: gravity from the mid-clip hops and hardware sizes for scale.",
+    "views": [
+      {
+        "artifact": "artifacts/t3_view_frames_0.jpg",
+        "frame_end": 189,
+        "frame_start": 0
+      },
+      {
+        "artifact": "artifacts/t4_view_frames_0.jpg",
+        "frame_end": 170,
+        "frame_start": 90
+      }
+    ],
+    "wonder": {
+      "checks": [
+        {
+          "compare_with": "the Moon's surface gravity",
+          "what": "downward acceleration of the foreground suited figure during its off-ground airborne phase",
+          "why": "a body with nothing holding it up must accelerate downward at the local gravity, so it directly tests lunar motion"
+        },
+        {
+          "compare_with": "published size of a back-mounted life-support backpack and adult human height norms",
+          "what": "height of the back-mounted backpack and standing height of the suited figure",
+          "why": "confirms the pixel scale rests on life-size hardware rather than a small model or a wrong size"
+        }
+      ],
+      "claim": "Two figures in bulky white suits with back-mounted packs move on a grey dusty plain under a black sky, with the foreground figure hopping forward, hanging off the ground and landing with floaty motion.",
+      "not_realistic_if": "The fitted free-flight acceleration matches Earth gravity or the hardware sizes require model scale rather than life-size suits.",
+      "realistic_if": "The hop's fitted free-flight acceleration matches the Moon's gravity within uncertainty and the hardware sizes match life-size norms."
+    }
+  },
+  "page_texts": {},
+  "provenance": {
+    "artifacts": [
+      {
+        "name": "view",
+        "path": "artifacts/t3_view_frames_0.jpg",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "view",
+        "path": "artifacts/t4_view_frames_0.jpg",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "segment masks",
+        "path": "artifacts/t5_segment_0.npz",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "backpack masks",
+        "path": "artifacts/t18_segment_0.npz",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "mask check backpack",
+        "path": "artifacts/t23_check_mask_0.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "mask check figure",
+        "path": "artifacts/t40_check_mask_0.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "line check",
+        "path": "artifacts/t46_check_line_0.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "track mid",
+        "path": "workspace/track_hop_mid.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "track late",
+        "path": "workspace/track_hop_late.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "reference track",
+        "path": "workspace/ref_track.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "motion overview",
+        "path": "artifacts/t55_motion_overview_0.json",
+        "produced_by": "run_python"
+      }
+    ],
+    "model": "muse-spark-1.3-contributor",
+    "run_id": "20261103T084354Z-91d45f0b"
+  },
+  "range_checks": [],
+  "references": [
+    {
+      "extent_description": "height of the back-mounted backpack",
+      "extent_px": {
+        "frame": 84,
+        "length_px": 70.21395872616783,
+        "x1": 102.0,
+        "x2": 89.0,
+        "y1": 58.0,
+        "y2": 127.0
+      },
+      "extent_type": "face_on",
+      "mask": {
+        "artifact": "artifacts/t18_segment_0.npz",
+        "frame": 84,
+        "object_id": "0",
+        "outline": [
+          [
+            109.0,
+            60.0
+          ],
+          [
+            76.0,
+            63.0
+          ],
+          [
+            70.0,
+            83.0
+          ],
+          [
+            69.0,
+            125.0
+          ],
+          [
+            101.0,
+            127.0
+          ],
+          [
+            112.0,
+            118.0
+          ],
+          [
+            112.0,
+            101.0
+          ],
+          [
+            121.0,
+            76.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [
+          {
+            "description": "upper block-like section at the top of the back-mounted volume inside the rectangle (OPS unit)",
+            "size_m": 0.254
+          },
+          {
+            "description": "larger block-like section below it forming the bulk of the back-mounted volume inside the rectangle (PLSS alone)",
+            "size_m": 0.66
+          }
+        ],
+        "artifact": "artifacts/t23_check_mask_0.json",
+        "confidence": null,
+        "coverage_answer": "The tinted rectangle on the left covers the pale bulky box-shaped volume carried on the back of the pale-clothed figure on the left. It includes the full top-to-bottom and side-to-side extent of that volume. The top edge sits just above the volume and the left edge sits just left of the volume, so a narrow strip of dark background is included there and the tint extends past the volume onto the background. The right edge follows the right side of the volume, excluding the arm and torso to its right, and the bottom edge follows the bottom of the volume, excluding the lower body and legs below. It covers only that back-mounted volume, not the ground surface nor the other figure and upright pole on the right."
+      },
+      "name": "backpack height",
+      "size_derivation": {
+        "mode": "sum",
+        "note": "sum of quoted PLSS height 0.66 m plus quoted OPS height 0.254 m stacked on top as seen in the mask; 'upper block-like section at the top of the back-mounted volume inside the rectangle' is the OPS unit priced at 0.254 m; 'larger block-like section below it forming the bulk of the back-mounted volume inside the rectangle' is the PLSS priced at 0.66 m; 'lower torso and legs of the same left figure below the bottom edge, left outside the rectangle' does not apply because the measured line stops at the bottom of the back-mounted volume and excludes legs; 'shoulder and arm of the same left figure to the right of the right edge, left mostly outside the rectangle' does not apply because the measured line follows the pack height and excludes the arm and torso to its right",
+        "state_match": {
+          "shown_and_covered": "pale bulky box-shaped back-mounted volume shown in the mask and covered by quoted PLSS height plus OPS unit mounted on top",
+          "shown_not_covered": "lower torso legs and arm of the same figure shown in the wider figure mask but outside the backpack extent"
+        }
+      },
+      "size_m": 0.914,
+      "size_tolerance_m": 0.018027756377319945,
+      "sources": [
+        {
+          "domain": "en.wikipedia.org",
+          "quote": "The PLSS was 26 inches (66 cm) high, 18 inches (46 cm) wide, and 10 inches (25 cm) deep.",
+          "quote_highlight": "26 inches (66 cm) high",
+          "source_type": "encyclopedia article",
+          "url": "https://en.wikipedia.org/wiki/Portable_life_support_system",
+          "value_m": 0.66
+        },
+        {
+          "domain": "nasa.gov",
+          "quote": "inches long, 10 inches high, and 8 inches deep.",
+          "quote_highlight": "10 inches high",
+          "source_type": "NASA technical document",
+          "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+          "value_m": 0.254
+        }
+      ]
+    },
+    {
+      "extent_description": "height of the suited figure",
+      "extent_px": {
+        "frame": 84,
+        "length_px": 129.5569372901351,
+        "x1": 96.0,
+        "x2": 108.0,
+        "y1": 59.0,
+        "y2": 188.0
+      },
+      "extent_type": "rotation_invariant",
+      "mask": {
+        "artifact": "artifacts/t5_segment_0.npz",
+        "frame": 84,
+        "object_id": "1",
+        "outline": [
+          [
+            82.0,
+            60.0
+          ],
+          [
+            67.0,
+            123.0
+          ],
+          [
+            88.0,
+            154.0
+          ],
+          [
+            86.0,
+            183.0
+          ],
+          [
+            120.0,
+            188.0
+          ],
+          [
+            129.0,
+            152.0
+          ],
+          [
+            112.0,
+            125.0
+          ],
+          [
+            122.0,
+            112.0
+          ],
+          [
+            140.0,
+            131.0
+          ],
+          [
+            147.0,
+            127.0
+          ],
+          [
+            112.0,
+            63.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [],
+        "artifact": "artifacts/t40_check_mask_0.json",
+        "confidence": null,
+        "coverage_answer": "The orange-tinted rectangular region covers the large light-colored upright shape on the left side of the frame, from just above its top to where its feet meet the lower surface. It includes the full height of the bulky upper back portion and the two lower supporting portions and most of the width of the main body. The top edge sits slightly above the shape, the bottom edge sits at the feet-surface contact, the left edge includes a narrow strip of dark background to the left of the shape, and the right edge runs tight along the right side of the main body, just containing or clipping the limb that extends forward to the right. It does not extend far onto the surrounding background."
+      },
+      "name": "suited figure height",
+      "size_derivation": {
+        "mode": "single",
+        "note": "quoted overall height of Apollo A-7L spacesuit 1.70 m; 'bulky block-like upper portion stacked on / behind the central body portion' is the backpack part of the same standing height and does not change the overall height; 'central torso-like mid portion' is part of the same standing height, not a separate size; 'two lower limb-like portions extending down to the ground line' are the legs included in the standing height down to boot soles; 'forward-reaching limb-like projection on the right side of the shape at the right border - read as just inside the tint versus partially clipped, with any tip beyond the border being the part of the same shape left outside' does not apply because the vertical extent is height and the arm tip beyond the side does not change the top-to-bottom length",
+        "state_match": {
+          "shown_and_covered": "full standing height from top of pack/shoulders to boot soles shown in the mask and covered by quoted spacesuit overall height",
+          "shown_not_covered": "flagpole and second figure shown in frame but outside the figure extent"
+        }
+      },
+      "size_m": 1.7,
+      "size_tolerance_m": 0.03,
+      "sources": [
+        {
+          "domain": "si.edu",
+          "quote": "Overall: 5 ft. 6 15/16 in. \u00d7 2 ft. 8 5/16 in. \u00d7 11 in. (170 \u00d7 82 \u00d7 28cm)",
+          "quote_highlight": "(170 \u00d7 82 \u00d7 28cm)",
+          "source_type": "museum catalogue",
+          "url": "https://airandspace.si.edu/collection-objects/spacesuit-apollo-a7-l/nasm_A19730040000",
+          "value_m": 1.7
+        }
+      ]
+    }
+  ],
+  "scale": {
+    "check_scale": null,
+    "extent_px": {
+      "frame": 84,
+      "length_px": 70.21395872616783,
+      "x1": 102.0,
+      "x2": 89.0,
+      "y1": 58.0,
+      "y2": 127.0
+    },
+    "frame": 84,
+    "m_per_px": 0.013088526235880808,
+    "reference_index": 0,
+    "reference_indices": [
+      0,
+      1
+    ],
+    "second_reference_absent_reason": null,
+    "second_reference_index": 1,
+    "sigma_m_per_px": 0.00025415296234286317
+  },
+  "segments": [
+    {
+      "apex_info": {
+        "feet_clearance_m": null,
+        "rise_m": 0.14252753772224513,
+        "sigma_m": 0.010036443438916381
+      },
+      "fit": {
+        "a_px_s2": 709.3218229388111,
+        "g_app": 9.28397728921743,
+        "n_points": 13,
+        "residual_trend": 0.37042209453511543,
+        "sigma_a_px_s2": 49.94872197812004,
+        "sigma_g": 0.6537551580593405,
+        "v0": 32.604358238058126,
+        "y0": -57.14406661587823
+      },
+      "fit_curve_px": [
+        {
+          "t_s": 3.370037,
+          "x_px": 99.51669796701765,
+          "y_px": 92.57564985223439
+        },
+        {
+          "t_s": 3.403403,
+          "x_px": 99.42120893089525,
+          "y_px": 89.6130918165554
+        },
+        {
+          "t_s": 3.43677,
+          "x_px": 99.3257170329064,
+          "y_px": 87.44016135340115
+        },
+        {
+          "t_s": 3.470137,
+          "x_px": 99.23022513491753,
+          "y_px": 86.05695908646945
+        },
+        {
+          "t_s": 3.503504,
+          "x_px": 99.13473323692868,
+          "y_px": 85.46348501576024
+        },
+        {
+          "t_s": 3.53687,
+          "x_px": 99.03924420080628,
+          "y_px": 85.65972142597431
+        },
+        {
+          "t_s": 3.570237,
+          "x_px": 98.94375230281743,
+          "y_px": 86.64568007976888
+        },
+        {
+          "t_s": 3.603604,
+          "x_px": 98.84826040482858,
+          "y_px": 88.42136692978593
+        },
+        {
+          "t_s": 3.63697,
+          "x_px": 98.75277136870618,
+          "y_px": 90.9866932576118
+        },
+        {
+          "t_s": 3.670337,
+          "x_px": 98.65727947071733,
+          "y_px": 94.34181283213266
+        },
+        {
+          "t_s": 3.703704,
+          "x_px": 98.56178757272846,
+          "y_px": 98.48666060287604
+        },
+        {
+          "t_s": 3.73707,
+          "x_px": 98.46629853660608,
+          "y_px": 103.42107684831373
+        },
+        {
+          "t_s": 3.770437,
+          "x_px": 98.37080663861721,
+          "y_px": 109.1453573435608
+        }
+      ],
+      "frames": {
+        "apex": 105,
+        "end": 114,
+        "start": 100
+      },
+      "ghosts": [
+        {
+          "gravity_m_s2": 9.81,
+          "landing": {
+            "t_s": 3.7689037831381107,
+            "x_px": 98.64311817700803,
+            "y_px": 109.9417612279327
+          },
+          "points": [
+            {
+              "frame": 100,
+              "t_s": 3.33667,
+              "x_px": 99.88011354149273,
+              "y_px": 93.65052596426783
+            },
+            {
+              "frame": 101,
+              "t_s": 3.370037,
+              "x_px": 99.78462164350388,
+              "y_px": 89.92053545986859
+            },
+            {
+              "frame": 102,
+              "t_s": 3.403403,
+              "x_px": 99.68913260738148,
+              "y_px": 87.02509279197423
+            },
+            {
+              "frame": 103,
+              "t_s": 3.43677,
+              "x_px": 99.59364070939263,
+              "y_px": 84.96402440411
+            },
+            {
+              "frame": 104,
+              "t_s": 3.470137,
+              "x_px": 99.49814881140377,
+              "y_px": 83.73742957898722
+            },
+            {
+              "frame": 105,
+              "t_s": 3.503504,
+              "x_px": 99.40265691341492,
+              "y_px": 83.34530831660584
+            },
+            {
+              "frame": 106,
+              "t_s": 3.53687,
+              "x_px": 99.30716787729251,
+              "y_px": 83.78763485568744
+            },
+            {
+              "frame": 107,
+              "t_s": 3.570237,
+              "x_px": 99.21167597930366,
+              "y_px": 85.06443570984106
+            },
+            {
+              "frame": 108,
+              "t_s": 3.603604,
+              "x_px": 99.11618408131481,
+              "y_px": 87.17571012673608
+            },
+            {
+              "frame": 109,
+              "t_s": 3.63697,
+              "x_px": 99.02069504519241,
+              "y_px": 90.12135731900007
+            },
+            {
+              "frame": 110,
+              "t_s": 3.670337,
+              "x_px": 98.92520314720356,
+              "y_px": 93.90155385243011
+            },
+            {
+              "frame": 111,
+              "t_s": 3.703704,
+              "x_px": 98.8297112492147,
+              "y_px": 98.51622394860159
+            },
+            {
+              "frame": 112,
+              "t_s": 3.73707,
+              "x_px": 98.73422221309231,
+              "y_px": 103.96519179404797
+            },
+            {
+              "frame": 113,
+              "t_s": 3.7689037831381107,
+              "x_px": 98.64311817700803,
+              "y_px": 109.9417612279327
+            }
+          ],
+          "role": "earth_counterfactual",
+          "world": "Earth"
+        },
+        {
+          "gravity_m_s2": 1.62,
+          "landing": {
+            "t_s": 5.468533453763046,
+            "x_px": 93.77900503749457,
+            "y_px": 109.94176122793273
+          },
+          "points": [
+            {
+              "frame": 100,
+              "t_s": 3.33667,
+              "x_px": 99.88011354149273,
+              "y_px": 93.65052596426783
+            },
+            {
+              "frame": 101,
+              "t_s": 3.370037,
+              "x_px": 99.78462164350388,
+              "y_px": 89.57220016532975
+            },
+            {
+              "frame": 102,
+              "t_s": 3.403403,
+              "x_px": 99.68913260738148,
+              "y_px": 85.63179337156566
+            },
+            {
+              "frame": 103,
+              "t_s": 3.43677,
+              "x_px": 99.59364070939263,
+              "y_px": 81.82906939003703
+            },
+            {
+              "frame": 104,
+              "t_s": 3.470137,
+              "x_px": 99.49814881140377,
+              "y_px": 78.16414838217216
+            },
+            {
+              "frame": 105,
+              "t_s": 3.503504,
+              "x_px": 99.40265691341492,
+              "y_px": 74.63703034797098
+            },
+            {
+              "frame": 106,
+              "t_s": 3.53687,
+              "x_px": 99.30716787729251,
+              "y_px": 71.24781479939558
+            },
+            {
+              "frame": 107,
+              "t_s": 3.570237,
+              "x_px": 99.21167597930366,
+              "y_px": 67.99629858260384
+            },
+            {
+              "frame": 108,
+              "t_s": 3.603604,
+              "x_px": 99.11618408131481,
+              "y_px": 64.88258533947587
+            },
+            {
+              "frame": 109,
+              "t_s": 3.63697,
+              "x_px": 99.02069504519241,
+              "y_px": 61.90676219234345
+            },
+            {
+              "frame": 110,
+              "t_s": 3.670337,
+              "x_px": 98.92520314720356,
+              "y_px": 59.06865076662488
+            },
+            {
+              "frame": 111,
+              "t_s": 3.703704,
+              "x_px": 98.8297112492147,
+              "y_px": 56.36834231457002
+            },
+            {
+              "frame": 112,
+              "t_s": 3.73707,
+              "x_px": 98.73422221309231,
+              "y_px": 53.80591156888057
+            },
+            {
+              "frame": 113,
+              "t_s": 3.770437,
+              "x_px": 98.63873031510344,
+              "y_px": 51.38120493423519
+            },
+            {
+              "frame": 114,
+              "t_s": 3.803804,
+              "x_px": 98.5432384171146,
+              "y_px": 49.094301273253514
+            },
+            {
+              "frame": 164,
+              "t_s": 5.468533453763046,
+              "x_px": 93.77900503749457,
+              "y_px": 109.94176122793273
+            }
+          ],
+          "role": "fitting_world",
+          "world": "Moon"
+        }
+      ],
+      "id": "hop_mid",
+      "key_moments": [
+        {
+          "caption": "leaving the ground",
+          "frame": 100,
+          "t_s": 3.33667,
+          "type": "takeoff"
+        },
+        {
+          "caption": "hanging at the top",
+          "frame": 105,
+          "t_s": 3.503504,
+          "type": "apex"
+        },
+        {
+          "caption": "touching down softly",
+          "frame": 114,
+          "t_s": 3.803804,
+          "type": "landing"
+        }
+      ],
+      "kind": "free_flight",
+      "label": "Mid-clip hop",
+      "landing_info": {
+        "airborne_s": 0.46713400000000016,
+        "sigma_s": 0.04718806393570304
+      },
+      "mask": {
+        "artifact": "artifacts/t5_segment_0.npz",
+        "object_id": "1"
+      },
+      "overlay": [
+        {
+          "bbox": [
+            95.88011354149273,
+            89.65052596426783,
+            8.0,
+            8.0
+          ],
+          "frame": 100,
+          "outline": [
+            [
+              95.88011354149273,
+              89.65052596426783
+            ],
+            [
+              103.88011354149273,
+              89.65052596426783
+            ],
+            [
+              103.88011354149273,
+              97.65052596426783
+            ],
+            [
+              95.88011354149273,
+              97.65052596426783
+            ]
+          ],
+          "point": [
+            99.88011354149273,
+            93.65052596426783
+          ]
+        },
+        {
+          "bbox": [
+            95.28672268907563,
+            81.0744537815126,
+            8.0,
+            8.0
+          ],
+          "frame": 105,
+          "outline": [
+            [
+              95.28672268907563,
+              81.0744537815126
+            ],
+            [
+              103.28672268907563,
+              81.0744537815126
+            ],
+            [
+              103.28672268907563,
+              89.0744537815126
+            ],
+            [
+              95.28672268907563,
+              89.0744537815126
+            ]
+          ],
+          "point": [
+            99.28672268907563,
+            85.0744537815126
+          ]
+        },
+        {
+          "bbox": [
+            94.385966314398,
+            105.94176122793269,
+            8.0,
+            8.0
+          ],
+          "frame": 114,
+          "outline": [
+            [
+              94.385966314398,
+              105.94176122793269
+            ],
+            [
+              102.385966314398,
+              105.94176122793269
+            ],
+            [
+              102.385966314398,
+              113.94176122793269
+            ],
+            [
+              94.385966314398,
+              113.94176122793269
+            ]
+          ],
+          "point": [
+            98.385966314398,
+            109.94176122793269
+          ]
+        }
+      ],
+      "repetitions": [],
+      "takeoff_level_y_px": 93.65052596426783,
+      "times_s": {
+        "apex": 3.503504,
+        "end": 3.803804,
+        "start": 3.33667
+      },
+      "track": [
+        {
+          "frame": 100,
+          "t_s": 3.33667,
+          "x_m": 0.0,
+          "x_px": 99.88011354149273,
+          "y_m": 0.0,
+          "y_px": 93.65052596426783
+        },
+        {
+          "frame": 101,
+          "t_s": 3.370037,
+          "x_m": 0.0,
+          "x_px": 99.88011354149273,
+          "y_m": 0.0,
+          "y_px": 93.65052596426783
+        },
+        {
+          "frame": 102,
+          "t_s": 3.403403,
+          "x_m": -0.009446361731083807,
+          "x_px": 99.1583850931677,
+          "y_m": 0.06366644068786645,
+          "y_px": 88.78623188405797
+        },
+        {
+          "frame": 103,
+          "t_s": 3.43677,
+          "x_m": -0.007165378763881381,
+          "x_px": 99.33265856950068,
+          "y_m": 0.08403840193055909,
+          "y_px": 87.22975708502024
+        },
+        {
+          "frame": 104,
+          "t_s": 3.470137,
+          "x_m": -0.007219564301427786,
+          "x_px": 99.32851864292913,
+          "y_m": 0.10495272745512556,
+          "y_px": 85.63184413839436
+        },
+        {
+          "frame": 105,
+          "t_s": 3.503504,
+          "x_m": -0.007766611739992911,
+          "x_px": 99.28672268907563,
+          "y_m": 0.11224814576479936,
+          "y_px": 85.0744537815126
+        },
+        {
+          "frame": 106,
+          "t_s": 3.53687,
+          "x_m": -0.012044792416509017,
+          "x_px": 98.95985772357723,
+          "y_m": 0.10181451340709421,
+          "y_px": 85.87161246612466
+        },
+        {
+          "frame": 107,
+          "t_s": 3.570237,
+          "x_m": -0.016759251552406037,
+          "x_px": 98.59965986394558,
+          "y_m": 0.08812071250653045,
+          "y_px": 86.91785714285714
+        },
+        {
+          "frame": 108,
+          "t_s": 3.603604,
+          "x_m": -0.01676942620052892,
+          "x_px": 98.59888249238062,
+          "y_m": 0.06267911794372973,
+          "y_px": 88.86166610226888
+        },
+        {
+          "frame": 109,
+          "t_s": 3.63697,
+          "x_m": -0.015845972901877548,
+          "x_px": 98.6694369063772,
+          "y_m": 0.04680990886672,
+          "y_px": 90.07411804613297
+        },
+        {
+          "frame": 110,
+          "t_s": 3.670337,
+          "x_m": -0.01656312022659355,
+          "x_px": 98.61464484562173,
+          "y_m": -0.026601778371741488,
+          "y_px": 95.68297621056183
+        },
+        {
+          "frame": 111,
+          "t_s": 3.703704,
+          "x_m": -0.013020346884468988,
+          "x_px": 98.88532263457037,
+          "y_m": -0.04651120847111804,
+          "y_px": 97.20411233701104
+        },
+        {
+          "frame": 112,
+          "t_s": 3.73707,
+          "x_m": -0.017962463690128713,
+          "x_px": 98.50773109243697,
+          "y_m": -0.15554310102132207,
+          "y_px": 105.53445378151261
+        },
+        {
+          "frame": 113,
+          "t_s": 3.770437,
+          "x_m": -0.018759324436113313,
+          "x_px": 98.44684870341749,
+          "y_m": -0.18438568059235308,
+          "y_px": 107.73810750472265
+        },
+        {
+          "frame": 114,
+          "t_s": 3.803804,
+          "x_m": -0.019556185182097917,
+          "x_px": 98.385966314398,
+          "y_m": -0.2132282601633841,
+          "y_px": 109.94176122793269
+        }
+      ],
+      "world_outcomes": [
+        {
+          "landing_time_s": 2.1318634537630463,
+          "landing_x_px": 93.77900503749457,
+          "world": "Moon"
+        }
+      ]
+    },
+    {
+      "apex_info": {
+        "feet_clearance_m": null,
+        "rise_m": 0.33159527705605396,
+        "sigma_m": 0.022495973978206768
+      },
+      "fit": {
+        "a_px_s2": 736.2544213011577,
+        "g_app": 9.636485309483444,
+        "n_points": 14,
+        "residual_trend": -0.13483466955822454,
+        "sigma_a_px_s2": 49.94872197812004,
+        "sigma_g": 0.6537551580593405,
+        "v0": 45.9356045722899,
+        "y0": -109.22686681164998
+      },
+      "fit_curve_px": [
+        {
+          "t_s": 4.537871,
+          "x_px": 97.2898075843523,
+          "y_px": 109.85595240788622
+        },
+        {
+          "t_s": 4.571238,
+          "x_px": 97.3968048997185,
+          "y_px": 104.64076579073001
+        },
+        {
+          "t_s": 4.604605,
+          "x_px": 97.50380221508469,
+          "y_px": 100.24529295833511
+        },
+        {
+          "t_s": 4.637971,
+          "x_px": 97.61079632377017,
+          "y_px": 96.66962879230427
+        },
+        {
+          "t_s": 4.671338,
+          "x_px": 97.71779363913636,
+          "y_px": 93.91355896283069
+        },
+        {
+          "t_s": 4.704705,
+          "x_px": 97.82479095450256,
+          "y_px": 91.97720291811846
+        },
+        {
+          "t_s": 4.738071,
+          "x_px": 97.93178506318804,
+          "y_px": 90.86058184070264
+        },
+        {
+          "t_s": 4.771438,
+          "x_px": 98.03878237855423,
+          "y_px": 90.56362879891168
+        },
+        {
+          "t_s": 4.804805,
+          "x_px": 98.14577969392043,
+          "y_px": 91.08638954188201
+        },
+        {
+          "t_s": 4.838172,
+          "x_px": 98.25277700928662,
+          "y_px": 92.42886406961365
+        },
+        {
+          "t_s": 4.871538,
+          "x_px": 98.3597711179721,
+          "y_px": 94.59097529897291
+        },
+        {
+          "t_s": 4.904905,
+          "x_px": 98.4667684333383,
+          "y_px": 97.57285282962587
+        },
+        {
+          "t_s": 4.938272,
+          "x_px": 98.57376574870449,
+          "y_px": 101.37444414504013
+        },
+        {
+          "t_s": 4.971638,
+          "x_px": 98.68075985738997,
+          "y_px": 105.9955984630143
+        }
+      ],
+      "frames": {
+        "apex": 142,
+        "end": 150,
+        "start": 135
+      },
+      "ghosts": [
+        {
+          "gravity_m_s2": 9.81,
+          "landing": {
+            "t_s": 5.037228761012319,
+            "x_px": 100.04160834337618,
+            "y_px": 113.6527386887489
+          },
+          "points": [
+            {
+              "frame": 135,
+              "t_s": 4.504505,
+              "x_px": 98.33333333333333,
+              "y_px": 110.19303338171262
+            },
+            {
+              "frame": 136,
+              "t_s": 4.537871,
+              "x_px": 98.44032744201881,
+              "y_px": 104.16570557371531
+            },
+            {
+              "frame": 137,
+              "t_s": 4.571238,
+              "x_px": 98.547324757385,
+              "y_px": 98.97265818118117
+            },
+            {
+              "frame": 138,
+              "t_s": 4.604605,
+              "x_px": 98.6543220727512,
+              "y_px": 94.61408435138848
+            },
+            {
+              "frame": 139,
+              "t_s": 4.637971,
+              "x_px": 98.76131618143668,
+              "y_px": 91.09007719657356
+            },
+            {
+              "frame": 140,
+              "t_s": 4.671338,
+              "x_px": 98.86831349680287,
+              "y_px": 88.40042548331587
+            },
+            {
+              "frame": 141,
+              "t_s": 4.704705,
+              "x_px": 98.97531081216907,
+              "y_px": 86.54524733279965
+            },
+            {
+              "frame": 142,
+              "t_s": 4.738071,
+              "x_px": 99.08230492085454,
+              "y_px": 85.5245608311671
+            },
+            {
+              "frame": 143,
+              "t_s": 4.771438,
+              "x_px": 99.18930223622074,
+              "y_px": 85.33830479718581
+            },
+            {
+              "frame": 144,
+              "t_s": 4.804805,
+              "x_px": 99.29629955158693,
+              "y_px": 85.98652232594596
+            },
+            {
+              "frame": 145,
+              "t_s": 4.838172,
+              "x_px": 99.40329686695313,
+              "y_px": 87.46921341744752
+            },
+            {
+              "frame": 146,
+              "t_s": 4.871538,
+              "x_px": 99.51029097563861,
+              "y_px": 89.78629612279096
+            },
+            {
+              "frame": 147,
+              "t_s": 4.904905,
+              "x_px": 99.6172882910048,
+              "y_px": 92.93790933082754
+            },
+            {
+              "frame": 148,
+              "t_s": 4.938272,
+              "x_px": 99.724285606371,
+              "y_px": 96.92399610160552
+            },
+            {
+              "frame": 149,
+              "t_s": 4.971638,
+              "x_px": 99.83127971505648,
+              "y_px": 101.74439946013123
+            },
+            {
+              "frame": 150,
+              "t_s": 5.005005,
+              "x_px": 99.93827703042267,
+              "y_px": 107.39940834744421
+            },
+            {
+              "frame": 151,
+              "t_s": 5.037228761012319,
+              "x_px": 100.04160834337618,
+              "y_px": 113.6527386887489
+            }
+          ],
+          "role": "earth_counterfactual",
+          "world": "Earth"
+        },
+        {
+          "gravity_m_s2": 1.62,
+          "landing": {
+            "t_s": 7.643313577355223,
+            "x_px": 108.39849026159752,
+            "y_px": 113.65273868874887
+          },
+          "points": [
+            {
+              "frame": 135,
+              "t_s": 4.504505,
+              "x_px": 98.33333333333333,
+              "y_px": 110.19303338171262
+            },
+            {
+              "frame": 136,
+              "t_s": 4.537871,
+              "x_px": 98.44032744201881,
+              "y_px": 103.81739115789344
+            },
+            {
+              "frame": 137,
+              "t_s": 4.571238,
+              "x_px": 98.547324757385,
+              "y_px": 97.5793587607726
+            },
+            {
+              "frame": 138,
+              "t_s": 4.604605,
+              "x_px": 98.6543220727512,
+              "y_px": 91.4791293373155
+            },
+            {
+              "frame": 139,
+              "t_s": 4.637971,
+              "x_px": 98.76131618143668,
+              "y_px": 85.51687951493929
+            },
+            {
+              "frame": 140,
+              "t_s": 4.671338,
+              "x_px": 98.86831349680287,
+              "y_px": 79.69225190889163
+            },
+            {
+              "frame": 141,
+              "t_s": 4.704705,
+              "x_px": 98.97531081216907,
+              "y_px": 74.00542727650785
+            },
+            {
+              "frame": 142,
+              "t_s": 4.738071,
+              "x_px": 99.08230492085454,
+              "y_px": 68.45656985557459
+            },
+            {
+              "frame": 143,
+              "t_s": 4.771438,
+              "x_px": 99.18930223622074,
+              "y_px": 63.04534704060009
+            },
+            {
+              "frame": 144,
+              "t_s": 4.804805,
+              "x_px": 99.29629955158693,
+              "y_px": 57.77192719928932
+            },
+            {
+              "frame": 145,
+              "t_s": 4.838172,
+              "x_px": 99.40329686695313,
+              "y_px": 52.63631033164228
+            },
+            {
+              "frame": 146,
+              "t_s": 4.871538,
+              "x_px": 99.51029097563861,
+              "y_px": 47.63864415589772
+            },
+            {
+              "frame": 147,
+              "t_s": 4.904905,
+              "x_px": 99.6172882910048,
+              "y_px": 42.77862910566013
+            },
+            {
+              "frame": 148,
+              "t_s": 4.938272,
+              "x_px": 99.724285606371,
+              "y_px": 38.05641702908625
+            },
+            {
+              "frame": 149,
+              "t_s": 4.971638,
+              "x_px": 99.83127971505648,
+              "y_px": 33.47214325478478
+            },
+            {
+              "frame": 150,
+              "t_s": 5.005005,
+              "x_px": 99.93827703042267,
+              "y_px": 29.02553299562034
+            },
+            {
+              "frame": 191,
+              "t_s": 7.643313577355223,
+              "x_px": 108.39849026159752,
+              "y_px": 113.65273868874887
+            }
+          ],
+          "role": "fitting_world",
+          "world": "Moon"
+        }
+      ],
+      "id": "hop_late",
+      "key_moments": [
+        {
+          "caption": "leaving the ground",
+          "frame": 135,
+          "t_s": 4.504505,
+          "type": "takeoff"
+        },
+        {
+          "caption": "hanging at the top",
+          "frame": 142,
+          "t_s": 4.738071,
+          "type": "apex"
+        },
+        {
+          "caption": "touching down softly",
+          "frame": 150,
+          "t_s": 5.005005,
+          "type": "landing"
+        }
+      ],
+      "kind": "free_flight",
+      "label": "Late hop",
+      "landing_info": {
+        "airborne_s": 0.5004999999999997,
+        "sigma_s": 0.04718806393570304
+      },
+      "mask": {
+        "artifact": "artifacts/t5_segment_0.npz",
+        "object_id": "1"
+      },
+      "overlay": [
+        {
+          "bbox": [
+            94.33333333333333,
+            106.19303338171262,
+            8.0,
+            8.0
+          ],
+          "frame": 135,
+          "outline": [
+            [
+              94.33333333333333,
+              106.19303338171262
+            ],
+            [
+              102.33333333333333,
+              106.19303338171262
+            ],
+            [
+              102.33333333333333,
+              114.19303338171262
+            ],
+            [
+              94.33333333333333,
+              114.19303338171262
+            ]
+          ],
+          "point": [
+            98.33333333333333,
+            110.19303338171262
+          ]
+        },
+        {
+          "bbox": [
+            93.38877204335868,
+            87.28814107749555,
+            8.0,
+            8.0
+          ],
+          "frame": 142,
+          "outline": [
+            [
+              93.38877204335868,
+              87.28814107749555
+            ],
+            [
+              101.38877204335868,
+              87.28814107749555
+            ],
+            [
+              101.38877204335868,
+              95.28814107749555
+            ],
+            [
+              93.38877204335868,
+              95.28814107749555
+            ]
+          ],
+          "point": [
+            97.38877204335868,
+            91.28814107749555
+          ]
+        },
+        {
+          "bbox": [
+            96.44460055380381,
+            109.6527386887489,
+            8.0,
+            8.0
+          ],
+          "frame": 150,
+          "outline": [
+            [
+              96.44460055380381,
+              109.6527386887489
+            ],
+            [
+              104.44460055380381,
+              109.6527386887489
+            ],
+            [
+              104.44460055380381,
+              117.6527386887489
+            ],
+            [
+              96.44460055380381,
+              117.6527386887489
+            ]
+          ],
+          "point": [
+            100.44460055380381,
+            113.6527386887489
+          ]
+        }
+      ],
+      "repetitions": [],
+      "takeoff_level_y_px": 110.19303338171262,
+      "times_s": {
+        "apex": 4.738071,
+        "end": 5.005005,
+        "start": 4.504505
+      },
+      "track": [
+        {
+          "frame": 135,
+          "t_s": 4.504505,
+          "x_m": 0.0,
+          "x_px": 98.33333333333333,
+          "y_m": 0.0,
+          "y_px": 110.19303338171262
+        },
+        {
+          "frame": 136,
+          "t_s": 4.537871,
+          "x_m": 0.0,
+          "x_px": 98.33333333333333,
+          "y_m": 0.0,
+          "y_px": 110.19303338171262
+        },
+        {
+          "frame": 137,
+          "t_s": 4.571238,
+          "x_m": -0.009604165427684023,
+          "x_px": 97.59954824136818,
+          "y_m": 0.07409318174748408,
+          "y_px": 104.5321071313327
+        },
+        {
+          "frame": 138,
+          "t_s": 4.604605,
+          "x_m": -0.01094450098581259,
+          "x_px": 97.49714285714286,
+          "y_m": 0.13839076706499567,
+          "y_px": 99.6195918367347
+        },
+        {
+          "frame": 139,
+          "t_s": 4.637971,
+          "x_m": -0.009920661620551474,
+          "x_px": 97.57536704730832,
+          "y_m": 0.1796742804274919,
+          "y_px": 96.46541598694942
+        },
+        {
+          "frame": 140,
+          "t_s": 4.671338,
+          "x_m": -0.009873020599085784,
+          "x_px": 97.57900695455281,
+          "y_m": 0.21037011757555377,
+          "y_px": 94.12016820313764
+        },
+        {
+          "frame": 141,
+          "t_s": 4.704705,
+          "x_m": -0.0109548270958231,
+          "x_px": 97.49635391346621,
+          "y_m": 0.23644230484629844,
+          "y_px": 92.12818019769891
+        },
+        {
+          "frame": 142,
+          "t_s": 4.738071,
+          "x_m": -0.012362915225230543,
+          "x_px": 97.38877204335868,
+          "y_m": 0.2474371789102463,
+          "y_px": 91.28814107749555
+        },
+        {
+          "frame": 143,
+          "t_s": 4.771438,
+          "x_m": -0.012740438492945844,
+          "x_px": 97.35992821014847,
+          "y_m": 0.25467872085390486,
+          "y_px": 90.73486702561593
+        },
+        {
+          "frame": 144,
+          "t_s": 4.804805,
+          "x_m": -0.007883744558450506,
+          "x_px": 97.73099320608218,
+          "y_m": 0.24393170687780283,
+          "y_px": 91.55596894208993
+        },
+        {
+          "frame": 145,
+          "t_s": 4.838172,
+          "x_m": -0.008156649235828619,
+          "x_px": 97.71014252568777,
+          "y_m": 0.2369009440565052,
+          "y_px": 92.0931388796818
+        },
+        {
+          "frame": 146,
+          "t_s": 4.871538,
+          "x_m": -0.0006360845675450309,
+          "x_px": 98.28473469387755,
+          "y_m": 0.2118596030675783,
+          "y_px": 94.00636734693877
+        },
+        {
+          "frame": 147,
+          "t_s": 4.904905,
+          "x_m": 0.0036101358819055104,
+          "x_px": 98.6091578086672,
+          "y_m": 0.16070398402760677,
+          "y_px": 97.9147996729354
+        },
+        {
+          "frame": 148,
+          "t_s": 4.938272,
+          "x_m": 0.007915973886343613,
+          "x_px": 98.93813587134886,
+          "y_m": 0.13081512776407678,
+          "y_px": 100.19839186084674
+        },
+        {
+          "frame": 149,
+          "t_s": 4.971638,
+          "x_m": 0.017774675146213326,
+          "x_px": 99.69136821257634,
+          "y_m": 0.042766342042258224,
+          "y_px": 106.92556527479782
+        },
+        {
+          "frame": 150,
+          "t_s": 5.005005,
+          "x_m": 0.027633376406083036,
+          "x_px": 100.44460055380381,
+          "y_m": -0.04528244367956033,
+          "y_px": 113.6527386887489
+        }
+      ],
+      "world_outcomes": [
+        {
+          "landing_time_s": 3.1388085773552232,
+          "landing_x_px": 108.39849026159752,
+          "world": "Moon"
+        }
+      ]
+    }
+  ],
+  "self_built_tools": [],
+  "sentence": "Not realistic at this speed: sped up \u00d72.43; at real speed it fits the Moon (no independent clock; scene-pinned). Measured g = 9.58 \u00b1 0.65 m/s\u00b2.",
+  "verdict": {
+    "clock_note": "clock: none, scene-pinned",
+    "decided_by": "gravity",
+    "direction": "sped",
+    "factor": 2.432039472913942,
+    "g_measured": 9.58200191645467,
+    "kind": "retimed",
+    "reason": null,
+    "sigma_g": 0.6537551580593405,
+    "world": "Moon"
+  },
+  "video": {
+    "coded_height": 240,
+    "coded_width": 352,
+    "duration_s": 6.406407,
+    "frame_count": 192,
+    "measured_fps": 29.969730572122174,
+    "sample_aspect": {
+      "den": 1,
+      "num": 1
+    }
+  },
+  "worlds": {
+    "candidates": [
+      {
+        "delta_sigma": 12.178874335905386,
+        "fits_native": false,
+        "g_m_s2": 1.62,
+        "retime_factor": 0.4111775368521682,
+        "world": "Moon"
+      },
+      {
+        "delta_sigma": 0.34875148705845477,
+        "fits_native": true,
+        "g_m_s2": 9.81,
+        "retime_factor": 1.0118272629941436,
+        "world": "Earth"
+      }
+    ],
+    "excluded": []
+  }
+}

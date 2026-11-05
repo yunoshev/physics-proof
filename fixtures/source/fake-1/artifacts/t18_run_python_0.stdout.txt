@@ -1,0 +1,4 @@
+PIL fail No module named 'PIL'
+mask shape (240, 352)
+x0 6 x1 69 y0 40 y1 130 w 64 h 91
+fig x0 12 x1 91 y0 58 y1 213

@@ -1,0 +1,16 @@
+{
+  "checks": [
+    {
+      "compare_with": "the Moon's surface gravity",
+      "how": "track the foreground astronaut through takeoff, apex and landing of the leap around 8.5s and convert pixels to metres against the known height of the life-support backpack or suited figure visible in the same frames",
+      "kind": "gravity",
+      "what": "downward acceleration of the foreground astronaut during the prolonged airborne leap",
+      "why": "a body in free flight with nothing holding it up must accelerate downward at the local gravity, so a floaty long hang time distinguishes lunar gravity from Earth gravity"
+    }
+  ],
+  "claim": "Two figures in bulky white spacesuits with backpacks hop and leap with long airborne phases on a grey cratered plain under a black sky, as if on the lunar surface.",
+  "not_realistic_if": "Not realistic if the measured downward acceleration is close to Earth gravity, with a short fast fall.",
+  "question": "Was this really filmed in lunar gravity?",
+  "realistic_if": "Realistic if the measured downward acceleration matches the Moon's gravity within uncertainty, with a prolonged floaty flight.",
+  "world": "Moon"
+}

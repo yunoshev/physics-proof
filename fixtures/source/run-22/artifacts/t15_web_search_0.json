@@ -1,0 +1,15 @@
+{
+  "query": "Apollo PLSS life support backpack height dimensions metres",
+  "facts": [
+    {
+      "text": "The Apollo PLSS backpack was 26 inches high, which is 66 cm or 0.66 metres.",
+      "url": "https://en.wikipedia.org/wiki/Portable_life_support_system",
+      "quote": "The PLSS was 26 inches (66\u00a0cm) high, 18 inches (46\u00a0cm) wide, and 10 inches (25\u00a0cm) deep."
+    },
+    {
+      "text": "NASA's Apollo News Reference describes the life support pack as 26 inches high.",
+      "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/WOTM/WOTM-ALMNR-PLSSOPS.pdf",
+      "quote": "84 pounds; it is 26 inches high, 17 .8 inches wide,"
+    }
+  ]
+}

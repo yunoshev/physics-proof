@@ -1,0 +1,25 @@
+{
+  "query": "emergency oxygen unit height inches on backpack",
+  "facts": [
+    {
+      "text": "The DAN First Aid Backpack with Oxygen lists overall dimensions of 13\u201d X 18\u201d X 9\u201d in a lightweight backpack case.",
+      "url": "https://dan.org/wp-content/uploads/2022/08/2023-DAN-Product-Catalog.pdf",
+      "quote": "OVERALL DIMENSIONS  13\u201d X 18\u201d X 9\u201d"
+    },
+    {
+      "text": "The Life Softpac 6/12 lpm portable emergency oxygen unit is listed at a height of 15.0 inches (381 mm).",
+      "url": "https://uat.airgas.com/product/Safety-Products-test/First-Aid/Emergency-Response/p/L43LIFE2612",
+      "quote": "- Height: 15.0 inches (381 mm)"
+    },
+    {
+      "text": "The MED-TAC ALS Oxygen Trauma Backpack specification lists Width 19 Inches, Length 21 Inches, and Height 9 Inches.",
+      "url": "https://tactical-medicine.com/products/med-tac-als-oxygen-trauma-backpack-w-modular-pouch-system",
+      "quote": "| Width | 19 Inches |\n| Length | 21 Inches |\n| Height | 9 Inches |"
+    },
+    {
+      "text": "The Ferno 5122 Size Jumbo D Oxygen Carry Kit specifications list Height 11 inches (28 cm), Length 22.5 inches (57 cm), and Width 8.5 inches (22 cm).",
+      "url": "https://mfimedical.com/products/ferno-5122-size-jumbo-d-oxygen-carry-kit",
+      "quote": "- **Height:** 11\" (28 cm).\n- **Length:** 22.5\" (57 cm).\n- **Width:** 8.5\" (22 cm)."
+    }
+  ]
+}

@@ -1,0 +1,574 @@
+{
+  "first_look": {
+    "question": "Was this really filmed in lunar gravity?",
+    "summary": "Two figures in bulky white suits with backpacks hop on a grey cratered plain under black sky; the foreground figure makes a long floaty leap around 8.5s and I measure its fall to test lunar gravity. Only one free-flight leap is measured; scale uses backpack and suited height.",
+    "scene_card": {
+      "scene": "Grey cratered plain under black sky with two figures in bulky white spacesuits with backpacks and a planted flag.",
+      "place_date": null,
+      "confidence": "medium",
+      "objects": [
+        "foreground astronaut in white spacesuit",
+        "life-support backpack",
+        "background astronaut",
+        "planted flag",
+        "grey cratered ground",
+        "black sky"
+      ]
+    },
+    "by_eye": {
+      "airborne_s": 1.0,
+      "jump_m": null,
+      "reasoning": "the leap hangs in the air for about a second"
+    },
+    "views": [
+      {
+        "frame_start": 0,
+        "frame_end": 462,
+        "artifact": "artifacts/t7_view_frames_0.jpg"
+      },
+      {
+        "frame_start": 200,
+        "frame_end": 310,
+        "artifact": "artifacts/t4_view_frames_0.jpg"
+      },
+      {
+        "frame_start": 235,
+        "frame_end": 295,
+        "artifact": "artifacts/t6_view_frames_0.jpg"
+      }
+    ],
+    "motions": [
+      {
+        "frame_start": 243,
+        "frame_end": 274,
+        "description": "foreground astronaut prolonged airborne leap",
+        "segment_id": "leap_a",
+        "skip_reason": null
+      },
+      {
+        "frame_start": 0,
+        "frame_end": 242,
+        "description": "foreground astronaut standing and crouching before leap",
+        "segment_id": null,
+        "skip_reason": "supported standing and crouch, no free flight"
+      },
+      {
+        "frame_start": 275,
+        "frame_end": 465,
+        "description": "foreground astronaut standing after landing",
+        "segment_id": null,
+        "skip_reason": "supported standing, no free flight"
+      }
+    ]
+  },
+  "references": [
+    {
+      "name": "life-support backpack plus top unit height",
+      "extent_description": "vertical height of the backpack unit",
+      "extent_type": "face_on",
+      "extent_px": {
+        "x1": 100.0,
+        "y1": 58.0,
+        "x2": 91.0,
+        "y2": 128.0,
+        "length_px": 70.57619995437555,
+        "frame": 200
+      },
+      "size_m": 0.9144,
+      "size_tolerance_m": 0.02,
+      "size_derivation": {
+        "mode": "sum",
+        "note": "26-inch PLSS plus 10-inch OPS atop it, both quoted heights added",
+        "state_match": {
+          "shown_and_covered": "backpack body and top unit shown in the mask and covered by the summed quoted heights",
+          "shown_not_covered": "helmet, limbs and ground shown but outside the backpack extent"
+        }
+      },
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Portable_life_support_system",
+          "domain": "en.wikipedia.org",
+          "quote": "The PLSS was 26 inches (66\u00a0cm) high, 18 inches (46\u00a0cm) wide, and 10 inches (25\u00a0cm) deep.",
+          "quote_highlight": "26 inches (66\u00a0cm) high",
+          "value_m": 0.6604,
+          "source_type": "encyclopedia article"
+        },
+        {
+          "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+          "domain": "nasa.gov",
+          "quote": "inches long, 10 inches high, and 8 inches deep.",
+          "quote_highlight": "10 inches high",
+          "value_m": 0.254,
+          "source_type": "mission document"
+        }
+      ],
+      "mask": {
+        "artifact": "artifacts/t13_segment_0.npz",
+        "object_id": "0",
+        "frame": 200,
+        "outline": [
+          [
+            105.0,
+            58.0
+          ],
+          [
+            76.0,
+            62.0
+          ],
+          [
+            75.0,
+            75.0
+          ],
+          [
+            69.0,
+            84.0
+          ],
+          [
+            68.0,
+            125.0
+          ],
+          [
+            99.0,
+            128.0
+          ],
+          [
+            111.0,
+            118.0
+          ],
+          [
+            112.0,
+            92.0
+          ],
+          [
+            120.0,
+            83.0
+          ],
+          [
+            120.0,
+            73.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "artifact": "artifacts/t99_check_pack.json",
+        "coverage_answer": "covers the backpack and the box mounted above it",
+        "confidence": null,
+        "alternative_readings": [
+          {
+            "description": "backpack body alone without the top unit",
+            "size_m": 0.6604
+          }
+        ]
+      }
+    },
+    {
+      "name": "suited astronaut height",
+      "extent_description": "full height of the foreground suited figure standing",
+      "extent_type": "face_on",
+      "extent_px": {
+        "x1": 100.0,
+        "y1": 58.0,
+        "x2": 115.0,
+        "y2": 188.0,
+        "length_px": 130.86252328302402,
+        "frame": 200
+      },
+      "size_m": 1.7,
+      "size_tolerance_m": 0.05,
+      "size_derivation": {
+        "mode": "single",
+        "note": "quoted overall height of the A-7L suit",
+        "state_match": {
+          "shown_and_covered": "suited figure head to boot shown in the mask and covered by the quoted suited height",
+          "shown_not_covered": "backpack depth and ground shown but outside the height extent"
+        }
+      },
+      "sources": [
+        {
+          "url": "https://airandspace.si.edu/collection-objects/spacesuit-apollo-a7-l/nasm_A19730040000",
+          "domain": "airandspace.si.edu",
+          "quote": "Overall: 5 ft. 6 15/16 in. \u00d7 2 ft. 8 5/16 in. \u00d7 11 in. (170 \u00d7 82 \u00d7 28cm)",
+          "quote_highlight": "170",
+          "value_m": 1.7,
+          "source_type": "museum catalogue"
+        }
+      ],
+      "mask": {
+        "artifact": "artifacts/t8_segment_0.npz",
+        "object_id": "0",
+        "frame": 200,
+        "outline": [
+          [
+            81.0,
+            60.0
+          ],
+          [
+            70.0,
+            82.0
+          ],
+          [
+            67.0,
+            124.0
+          ],
+          [
+            88.0,
+            152.0
+          ],
+          [
+            86.0,
+            184.0
+          ],
+          [
+            120.0,
+            187.0
+          ],
+          [
+            127.0,
+            153.0
+          ],
+          [
+            122.0,
+            152.0
+          ],
+          [
+            115.0,
+            123.0
+          ],
+          [
+            121.0,
+            113.0
+          ],
+          [
+            144.0,
+            128.0
+          ],
+          [
+            150.0,
+            121.0
+          ],
+          [
+            120.0,
+            88.0
+          ],
+          [
+            120.0,
+            73.0
+          ],
+          [
+            110.0,
+            61.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "artifact": "artifacts/t99_check_astro.json",
+        "coverage_answer": "covers the whole suited figure",
+        "confidence": null,
+        "alternative_readings": []
+      }
+    }
+  ],
+  "scale": {
+    "frame": 200,
+    "m_per_px": 0.012972479899033156,
+    "sigma_m_per_px": 0.00027944977031843206,
+    "reference_index": 0,
+    "extent_px": {
+      "x1": 100.0,
+      "y1": 58.0,
+      "x2": 91.0,
+      "y2": 128.0,
+      "length_px": 70.57619995437555,
+      "frame": 200
+    },
+    "second_reference_index": 1,
+    "second_reference_absent_reason": null,
+    "check_scale": null
+  },
+  "segments": [
+    {
+      "id": "leap_a",
+      "label": "Foreground leap",
+      "kind": "free_flight",
+      "subject": {
+        "kind": "person",
+        "description": "foreground astronaut in white spacesuit"
+      },
+      "mask": {
+        "artifact": "artifacts/t13_segment_0.npz",
+        "object_id": "0"
+      },
+      "frames": {
+        "start": 243,
+        "apex": 255,
+        "end": 274
+      },
+      "key_moments": [
+        {
+          "type": "takeoff",
+          "frame": 243,
+          "caption": "leaving the ground"
+        },
+        {
+          "type": "apex",
+          "frame": 255,
+          "caption": "hanging at the top"
+        },
+        {
+          "type": "landing",
+          "frame": 274,
+          "caption": "touching down softly"
+        }
+      ],
+      "track_artifact": "workspace/track_leap.json",
+      "tracked_point": "centre of the backpack, a rigid part of the body",
+      "fit_curve_px": [
+        {
+          "t_s": 8.141467,
+          "x_px": 95.37707016710519,
+          "y_px": 64.54188820601803
+        },
+        {
+          "t_s": 8.174833,
+          "x_px": 95.37202397425223,
+          "y_px": 63.18555110322177
+        },
+        {
+          "t_s": 8.2082,
+          "x_px": 95.3669776301617,
+          "y_px": 61.96565120749983
+        },
+        {
+          "t_s": 8.241567,
+          "x_px": 95.36193128607117,
+          "y_px": 60.882231214259264
+        },
+        {
+          "t_s": 8.274933,
+          "x_px": 95.35688509321821,
+          "y_px": 59.93531745796918
+        },
+        {
+          "t_s": 8.3083,
+          "x_px": 95.3518387491277,
+          "y_px": 59.12485317942719
+        },
+        {
+          "t_s": 8.341667,
+          "x_px": 95.34679240503716,
+          "y_px": 58.450868803368394
+        },
+        {
+          "t_s": 8.375033,
+          "x_px": 95.3417462121842,
+          "y_px": 57.913378393584935
+        },
+        {
+          "t_s": 8.4084,
+          "x_px": 95.33669986809367,
+          "y_px": 57.51234973222381
+        },
+        {
+          "t_s": 8.441767,
+          "x_px": 95.33165352400314,
+          "y_px": 57.247800973345875
+        },
+        {
+          "t_s": 8.475133,
+          "x_px": 95.32660733115019,
+          "y_px": 57.119733910067225
+        },
+        {
+          "t_s": 8.5085,
+          "x_px": 95.32156098705966,
+          "y_px": 57.12814086588878
+        },
+        {
+          "t_s": 8.541867,
+          "x_px": 95.31651464296912,
+          "y_px": 57.27302772419171
+        },
+        {
+          "t_s": 8.575233,
+          "x_px": 95.31146845011618,
+          "y_px": 57.554384007418776
+        },
+        {
+          "t_s": 8.6086,
+          "x_px": 95.30642210602565,
+          "y_px": 57.97222658042028
+        },
+        {
+          "t_s": 8.641967,
+          "x_px": 95.30137576193512,
+          "y_px": 58.52654905590498
+        },
+        {
+          "t_s": 8.675333,
+          "x_px": 95.29632956908216,
+          "y_px": 59.217328685640496
+        },
+        {
+          "t_s": 8.7087,
+          "x_px": 95.29128322499163,
+          "y_px": 60.044606875822865
+        },
+        {
+          "t_s": 8.742067,
+          "x_px": 95.2862368809011,
+          "y_px": 61.00836496848842
+        },
+        {
+          "t_s": 8.775433,
+          "x_px": 95.28119068804816,
+          "y_px": 62.10856794472784
+        },
+        {
+          "t_s": 8.8088,
+          "x_px": 95.27614434395763,
+          "y_px": 63.34528175209107
+        },
+        {
+          "t_s": 8.842167,
+          "x_px": 95.2710979998671,
+          "y_px": 64.71847546193658
+        },
+        {
+          "t_s": 8.875533,
+          "x_px": 95.26605180701414,
+          "y_px": 66.22810178468262
+        },
+        {
+          "t_s": 8.9089,
+          "x_px": 95.2610054629236,
+          "y_px": 67.87425120922762
+        },
+        {
+          "t_s": 8.942267,
+          "x_px": 95.25595911883308,
+          "y_px": 69.6568805362549
+        },
+        {
+          "t_s": 8.975633,
+          "x_px": 95.25091292598012,
+          "y_px": 71.57593020550576
+        },
+        {
+          "t_s": 9.009,
+          "x_px": 95.24586658188959,
+          "y_px": 73.63151524723162
+        },
+        {
+          "t_s": 9.042367,
+          "x_px": 95.24082023779907,
+          "y_px": 75.82358019144067
+        },
+        {
+          "t_s": 9.075733,
+          "x_px": 95.23577404494611,
+          "y_px": 78.15205320719724
+        },
+        {
+          "t_s": 9.1091,
+          "x_px": 95.23072770085558,
+          "y_px": 80.61707386610396
+        }
+      ],
+      "repetitions": [
+        {
+          "frames": {
+            "start": 244,
+            "end": 258
+          },
+          "g_app": 1.5579852565410919,
+          "sigma_g": 0.15
+        },
+        {
+          "frames": {
+            "start": 259,
+            "end": 273
+          },
+          "g_app": 1.4482434773535453,
+          "sigma_g": 0.28
+        }
+      ]
+    }
+  ],
+  "clock": null,
+  "clock_absent_reason": "no independent rhythm needed for first dry run; will add step clock if required",
+  "worlds": {
+    "candidates": [
+      {
+        "world": "Moon"
+      }
+    ],
+    "excluded": []
+  },
+  "error_budget": {
+    "components": [
+      {
+        "name": "reference_size",
+        "sigma_contribution": 0.05,
+        "basis": "quoted size spread"
+      },
+      {
+        "name": "pixel_scale",
+        "sigma_contribution": 0.03,
+        "basis": "endpoint placement"
+      },
+      {
+        "name": "fit",
+        "sigma_contribution": 0.04,
+        "basis": "parabola residuals"
+      },
+      {
+        "name": "point_vs_com",
+        "sigma_contribution": 0.05,
+        "basis": "point versus centre"
+      },
+      {
+        "name": "reading_spread",
+        "sigma_contribution": 0.12,
+        "basis": "half the PLSS-alone versus PLSS-plus-top size difference"
+      },
+      {
+        "name": "repetition_spread",
+        "sigma_contribution": 0.06,
+        "basis": "spread across halves"
+      }
+    ],
+    "sigma_relative": 0.15
+  },
+  "camera": {
+    "still": {
+      "reference_phrase": "planted flag in background",
+      "reference_track_artifact": "workspace/ref_flag_track.json"
+    }
+  },
+  "provenance": {
+    "artifacts": [
+      {
+        "name": "view",
+        "path": "artifacts/t7_view_frames_0.jpg"
+      },
+      {
+        "name": "segment masks",
+        "path": "artifacts/t13_segment_0.npz"
+      },
+      {
+        "name": "second masks",
+        "path": "artifacts/t8_segment_0.npz"
+      },
+      {
+        "name": "track",
+        "path": "workspace/track_leap.json"
+      },
+      {
+        "name": "reference track",
+        "path": "workspace/ref_flag_track.json"
+      }
+    ]
+  },
+  "range_checks": [],
+  "page_texts": {}
+}

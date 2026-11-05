@@ -1,0 +1,47 @@
+[
+  {
+    "code": "MASK_CHECK_MISSING",
+    "field": "references[0].mask_check.coverage_answer",
+    "detail": "submission does not quote the blind check's coverage answer verbatim"
+  },
+  {
+    "code": "MASK_CHECK_MISSING",
+    "field": "references[1].mask_check.coverage_answer",
+    "detail": "submission does not quote the blind check's coverage answer verbatim"
+  },
+  {
+    "code": "SECOND_REFERENCE_SAME_OBJECT",
+    "field": "references",
+    "detail": "reference masks overlap by 100% of the smaller mask (> 50%) on frame 250: two extents of the same object are not two references"
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[0].mask_check.alternative_readings",
+    "detail": "blind-check alternative 'a smaller upper block stacked on top of a larger lower block, both contained together inside the tinted square' is not answered by any alternative reading"
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[0].mask_check.alternative_readings",
+    "detail": "blind-check alternative 'the dark-suited lower body and legs of the same left-side figure that continue downward below the bottom edge of the box and are left outside' is not answered by any alternative reading"
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[0].mask_check.alternative_readings",
+    "detail": "blind-check alternative 'the lighter forward protrusion extending to the right of the box from the same mass, left outside the tinted region' is not answered by any alternative reading"
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[1].mask_check.alternative_readings",
+    "detail": "blind-check alternative 'the brighter whitish upper section of the left figure inside the tint' is not answered by any alternative reading"
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[1].mask_check.alternative_readings",
+    "detail": "blind-check alternative 'the darker brownish lower section with two leg-like parts inside the tint, stacked below the upper section' is not answered by any alternative reading"
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[1].mask_check.alternative_readings",
+    "detail": "blind-check alternative 'no part of that same left foreground figure is left outside the tinted box - the small bright figure on the right is a separate shape' is not answered by any alternative reading"
+  }
+]

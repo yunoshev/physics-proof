@@ -1,0 +1,30 @@
+{
+  "query": "human step frequency range slow walking hertz",
+  "facts": [
+    {
+      "text": "Slow walking is approximately 90 steps per minute, corresponding to a typical ideal frequency of approximately 1.5 Hz.",
+      "url": "https://patents.justia.com/patent/9226705",
+      "quote": "Because slow walking is approximately 90 steps per minute, the typical ideal frequency is approximately 1.5 Hz."
+    },
+    {
+      "text": "A frequency range of 1 to 2 Hz is used to allow for individual variation when mimicking slow walking.",
+      "url": "https://patents.justia.com/patent/9226705",
+      "quote": "However, the preferred frequency of the wave is in the range of 1 to 2 Hz to allow for variations in individuals and other factors."
+    },
+    {
+      "text": "Walking at a slow pace can correspond to about 1 step per second, which is 1 Hz, while running can reach about 3 steps per second.",
+      "url": "https://www.bitglint.com/frequency-examples-in-daily-life-and-physics/",
+      "quote": "When walking or jogging, your step frequency is the number of steps you take per second. For instance, walking at a slow pace might mean 1 step per second (1 Hz), while running could be 3 steps per second."
+    },
+    {
+      "text": "In walking analysis, step frequency is identified as the largest spectral peak in the range of 1.4-2.5 Hz.",
+      "url": "https://www.biorxiv.org/content/10.1101/2024.08.28.610096v1.full-text",
+      "quote": "The largest peak in the range of 1.4 \u2013 2.5 Hz was estimated as the step frequency"
+    },
+    {
+      "text": "The standard unit of frequency is the hertz, where 1 hertz equals one cycle per second.",
+      "url": "https://www.bitglint.com/frequency-examples-in-daily-life-and-physics/",
+      "quote": "The standard unit of frequency is the **hertz (Hz)**, where 1 hertz equals one cycle per second."
+    }
+  ]
+}

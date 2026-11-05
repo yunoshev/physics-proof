@@ -1,0 +1,5 @@
+466 29.969730572122025 15.548867
+dups []
+cuts []
+ts0 [0.       0.033367 0.066733 0.1001   0.133467] ts_end [15.382033 15.4154   15.448767 15.482133 15.5155  ]
+['frame_count', 'measured_fps', 'timestamps', 'duration_s', 'duplicate_runs', 'cut_indices']

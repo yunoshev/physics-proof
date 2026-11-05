@@ -1,0 +1,9 @@
+artifacts/t13_segment_preview_0.jpg (240, 352, 3)
+artifacts/t8_segment_preview_0.jpg (240, 352, 3)
+artifacts/t20_segment_preview_0.jpg (240, 352, 3)
+astro {'top': 58, 'bottom': 188, 'left': 67, 'right': 150, 'height': 131, 'width': 84, 'area': 6090, 'centroid': {'x': 100.9256157635468, 'y': 118.97077175697865}}
+astro extent {'x1': 100, 'y1': 58, 'x2': 115, 'y2': 188, 'length_px': 130.86252328302402}
+pack {'top': 58, 'bottom': 128, 'left': 66, 'right': 120, 'height': 71, 'width': 55, 'area': 3001, 'centroid': {'x': 92.13462179273576, 'y': 93.30556481172943}}
+pack extent {'x1': 100, 'y1': 58, 'x2': 91, 'y2': 128, 'length_px': 70.57619995437555}
+flag track sample {'frame': 200, 't': 6.673333, 'x_px': 240.6743119266055, 'y_px': 76.34600262123197, 'mode': 'centroid'} {'frame': 240, 't': 8.008, 'x_px': 240.85438829787233, 'y_px': 76.59175531914893, 'mode': 'centroid'} {'frame': 280, 't': 9.342667, 'x_px': 241.38244924688934, 'y_px': 76.84675834970531, 'mode': 'centroid'}
+flag x range 240.4844473858372 241.55141388174806 std 0.22106005577887738 y range 76.09770491803279 77.37253655435474 std 0.2727731637933351

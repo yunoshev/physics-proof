@@ -1,0 +1,20 @@
+{
+  "query": "extravehicular spacesuit height metres",
+  "facts": [
+    {
+      "text": "China's Feitian extravehicular spacesuit can be worn by people with a height of 1.60 metres to 1.80 metres.",
+      "url": "https://www.laitimes.com/en/article/zr30_10j1d.html",
+      "quote": "The \"Feitian\" extravehicular spacesuit developed by China weighs a total weight of 120 kilograms, costs about 30 million yuan, and can be worn by people with a height of 1.60 meters to 1.80 meters, and is divided into 6 layers from the inside to the outside."
+    },
+    {
+      "text": "The Russian Orlan-M extravehicular spacesuit can accommodate wearers with height from 165 cm to 190 cm, i.e. 1.65 metres to 1.90 metres.",
+      "url": "http://suzymchale.com/ruspace/rusuits.html",
+      "quote": "The Orlan-M can accommodate a greater range of anthropometric sizes: 165 cm to 190 cm height (instead of 185 cm for the DMA) and up to 112 cm for chest diameter (instead of 108 cm)."
+    },
+    {
+      "text": "An Orlan-M EVA spacesuit is approx 70 inches tall, about 1.78 metres.",
+      "url": "https://www.sothebys.com/en/auctions/ecatalogue/2018/space-and-exploration-n09897/lot.64.html",
+      "quote": "both clear and protective sun visors, manufactured by NPP Zvezda, approx 70 inches tall and 250 lbs."
+    }
+  ]
+}

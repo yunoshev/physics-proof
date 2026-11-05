@@ -1,0 +1,7 @@
+brief/dialog/
+__pycache__/
+.pytest_cache/
+.venv/
+uv.lock
+.dev_loop/
+runs/

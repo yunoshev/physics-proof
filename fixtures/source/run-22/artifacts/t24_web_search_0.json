@@ -1,0 +1,30 @@
+{
+  "query": "Apollo lunar flag assembly dimensions pole height flag size inches",
+  "facts": [
+    {
+      "text": "Standard Apollo lunar flags measured 3 by 5 feet, i.e., 36 by 60 inches.",
+      "url": "https://roundupreads.jsc.nasa.gov/roundup/1180",
+      "quote": "The flag itself was a standard 3- by 5-foot nylon flag, with the only modification being a hem sewed along its top edge to allow a metal rod to slide through,"
+    },
+    {
+      "text": "The Apollo lunar flag was attached to an 8-foot flagpole, i.e., 96 inches tall.",
+      "url": "https://roundupreads.jsc.nasa.gov/roundup/1180",
+      "quote": "The flag was attached to an 8-foot flagpole that the astronauts planted into the lunar soil."
+    },
+    {
+      "text": "The horizontal and vertical poles of the Lunar Flag Assembly were each made of one-inch aluminum tubes in two telescoping parts.",
+      "url": "https://en.wikipedia.org/wiki/Lunar_Flag_Assembly",
+      "quote": "The horizontal and vertical poles were each made of one-inch aluminum tubes in two telescoping parts, anodized with a gold color."
+    },
+    {
+      "text": "Due to spacesuit limits, the flagpole total height was constrained to a 28-inch minimum and 66-inch maximum reach.",
+      "url": "https://en.wikipedia.org/wiki/Lunar_Flag_Assembly",
+      "quote": "Due to the limits of the astronauts' spacesuits, the total height of the flagpole was limited to their 28-inch (71 cm) minimum and 66-inch (170 cm) maximum reach."
+    },
+    {
+      "text": "The final Apollo 17 Moon flag was larger, requiring a 6-foot long horizontal pole, i.e., 72 inches.",
+      "url": "https://en.wikipedia.org/wiki/Lunar_Flag_Assembly",
+      "quote": "This flag measured 20% wider and taller than the others requiring a 6-foot (1.8 m) long horizontal pole."
+    }
+  ]
+}

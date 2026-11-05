@@ -1,0 +1,9 @@
+200 top 58 bot 187 h 130 w 85
+205 top 59 bot 188 h 130 w 82
+210 top 59 bot 188 h 130 w 87
+215 top 61 bot 188 h 128 w 90
+220 top 65 bot 188 h 124 w 90
+225 top 69 bot 189 h 121 w 94
+230 top 63 bot 188 h 126 w 91
+232 top 56 bot 187 h 132 w 85
+234 top 52 bot 186 h 135 w 80

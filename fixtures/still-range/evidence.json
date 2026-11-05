@@ -1,0 +1,128 @@
+{
+  "first_look": {
+    "question": "Is this hand the size it should be?",
+    "summary": "A close-up of a hand beside a steel ruler on a table.",
+    "scene_card": {
+      "scene": "A hand beside a steel ruler on a table.",
+      "place_date": null,
+      "confidence": "medium",
+      "objects": ["hand", "steel ruler", "table"]
+    },
+    "by_eye": null,
+    "views": [
+      {"frame_start": 0, "frame_end": 0, "artifact": "artifacts/still_view.jpg"}
+    ],
+    "motions": [
+      {"frame_start": 0, "frame_end": 0, "description": "hand held still for the still frame", "segment_id": null, "skip_reason": "still frame: no motion to measure"}
+    ]
+  },
+  "references": [
+    {
+      "name": "steel ruler",
+      "extent_description": "ten centimetre span of the ruler",
+      "extent_type": "face_on",
+      "extent_px": {"x1": 10.0, "y1": 200.0, "x2": 210.0, "y2": 200.0, "length_px": 200.0, "frame": 0},
+      "size_m": 0.1,
+      "size_tolerance_m": 0.0005,
+      "size_derivation": {"mode": "single", "note": "ruler markings", "state_match": {"shown_and_covered": "ruler span shown in the mask and covered by the markings", "shown_not_covered": "table and hand shown but outside the ruler span"}},
+      "sources": [
+        {"url": "https://example.com/ruler", "domain": "example.com", "quote": "ten centimetre steel ruler", "quote_highlight": "ten centimetre", "value_m": 0.1, "source_type": "maker specification"}
+      ],
+      "mask": {"artifact": "artifacts/ref_mask.npz", "object_id": "0", "frame": 0, "outline": [[5.0, 195.0], [215.0, 195.0], [215.0, 205.0], [5.0, 205.0]]},
+      "mask_check": {"artifact": "artifacts/check_mask.json", "coverage_answer": "covers the ruler span", "confidence": null, "alternative_readings": []}
+    }
+  ],
+  "scale": {
+    "frame": 0,
+    "m_per_px": 0.0005,
+    "sigma_m_per_px": 0.000005,
+    "reference_index": 0,
+    "extent_px": {"x1": 10.0, "y1": 200.0, "x2": 210.0, "y2": 200.0, "length_px": 200.0, "frame": 0},
+    "second_reference_index": null,
+    "second_reference_absent_reason": "no second object of known size in the still frame",
+    "check_scale": null
+  },
+  "segments": [],
+  "clock": null,
+  "clock_absent_reason": "no motion measured",
+  "worlds": {
+    "candidates": [{"world": "Earth"}],
+    "excluded": []
+  },
+  "error_budget": {
+    "components": [],
+    "sigma_relative": 0.0
+  },
+  "camera": {
+    "still": {"reference_phrase": "table corner", "reference_track_artifact": "workspace/ref_track.json"}
+  },
+  "range_checks": [
+    {
+      "id": "palm_hand_ratio",
+      "label": "palm / hand length",
+      "answers": "It settles whether the hand proportions fall inside the adult survey range.",
+      "unit": "ratio",
+      "frame": 0,
+      "extents": [
+        {"name": "hand length", "x1": 50.0, "y1": 40.0, "x2": 50.0, "y2": 240.0, "length_px": 200.0, "frame": 0},
+        {"name": "palm length", "x1": 50.0, "y1": 140.0, "x2": 50.0, "y2": 230.0, "length_px": 90.0, "frame": 0}
+      ],
+      "value": 0.45,
+      "sigma": 0.02,
+      "formula": "palm_px / hand_px",
+      "uses_scale": false,
+      "measurement_artifact": "artifacts/measure_palm_hand.txt",
+      "range": {
+        "min": 0.4,
+        "max": 0.52,
+        "typical": 0.46,
+        "what": "adult hands, US Army survey ANSUR II, 2012",
+        "bounds_kind": "percentile",
+        "percentiles": [5, 95],
+        "sources": [
+          {"url": "https://example.com/ansur", "domain": "example.com", "quote": "5th percentile palm-to-hand ratio 0.40", "quote_highlight": "0.40", "value": 0.4, "bound": "min", "source_type": "survey report"},
+          {"url": "https://example.com/ansur", "domain": "example.com", "quote": "95th percentile palm-to-hand ratio 0.52", "quote_highlight": "0.52", "value": 0.52, "bound": "max", "source_type": "survey report"}
+        ]
+      }
+    },
+    {
+      "id": "finger_hand_ratio",
+      "label": "finger / hand length",
+      "answers": "It settles whether the finger proportions fall inside the adult survey range.",
+      "unit": "ratio",
+      "frame": 0,
+      "extents": [
+        {"name": "hand length", "x1": 50.0, "y1": 40.0, "x2": 50.0, "y2": 240.0, "length_px": 200.0, "frame": 0},
+        {"name": "finger length", "x1": 150.0, "y1": 40.0, "x2": 150.0, "y2": 180.0, "length_px": 140.0, "frame": 0}
+      ],
+      "value": 0.7,
+      "sigma": 0.02,
+      "formula": "finger_px / hand_px",
+      "uses_scale": false,
+      "measurement_artifact": "artifacts/measure_finger_hand.txt",
+      "range": {
+        "min": 0.45,
+        "max": 0.6,
+        "typical": 0.52,
+        "what": "adult hands, US Army survey ANSUR II, 2012",
+        "bounds_kind": "min-max",
+        "percentiles": null,
+        "sources": [
+          {"url": "https://example.com/ansur", "domain": "example.com", "quote": "smallest quoted finger-to-hand ratio 0.45", "quote_highlight": "0.45", "value": 0.45, "bound": "min", "source_type": "survey report"},
+          {"url": "https://example.com/ansur", "domain": "example.com", "quote": "largest quoted finger-to-hand ratio 0.60", "quote_highlight": "0.60", "value": 0.6, "bound": "max", "source_type": "survey report"}
+        ]
+      }
+    }
+  ],
+  "provenance": {
+    "artifacts": [
+      {"name": "view", "path": "artifacts/still_view.jpg"},
+      {"name": "reference mask", "path": "artifacts/ref_mask.npz"},
+      {"name": "mask check", "path": "artifacts/check_mask.json"},
+      {"name": "palm/hand measurement", "path": "artifacts/measure_palm_hand.txt"},
+      {"name": "finger/hand measurement", "path": "artifacts/measure_finger_hand.txt"},
+      {"name": "reference track", "path": "workspace/ref_track.json"}
+    ]
+  },
+  "page_texts": {}
+}

@@ -1,0 +1,478 @@
+{
+  "camera": {
+    "still": {
+      "reference_phrase": "flag on pole",
+      "reference_track_artifact": "workspace/ref_flag_track.json"
+    }
+  },
+  "clock": null,
+  "clock_absent_reason": "no visible independent rhythm; gait signal over walking produced no reliable clock",
+  "error_budget": {
+    "components": [
+      {
+        "basis": "quoted PLSS plus OPS and stature size spreads over fitted gravity",
+        "name": "reference_size",
+        "sigma_contribution": 0.24391231630205865
+      },
+      {
+        "basis": "endpoint placement",
+        "name": "pixel_scale",
+        "sigma_contribution": 0.08179986217447087
+      },
+      {
+        "basis": "parabola residuals",
+        "name": "fit",
+        "sigma_contribution": 0.1559084087871097
+      },
+      {
+        "basis": "centroid versus centre-of-mass allowance",
+        "name": "point_vs_com",
+        "sigma_contribution": 0.371817555338504
+      },
+      {
+        "basis": "half size difference between whole-pack and lower-body-only readings over fitted gravity",
+        "name": "reading_spread",
+        "sigma_contribution": 1.0332785454702407
+      }
+    ],
+    "sigma_relative": 0.15411241765281877
+  },
+  "first_look": {
+    "by_eye": {
+      "airborne_s": 0.6,
+      "jump_m": null,
+      "reasoning": "feet leave the ground after 4.5 s and return about 0.6 s later in a low hop"
+    },
+    "motions": [
+      {
+        "description": "foreground two-footed hop",
+        "frame_end": 152,
+        "frame_start": 135,
+        "segment_id": "hop_a",
+        "skip_reason": null
+      }
+    ],
+    "question": "Does the foreground figure's hop fall as it would in lunar gravity?",
+    "scene_card": {
+      "confidence": "medium",
+      "objects": [
+        "foreground suited figure",
+        "background suited figure",
+        "backpack unit",
+        "flag on pole",
+        "grey plain"
+      ],
+      "place_date": null,
+      "scene": "Grey plain under black sky with two white-suited figures with backpacks and a flag on a pole."
+    },
+    "summary": "Two white-suited figures with backpacks move on a grey plain under a black sky with a flag on a pole. The foreground figure walks then makes a low two-footed hop around 4.5-5.1 s. Body height and backpack-unit size answer the pixel scale and the hop's fitted fall answers the gravity.",
+    "views": [
+      {
+        "artifact": "artifacts/t4_view_frames_0.jpg",
+        "frame_end": 184,
+        "frame_start": 0
+      },
+      {
+        "artifact": "artifacts/t28_view_frames_0.jpg",
+        "frame_end": 189,
+        "frame_start": 0
+      }
+    ]
+  },
+  "page_texts": {},
+  "provenance": {
+    "artifacts": [
+      {
+        "name": "view",
+        "path": "artifacts/t4_view_frames_0.jpg"
+      },
+      {
+        "name": "full scan view",
+        "path": "artifacts/t28_view_frames_0.jpg"
+      },
+      {
+        "name": "segment masks",
+        "path": "artifacts/t12_segment_0.npz"
+      },
+      {
+        "name": "figure masks",
+        "path": "artifacts/t9_segment_0.npz"
+      },
+      {
+        "name": "flag masks",
+        "path": "artifacts/t25_segment_0.npz"
+      },
+      {
+        "name": "mask check",
+        "path": "artifacts/t21_check_mask_0.json"
+      },
+      {
+        "name": "figure mask check",
+        "path": "artifacts/t42_check_mask_0.json"
+      },
+      {
+        "name": "line check",
+        "path": "artifacts/t40_check_line_0.json"
+      },
+      {
+        "name": "track",
+        "path": "workspace/track_hop_a.json"
+      },
+      {
+        "name": "reference track",
+        "path": "workspace/ref_flag_track.json"
+      },
+      {
+        "name": "figure height measurement",
+        "path": "artifacts/measure_figure_height.txt"
+      }
+    ]
+  },
+  "range_checks": [
+    {
+      "answers": "It settles whether the foreground figure's stature matches adult human norms.",
+      "extents": [
+        {
+          "frame": 10,
+          "length_px": 155.08062419270823,
+          "name": "suited figure height",
+          "x1": 66.0,
+          "x2": 61.0,
+          "y1": 58.0,
+          "y2": 213.0
+        }
+      ],
+      "formula": "length_px \u00d7 m_per_px",
+      "frame": 10,
+      "id": "suited_figure_height",
+      "label": "suited figure height",
+      "measurement_artifact": "artifacts/measure_figure_height.txt",
+      "range": {
+        "bounds_kind": "min-max",
+        "max": 1.75,
+        "min": 1.5,
+        "percentiles": null,
+        "sources": [
+          {
+            "bound": "min",
+            "domain": "myhsn.co.uk",
+            "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+            "quote_highlight": "1.50 to 1.75 metres",
+            "source_type": "survey report",
+            "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+            "value": 1.5
+          },
+          {
+            "bound": "max",
+            "domain": "myhsn.co.uk",
+            "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+            "quote_highlight": "1.50 to 1.75 metres",
+            "source_type": "survey report",
+            "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+            "value": 1.75
+          }
+        ],
+        "typical": null,
+        "what": "adult women standing height"
+      },
+      "sigma": 0.053860729156259876,
+      "unit": "m",
+      "uses_scale": true,
+      "value": 1.5769566427124344
+    }
+  ],
+  "references": [
+    {
+      "extent_description": "height of the backpack unit on the foreground figure seen from behind",
+      "extent_px": {
+        "frame": 10,
+        "length_px": 90.44888059008801,
+        "x1": 47.0,
+        "x2": 38.0,
+        "y1": 40.0,
+        "y2": 130.0
+      },
+      "extent_type": "face_on",
+      "mask": {
+        "artifact": "artifacts/t12_segment_0.npz",
+        "frame": 10,
+        "object_id": "0",
+        "outline": [
+          [
+            6.0,
+            40.0
+          ],
+          [
+            69.0,
+            40.0
+          ],
+          [
+            69.0,
+            130.0
+          ],
+          [
+            6.0,
+            130.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [
+          {
+            "description": "lower main body only (PLSS without top OPS unit)",
+            "size_m": 0.66
+          }
+        ],
+        "artifact": "artifacts/t21_check_mask_0.json",
+        "confidence": null,
+        "coverage_answer": "On the left side of the frame the pale tint covers the large light rectangular pack on the back of the light-suited figure seen from behind. It includes the top of the pack against the dark background, the left side at the frame edge, and the right side with a narrow margin onto the background, while its bottom edge cuts straight across the figure at about waist to upper-leg level. It covers only the pack unit and excludes the white legs and lower suit below it and excludes the surrounding ground and background."
+      },
+      "name": "backpack unit height",
+      "size_derivation": {
+        "mode": "sum",
+        "note": "sum of PLSS height 0.66 m plus top OPS unit height 0.254 m stacked on top; 'a smaller upper box-like protrusion forming the top of the pack inside the tint' is the top OPS unit included in the headline size; 'a larger lower rectangular section forming the main body of the pack below it inside the tint' is the PLSS body included in the headline size; 'the white suited lower body and legs of the same figure continuing down below the bottom edge of the tint and left outside' does not apply because it is outside the pack extent; 'the dark background and ground immediately to the right and above the pack only marginally included at the edge of the tint' does not apply because it is background margin outside the measured endpoints",
+        "state_match": {
+          "shown_and_covered": "backpack-unit mask covers the stacked light rectangular pack body plus the smaller top protrusion seen from behind, covered by the quoted PLSS plus OPS heights",
+          "shown_not_covered": "white suited legs below the pack, helmet, flag and ground shown outside the pack extent and not covered by the quoted heights"
+        }
+      },
+      "size_m": 0.914,
+      "size_tolerance_m": 0.03,
+      "sources": [
+        {
+          "domain": "en.wikipedia.org",
+          "quote": "The PLSS was 26 inches (66 cm) high, 18 inches (46 cm) wide, and 10 inches (25 cm) deep.",
+          "quote_highlight": "66 cm",
+          "source_type": "encyclopedia article",
+          "url": "https://en.wikipedia.org/wiki/Primary_life_support_system",
+          "value_m": 0.66
+        },
+        {
+          "domain": "nasa.gov",
+          "quote": "inches long, 10 inches high, and 8 inches deep.",
+          "quote_highlight": "10 inches high",
+          "source_type": "museum catalogue",
+          "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+          "value_m": 0.254
+        }
+      ]
+    },
+    {
+      "extent_description": "full height of the foreground suited figure from pack top to boot soles",
+      "extent_px": {
+        "frame": 10,
+        "length_px": 155.08062419270823,
+        "x1": 66.0,
+        "x2": 61.0,
+        "y1": 58.0,
+        "y2": 213.0
+      },
+      "extent_type": "rotation_invariant",
+      "mask": {
+        "artifact": "artifacts/t9_segment_0.npz",
+        "frame": 10,
+        "object_id": "1",
+        "outline": [
+          [
+            12.0,
+            58.0
+          ],
+          [
+            91.0,
+            58.0
+          ],
+          [
+            91.0,
+            213.0
+          ],
+          [
+            12.0,
+            213.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [],
+        "artifact": "artifacts/t42_check_mask_0.json",
+        "confidence": null,
+        "coverage_answer": "Two separate tinted rectangular patches, each with its own bounding box. The large left patch covers the whole left foreground suited figure from the top of its back-mounted box to the soles of its feet, including the torso, limbs, and head area. The box is slightly larger than the figure so a narrow margin of background and ground around the sides, top and bottom is also tinted. The small right patch in the mid-distance covers the small upright suited figure standing to the right of a vertical pole, from head to feet, with only a narrow margin of surrounding background included. The pole and the element attached to it to the left, and the rest of the ground and background, are left outside the tint."
+      },
+      "name": "suited figure height",
+      "size_derivation": {
+        "mode": "mean",
+        "note": "mean of quoted adult women height bounds 1.50 m and 1.75 m; 'upper boxy unit mounted on the back/shoulders of the left foreground figure' is the pack top included in the headline height; 'main suited body of the left figure - torso, arms, legs and boots - below and in front of that upper box, inside the same left tint' is the body included in the headline height; 'small distant upright suited figure on the right, as a separate tinted unit' does not apply because it is a different figure at greater depth not used for this extent; 'vertical pole and attached horizontal striped element immediately to the left of the right figure - part of the same distant grouping but left outside the tint' does not apply because it is a different object outside the figure extent; 'surrounding ground surface and dark background - mostly outside the tint except for thin margins of background/ground caught inside the two boxes around the figures' does not apply because it is background margin outside the measured endpoints",
+        "state_match": {
+          "shown_and_covered": "figure mask covers the whole foreground suited figure from pack top to boot soles including suit, helmet and boots, covered by the quoted adult stature range",
+          "shown_not_covered": "backpack-unit sub-part included in the height, background figure at different depth and flag and ground shown outside the figure extent and not covered by the stature range"
+        }
+      },
+      "size_m": 1.625,
+      "size_tolerance_m": 0.125,
+      "sources": [
+        {
+          "domain": "myhsn.co.uk",
+          "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+          "quote_highlight": "1.50 to 1.75 metres",
+          "source_type": "survey report",
+          "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+          "value_m": 1.5
+        },
+        {
+          "domain": "myhsn.co.uk",
+          "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+          "quote_highlight": "1.50 to 1.75 metres",
+          "source_type": "survey report",
+          "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+          "value_m": 1.75
+        }
+      ]
+    }
+  ],
+  "scale": {
+    "check_scale": null,
+    "extent_px": {
+      "frame": 10,
+      "length_px": 90.44888059008801,
+      "x1": 47.0,
+      "x2": 38.0,
+      "y1": 40.0,
+      "y2": 130.0
+    },
+    "frame": 10,
+    "m_per_px": 0.010168624552044985,
+    "reference_index": 0,
+    "second_reference_absent_reason": null,
+    "second_reference_index": 1,
+    "sigma_m_per_px": 0.0003346998093170726
+  },
+  "segments": [
+    {
+      "fit_curve_px": [
+        {
+          "t_s": 4.537871,
+          "x_px": 91.56155577131892,
+          "y_px": 79.67665975553427
+        },
+        {
+          "t_s": 4.571238,
+          "x_px": 91.56155577131892,
+          "y_px": 74.35968542254341
+        },
+        {
+          "t_s": 4.604605,
+          "x_px": 91.56155577131892,
+          "y_px": 69.8569127747578
+        },
+        {
+          "t_s": 4.637971,
+          "x_px": 91.56155577131892,
+          "y_px": 66.16844015731658
+        },
+        {
+          "t_s": 4.671338,
+          "x_px": 91.56155577131892,
+          "y_px": 63.29404647853062
+        },
+        {
+          "t_s": 4.704705,
+          "x_px": 91.56155577131892,
+          "y_px": 61.233854484950825
+        },
+        {
+          "t_s": 4.738071,
+          "x_px": 91.56155577131892,
+          "y_px": 59.987889318228554
+        },
+        {
+          "t_s": 4.771438,
+          "x_px": 91.56155577131892,
+          "y_px": 59.55607629364749
+        },
+        {
+          "t_s": 4.804805,
+          "x_px": 91.56155577131892,
+          "y_px": 59.938464954268056
+        },
+        {
+          "t_s": 4.838172,
+          "x_px": 91.56155577131892,
+          "y_px": 61.13505530009934
+        },
+        {
+          "t_s": 4.871538,
+          "x_px": 91.56155577131892,
+          "y_px": 63.14577486789494
+        },
+        {
+          "t_s": 4.904905,
+          "x_px": 91.56155577131892,
+          "y_px": 65.97074418272314
+        },
+        {
+          "t_s": 4.938272,
+          "x_px": 91.56155577131892,
+          "y_px": 69.6099151827566
+        },
+        {
+          "t_s": 4.971638,
+          "x_px": 91.56155577131892,
+          "y_px": 74.0631422012757
+        },
+        {
+          "t_s": 5.005005,
+          "x_px": 91.56155577131892,
+          "y_px": 79.33069217030607
+        },
+        {
+          "t_s": 5.038372,
+          "x_px": 91.56155577131892,
+          "y_px": 85.4124438245417
+        }
+      ],
+      "frames": {
+        "apex": 143,
+        "end": 152,
+        "start": 135
+      },
+      "id": "hop_a",
+      "key_moments": [
+        {
+          "caption": "leaving the ground",
+          "frame": 135,
+          "type": "takeoff"
+        },
+        {
+          "caption": "hanging at the top",
+          "frame": 143,
+          "type": "apex"
+        },
+        {
+          "caption": "touching down softly",
+          "frame": 152,
+          "type": "landing"
+        }
+      ],
+      "kind": "free_flight",
+      "label": "Foreground hop",
+      "mask": {
+        "artifact": "artifacts/t12_segment_0.npz",
+        "object_id": "0"
+      },
+      "repetitions": [],
+      "subject": {
+        "description": "foreground suited figure",
+        "kind": "person"
+      },
+      "track_artifact": "workspace/track_hop_a.json",
+      "tracked_point": "centroid of the backpack unit, rigid with the body"
+    }
+  ],
+  "worlds": {
+    "candidates": [
+      {
+        "world": "Moon"
+      }
+    ],
+    "excluded": []
+  }
+}

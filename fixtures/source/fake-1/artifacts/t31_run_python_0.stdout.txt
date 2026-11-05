@@ -1,0 +1,4 @@
+192
+sig mean 0.39626269406071984
+res None flag no_reliable_clock
+res2 None flag2 no_reliable_clock

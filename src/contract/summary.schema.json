@@ -1,0 +1,32 @@
+{
+  "$id": "https://physics-proof/summary.schema.json",
+  "title": "summary.json — run accounting (contract v3)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "run_id", "cost_usd", "turns", "model", "sam_frames_billed", "searches", "mask_checks", "wall_time_s", "budget_outcome", "result_path"],
+  "properties": {
+    "contract_version": {"type": "integer", "const": 3},
+    "run_id": {"type": "string", "minLength": 1},
+    "cost_usd": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "spark_input", "spark_cached", "spark_output", "sam", "search"],
+      "properties": {
+        "total": {"type": "number", "minimum": 0},
+        "spark_input": {"type": "number", "minimum": 0},
+        "spark_cached": {"type": "number", "minimum": 0},
+        "spark_output": {"type": "number", "minimum": 0},
+        "sam": {"type": "number", "minimum": 0},
+        "search": {"type": "number", "minimum": 0}
+      }
+    },
+    "turns": {"type": "integer", "minimum": 0},
+    "model": {"type": "string", "minLength": 1},
+    "sam_frames_billed": {"type": "integer", "minimum": 0},
+    "searches": {"type": "integer", "minimum": 0},
+    "mask_checks": {"type": "integer", "minimum": 0},
+    "wall_time_s": {"type": "number", "minimum": 0},
+    "budget_outcome": {"type": "string", "enum": ["completed", "budget_undetermined"]},
+    "result_path": {"type": "string", "minLength": 1}
+  }
+}

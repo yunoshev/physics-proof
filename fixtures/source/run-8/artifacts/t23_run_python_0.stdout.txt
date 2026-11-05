@@ -1,0 +1,19 @@
+{
+  "overlay_artifact": "artifacts/t14_segment_preview_2.jpg",
+  "mask_extents_px": {
+    "x0": 68,
+    "x1": 120,
+    "y0": 25,
+    "y1": 91
+  },
+  "question": "An overlay image shows a translucent coloured mask drawn on one video frame, with one bounding box per masked region. Describe, in plain words, WHAT THE MASK COVERS: which part of the visible object or surface the tinted region covers, and which edges it includes or excludes (for example, whether it covers only part of an object or extends past it onto the background). Do NOT name or guess what the object is, where the footage comes from, or what experiment this is. Where the covering is ambiguous, list each alternative reading. As alternatives, name any separable or stacked parts inside the tinted region (for example a unit mounted on top of another) and any part of the same object left outside the tinted region.",
+  "coverage_answer": "The tinted square covers the pale roughly rectangular bulky mass seen over the upper part of the figure on the left. It includes the top edge, left side edge, and right side edge of that mass, with only a very thin sliver of dark background at the perimeter. Its bottom edge cuts across the mass where it meets the rest of the figure, so it covers only the upper block and excludes the lower body and legs that extend down below the box. It does not extend far onto the background and does not include the second figure or pole on the right.",
+  "alternatives": [
+    "a smaller upper block stacked on top of a larger lower block, both contained together inside the tinted square",
+    "the dark-suited lower body and legs of the same left-side figure that continue downward below the bottom edge of the box and are left outside",
+    "the lighter forward protrusion extending to the right of the box from the same mass, left outside the tinted region"
+  ],
+  "confidence": null,
+  "turn": 22
+}
+

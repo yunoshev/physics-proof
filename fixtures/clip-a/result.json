@@ -1,0 +1,8844 @@
+{
+  "calculation_steps": [
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "text": "Duplicate frames and cuts are excluded from every fit window.",
+          "type": "text"
+        }
+      ],
+      "id": "time_from_frames",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Frame times come from measured timestamps, never the container rate.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "15.55 s of video",
+            "tone": "intermediate"
+          },
+          "fallback": "measured fps = 29.97 Hz over 466 frames",
+          "latex": "f = 29.97 \\, \\mathrm{Hz}, \\; N = 466 \\, \\mathrm{frames}",
+          "type": "formula"
+        }
+      ],
+      "title": "Time from frames"
+    },
+    {
+      "caveats": [],
+      "frame": 255,
+      "frame_end": null,
+      "full": [],
+      "id": "mask_check",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "A blind check read what the reference mask covers, with no knowledge of the measurement.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "the whole foreground astronaut from helmet top to boot soles",
+            "tone": "intermediate"
+          },
+          "fallback": "measured extent = 137.5 px",
+          "latex": "\\ell = 137.5 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Blind mask check"
+    },
+    {
+      "caveats": [],
+      "frame": 255,
+      "frame_end": null,
+      "full": [
+        {
+          "text": "No second object was available at the same depth.",
+          "type": "text"
+        }
+      ],
+      "id": "scale",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Metres per pixel from the reference size over its extent.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "0.013115 m/px",
+            "tone": "final"
+          },
+          "fallback": "s = 1.803 m / 137.5 px",
+          "latex": "s = L/\\ell = 1.803 \\, \\mathrm{m} / 137.5 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Pixel scale"
+    },
+    {
+      "caveats": [],
+      "frame": 241,
+      "frame_end": 276,
+      "full": [
+        {
+          "text": "Contact frames stay outside every gravity fit.",
+          "type": "text"
+        }
+      ],
+      "id": "segment",
+      "segment_id": "hop_a",
+      "short": [
+        {
+          "text": "Tracked point over the free-flight window.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "top of the mask",
+            "tone": "intermediate"
+          },
+          "fallback": "N = 36 tracked frames",
+          "latex": "N = 36 \\, \\mathrm{frames}",
+          "type": "formula"
+        }
+      ],
+      "title": "Segment Jump one"
+    },
+    {
+      "caveats": [],
+      "frame": 241,
+      "frame_end": 276,
+      "full": [
+        {
+          "chip": {
+            "text": "rigid point",
+            "tone": "intermediate"
+          },
+          "fallback": "residual trend = 0.14",
+          "latex": "\\rho = 0.14",
+          "type": "formula"
+        }
+      ],
+      "id": "fit",
+      "segment_id": "hop_a",
+      "short": [
+        {
+          "text": "Parabola fit to heights above the takeoff level.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "g = 1.663 m/s2",
+            "tone": "intermediate"
+          },
+          "fallback": "a = 126.8 +/- 2.7 px/s2",
+          "latex": "a = 126.8 \\pm 2.7 \\, \\mathrm{px/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Fit Jump one"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": {
+            "text": "fits",
+            "tone": "final"
+          },
+          "fallback": "Moon: 0.2 sigma",
+          "latex": "|g - g_{\\mathrm{Moon}}| = 0.2\\sigma",
+          "type": "formula"
+        }
+      ],
+      "id": "measured_g",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Apparent gravity at native playback speed.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "measured gravity",
+            "tone": "final"
+          },
+          "fallback": "g = 1.66 +/- 0.22 m/s2",
+          "latex": "g = 1.66 \\pm 0.22 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Measured gravity"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [],
+      "id": "clock",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "No independent clock was measured.",
+          "type": "text"
+        }
+      ],
+      "title": "Independent clock"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": {
+            "text": "reference_size",
+            "tone": "intermediate"
+          },
+          "fallback": "reference_size = 0.091 m/s2",
+          "latex": "\\sigma_{reference_size} = 0.091",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "pixel_scale",
+            "tone": "intermediate"
+          },
+          "fallback": "pixel_scale = 0.025 m/s2",
+          "latex": "\\sigma_{pixel_scale} = 0.025",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "fit",
+            "tone": "intermediate"
+          },
+          "fallback": "fit = 0.035 m/s2",
+          "latex": "\\sigma_{fit} = 0.035",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "point_vs_com",
+            "tone": "intermediate"
+          },
+          "fallback": "point_vs_com = 0.200 m/s2",
+          "latex": "\\sigma_{point_vs_com} = 0.200",
+          "type": "formula"
+        }
+      ],
+      "id": "uncertainty",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Itemised error budget, recombined in quadrature.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "error budget",
+            "tone": "final"
+          },
+          "fallback": "sigma total = 0.224 m/s2",
+          "latex": "\\sigma = 0.224 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        },
+        {
+          "source": "error_budget",
+          "type": "bars"
+        }
+      ],
+      "title": "Uncertainty"
+    },
+    {
+      "caveats": [],
+      "frame": 277,
+      "frame_end": null,
+      "full": [],
+      "id": "verdict",
+      "segment_id": null,
+      "short": [
+        {
+          "chip": {
+            "text": "Moon",
+            "tone": "final"
+          },
+          "fallback": "g = 1.66 +/- 0.22 m/s2",
+          "latex": "g = 1.66 \\pm 0.22 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Verdict"
+    }
+  ],
+  "clock": null,
+  "clock_absent_reason": "The source run recorded no independent clock signal.",
+  "contract_version": 3,
+  "error_budget": {
+    "components": [
+      {
+        "basis": "quoted suit-height spread over fitted gravity",
+        "name": "reference_size",
+        "sigma_contribution": 0.09146655175430222
+      },
+      {
+        "basis": "two pixel endpoint error on the suit extent",
+        "name": "pixel_scale",
+        "sigma_contribution": 0.024945423205718787
+      },
+      {
+        "basis": "parabola residuals over the contact-free window",
+        "name": "fit",
+        "sigma_contribution": 0.034923592488006305
+      },
+      {
+        "basis": "mask top row versus whole-body centre",
+        "name": "point_vs_com",
+        "sigma_contribution": 0.1995633856457503
+      }
+    ],
+    "sigma_relative": 0.13450278807519195,
+    "sigma_total": 0.22368193139231798
+  },
+  "first_look": {
+    "by_eye": {
+      "airborne_s": 1.1,
+      "jump_m": null,
+      "reasoning": "the hop hangs in the air"
+    },
+    "motions": [
+      {
+        "description": "foreground hop, measured as Jump one",
+        "frame_end": 276,
+        "frame_start": 241,
+        "segment_id": "hop_a",
+        "skip_reason": null
+      },
+      {
+        "description": "second hop near the flag, listed but not measured",
+        "frame_end": 376,
+        "frame_start": 340,
+        "segment_id": null,
+        "skip_reason": "second hop left unmeasured in the source run; the fixture measures the first hop only"
+      }
+    ],
+    "question": "Does the physics add up to the Moon?",
+    "scene_card": {
+      "confidence": "high",
+      "objects": [
+        "suited figure in foreground",
+        "backpack",
+        "suited figure in background",
+        "flag on pole",
+        "grey ground",
+        "black sky"
+      ],
+      "place_date": null,
+      "scene": "Two suited figures on grey ground under a black sky, with a flag on a pole between them; the foreground figure jumps."
+    },
+    "summary": "A suited figure hops in the left foreground while a second figure stands by a flag.",
+    "views": [
+      {
+        "artifact": "artifacts/astronaut.230-280.1.1.png",
+        "frame_end": 280,
+        "frame_start": 230
+      }
+    ],
+    "wonder": {
+      "checks": [
+        {
+          "compare_with": "the Moon's 1.62 m/s2",
+          "what": "measure the hop's apparent gravity",
+          "why": "a clean parabola separates lunar from terrestrial motion"
+        }
+      ],
+      "claim": "the astronaut hops far too high for Earth",
+      "not_realistic_if": "the measured gravity fits native Earth playback instead",
+      "realistic_if": "the measured gravity fits the Moon within two sigma"
+    }
+  },
+  "page_texts": {},
+  "provenance": {
+    "artifacts": [
+      {
+        "name": "segment masks",
+        "path": "artifacts/astronaut.230-280.npz",
+        "produced_by": "converter"
+      },
+      {
+        "name": "reference masks",
+        "path": "artifacts/flag_pole.240-270.npz",
+        "produced_by": "converter"
+      },
+      {
+        "name": "mask checks",
+        "path": "artifacts/mask_checks.jsonl",
+        "produced_by": "converter"
+      },
+      {
+        "name": "mask check sheet",
+        "path": "artifacts/astronaut.230-280.1.1.png",
+        "produced_by": "converter"
+      },
+      {
+        "name": "mask check sheet",
+        "path": "artifacts/flag_pole.240-270.0.2.png",
+        "produced_by": "converter"
+      },
+      {
+        "name": "timing report",
+        "path": "input/timing.json",
+        "produced_by": "converter"
+      }
+    ],
+    "converted_from": "conversion of the owner-supplied run in fixtures/source/clip-a-run (analysis.json, mask_checks/mask_checks.jsonl, summary.json, sam/, clip.mp4) by src/contract/convert_source_fixture.py",
+    "model": "converted-fixture",
+    "run_id": "clip-a"
+  },
+  "range_checks": [],
+  "references": [
+    {
+      "extent_description": "full suited standing height helmet top to boot sole",
+      "extent_px": {
+        "frame": 255,
+        "length_px": 137.48090776540573,
+        "x1": 103.0,
+        "x2": 129.0,
+        "y1": 23.0,
+        "y2": 158.0
+      },
+      "extent_type": "face_on",
+      "mask": {
+        "artifact": "artifacts/astronaut.230-280.npz",
+        "frame": 255,
+        "object_id": "1",
+        "outline": [
+          [
+            76.0,
+            25.0
+          ],
+          [
+            74.0,
+            26.0
+          ],
+          [
+            73.0,
+            41.0
+          ],
+          [
+            69.0,
+            47.0
+          ],
+          [
+            70.0,
+            78.0
+          ],
+          [
+            68.0,
+            87.0
+          ],
+          [
+            71.0,
+            88.0
+          ],
+          [
+            76.0,
+            94.0
+          ],
+          [
+            77.0,
+            105.0
+          ],
+          [
+            80.0,
+            116.0
+          ],
+          [
+            82.0,
+            118.0
+          ],
+          [
+            81.0,
+            151.0
+          ],
+          [
+            83.0,
+            157.0
+          ],
+          [
+            87.0,
+            158.0
+          ],
+          [
+            95.0,
+            155.0
+          ],
+          [
+            97.0,
+            149.0
+          ],
+          [
+            96.0,
+            139.0
+          ],
+          [
+            99.0,
+            122.0
+          ],
+          [
+            101.0,
+            119.0
+          ],
+          [
+            103.0,
+            119.0
+          ],
+          [
+            107.0,
+            127.0
+          ],
+          [
+            108.0,
+            135.0
+          ],
+          [
+            114.0,
+            155.0
+          ],
+          [
+            116.0,
+            157.0
+          ],
+          [
+            129.0,
+            158.0
+          ],
+          [
+            131.0,
+            154.0
+          ],
+          [
+            127.0,
+            146.0
+          ],
+          [
+            126.0,
+            125.0
+          ],
+          [
+            127.0,
+            115.0
+          ],
+          [
+            123.0,
+            111.0
+          ],
+          [
+            119.0,
+            101.0
+          ],
+          [
+            113.0,
+            95.0
+          ],
+          [
+            111.0,
+            89.0
+          ],
+          [
+            112.0,
+            88.0
+          ],
+          [
+            116.0,
+            90.0
+          ],
+          [
+            120.0,
+            89.0
+          ],
+          [
+            122.0,
+            78.0
+          ],
+          [
+            119.0,
+            75.0
+          ],
+          [
+            117.0,
+            75.0
+          ],
+          [
+            115.0,
+            72.0
+          ],
+          [
+            121.0,
+            67.0
+          ],
+          [
+            134.0,
+            62.0
+          ],
+          [
+            137.0,
+            58.0
+          ],
+          [
+            137.0,
+            54.0
+          ],
+          [
+            130.0,
+            46.0
+          ],
+          [
+            117.0,
+            44.0
+          ],
+          [
+            112.0,
+            37.0
+          ],
+          [
+            112.0,
+            31.0
+          ],
+          [
+            108.0,
+            25.0
+          ],
+          [
+            103.0,
+            23.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [],
+        "artifact": "artifacts/mask_checks.jsonl",
+        "confidence": null,
+        "coverage_answer": "the whole foreground astronaut from helmet top to boot soles including backpack, torso, limbs and boots"
+      },
+      "name": "Apollo A7-LB pressure suit overall height",
+      "size_derivation": {
+        "mode": "single",
+        "note": "single quoted standing height",
+        "state_match": {
+          "shown_and_covered": "whole foreground astronaut helmet top to boot soles including backpack shown in the mask and covered by the quoted standing height",
+          "shown_not_covered": "none beyond the quoted figure: the mask shows only the suited figure the quote covers"
+        }
+      },
+      "size_m": 1.803,
+      "size_tolerance_m": 0.1,
+      "sources": [
+        {
+          "domain": "airandspace.si.edu",
+          "quote": "Overall 71 x 29 x 15 in 180.3 cm standing height",
+          "quote_highlight": "15 in",
+          "source_type": "secondary",
+          "url": "https://airandspace.si.edu/collection-objects/pressure-suit-a7-lb-cernan-apollo-17-flown/nasm_A19740133000",
+          "value_m": 1.803
+        }
+      ]
+    },
+    {
+      "extent_description": "total 8-ft pole length; mask shows visible pole top to ground",
+      "extent_px": {
+        "frame": 255,
+        "length_px": 100.07996802557443,
+        "x1": 260.0,
+        "x2": 256.0,
+        "y1": 41.0,
+        "y2": 141.0
+      },
+      "extent_type": "projected",
+      "mask": {
+        "artifact": "artifacts/flag_pole.240-270.npz",
+        "frame": 255,
+        "object_id": "0",
+        "outline": [
+          [
+            263.0,
+            41.0
+          ],
+          [
+            260.0,
+            41.0
+          ],
+          [
+            259.0,
+            42.0
+          ],
+          [
+            259.0,
+            51.0
+          ],
+          [
+            258.0,
+            52.0
+          ],
+          [
+            258.0,
+            65.0
+          ],
+          [
+            257.0,
+            66.0
+          ],
+          [
+            257.0,
+            80.0
+          ],
+          [
+            256.0,
+            81.0
+          ],
+          [
+            256.0,
+            97.0
+          ],
+          [
+            255.0,
+            98.0
+          ],
+          [
+            255.0,
+            112.0
+          ],
+          [
+            254.0,
+            113.0
+          ],
+          [
+            254.0,
+            131.0
+          ],
+          [
+            253.0,
+            132.0
+          ],
+          [
+            253.0,
+            139.0
+          ],
+          [
+            254.0,
+            140.0
+          ],
+          [
+            254.0,
+            141.0
+          ],
+          [
+            256.0,
+            141.0
+          ],
+          [
+            256.0,
+            140.0
+          ],
+          [
+            257.0,
+            139.0
+          ],
+          [
+            257.0,
+            133.0
+          ],
+          [
+            258.0,
+            132.0
+          ],
+          [
+            258.0,
+            119.0
+          ],
+          [
+            259.0,
+            118.0
+          ],
+          [
+            259.0,
+            105.0
+          ],
+          [
+            260.0,
+            104.0
+          ],
+          [
+            260.0,
+            86.0
+          ],
+          [
+            261.0,
+            85.0
+          ],
+          [
+            261.0,
+            70.0
+          ],
+          [
+            262.0,
+            69.0
+          ],
+          [
+            262.0,
+            58.0
+          ],
+          [
+            263.0,
+            57.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [],
+        "artifact": "artifacts/mask_checks.jsonl",
+        "confidence": null,
+        "coverage_answer": "the full visible flagpole from top to ground"
+      },
+      "name": "Apollo lunar flagpole",
+      "size_derivation": {
+        "mode": "single",
+        "note": "single quoted pole length; visible shaft only",
+        "state_match": {
+          "shown_and_covered": "visible pole shaft top to soil shown in the mask and covered by the quoted total pole length",
+          "shown_not_covered": "buried lower portion of the pole not visible in the mask and not covered by the visible extent"
+        }
+      },
+      "size_m": 2.4384,
+      "size_tolerance_m": 0.15,
+      "sources": [
+        {
+          "domain": "www.nasa.gov",
+          "quote": "flag attached to an 8-foot flagpole; flag itself 3-by-5-foot nylon",
+          "quote_highlight": "8",
+          "source_type": "secondary",
+          "url": "https://www.nasa.gov/history/flag-day-flying-high-the-stars-and-stripes-in-space/",
+          "value_m": 2.4384
+        }
+      ]
+    }
+  ],
+  "scale": {
+    "check_scale": null,
+    "extent_px": {
+      "frame": 255,
+      "length_px": 137.48090776540573,
+      "x1": 103.0,
+      "x2": 129.0,
+      "y1": 23.0,
+      "y2": 158.0
+    },
+    "frame": 255,
+    "m_per_px": 0.013114548262051032,
+    "reference_index": 0,
+    "second_reference_absent_reason": "No second independent object at the same depth with a known size; the pole's buried length is unknown.",
+    "second_reference_index": null,
+    "sigma_m_per_px": 0.0007519779925284112
+  },
+  "segments": [
+    {
+      "apex_info": {
+        "feet_clearance_m": null,
+        "rise_m": 0.17048912740666342,
+        "sigma_m": 0.02293126297270285
+      },
+      "fit": {
+        "a_px_s2": -126.80789154795477,
+        "g_app": 1.663028213714586,
+        "n_points": 31,
+        "residual_trend": 0.13645148530641657,
+        "sigma_a_px_s2": 2.6508059387561214,
+        "sigma_g": 0.22368193139231798,
+        "v0": 0.7608886487985413,
+        "y0": -0.007588640718486078
+      },
+      "fit_curve_px": [
+        {
+          "t_s": 8.041366666666667,
+          "x_px": 100.35077173030058,
+          "y_px": 36.57864293659622
+        },
+        {
+          "t_s": 8.074733333333333,
+          "x_px": 100.30865121573244,
+          "y_px": 34.713343108504446
+        },
+        {
+          "t_s": 8.1081,
+          "x_px": 100.26653070116429,
+          "y_px": 32.98922287390029
+        },
+        {
+          "t_s": 8.141466666666666,
+          "x_px": 100.22441018659615,
+          "y_px": 31.406282232783933
+        },
+        {
+          "t_s": 8.174833333333334,
+          "x_px": 100.18228967202799,
+          "y_px": 29.964521185155213
+        },
+        {
+          "t_s": 8.2082,
+          "x_px": 100.14016915745985,
+          "y_px": 28.66393973101428
+        },
+        {
+          "t_s": 8.241566666666667,
+          "x_px": 100.0980486428917,
+          "y_px": 27.504537870361
+        },
+        {
+          "t_s": 8.274933333333333,
+          "x_px": 100.05592812832356,
+          "y_px": 26.486315603195482
+        },
+        {
+          "t_s": 8.308300000000001,
+          "x_px": 100.0138076137554,
+          "y_px": 25.609272929517637
+        },
+        {
+          "t_s": 8.341666666666667,
+          "x_px": 99.97168709918726,
+          "y_px": 24.873409849327544
+        },
+        {
+          "t_s": 8.375033333333333,
+          "x_px": 99.92956658461912,
+          "y_px": 24.27872636262516
+        },
+        {
+          "t_s": 8.4084,
+          "x_px": 99.88744607005097,
+          "y_px": 23.825222469410463
+        },
+        {
+          "t_s": 8.441766666666666,
+          "x_px": 99.84532555548283,
+          "y_px": 23.512898169683503
+        },
+        {
+          "t_s": 8.475133333333334,
+          "x_px": 99.80320504091468,
+          "y_px": 23.341753463444242
+        },
+        {
+          "t_s": 8.5085,
+          "x_px": 99.76108452634654,
+          "y_px": 23.311788350692698
+        },
+        {
+          "t_s": 8.541866666666667,
+          "x_px": 99.71896401177838,
+          "y_px": 23.423002831428875
+        },
+        {
+          "t_s": 8.575233333333333,
+          "x_px": 99.67684349721024,
+          "y_px": 23.675396905652754
+        },
+        {
+          "t_s": 8.608600000000001,
+          "x_px": 99.63472298264209,
+          "y_px": 24.068970573364364
+        },
+        {
+          "t_s": 8.641966666666667,
+          "x_px": 99.59260246807395,
+          "y_px": 24.603723834563667
+        },
+        {
+          "t_s": 8.675333333333333,
+          "x_px": 99.5504819535058,
+          "y_px": 25.27965668925068
+        },
+        {
+          "t_s": 8.7087,
+          "x_px": 99.50836143893765,
+          "y_px": 26.096769137425433
+        },
+        {
+          "t_s": 8.742066666666666,
+          "x_px": 99.46624092436952,
+          "y_px": 27.05506117908787
+        },
+        {
+          "t_s": 8.775433333333334,
+          "x_px": 99.42412040980136,
+          "y_px": 28.15453281423807
+        },
+        {
+          "t_s": 8.8088,
+          "x_px": 99.38199989523322,
+          "y_px": 29.395184042875915
+        },
+        {
+          "t_s": 8.842166666666667,
+          "x_px": 99.33987938066507,
+          "y_px": 30.77701486500156
+        },
+        {
+          "t_s": 8.875533333333333,
+          "x_px": 99.29775886609693,
+          "y_px": 32.30002528061483
+        },
+        {
+          "t_s": 8.908900000000001,
+          "x_px": 99.25563835152877,
+          "y_px": 33.9642152897159
+        },
+        {
+          "t_s": 8.942266666666667,
+          "x_px": 99.21351783696063,
+          "y_px": 35.7695848923046
+        },
+        {
+          "t_s": 8.975633333333333,
+          "x_px": 99.17139732239248,
+          "y_px": 37.71613408838099
+        },
+        {
+          "t_s": 9.009,
+          "x_px": 99.12927680782434,
+          "y_px": 39.803862877945214
+        },
+        {
+          "t_s": 9.042366666666666,
+          "x_px": 99.08715629325619,
+          "y_px": 42.03277126099704
+        },
+        {
+          "t_s": 9.075733333333334,
+          "x_px": 99.04503577868805,
+          "y_px": 44.402859237536696
+        },
+        {
+          "t_s": 9.1091,
+          "x_px": 99.00291526411989,
+          "y_px": 46.91412680756394
+        },
+        {
+          "t_s": 9.142466666666667,
+          "x_px": 98.96079474955175,
+          "y_px": 49.56657397107903
+        },
+        {
+          "t_s": 9.175833333333333,
+          "x_px": 98.91867423498361,
+          "y_px": 52.36020072808169
+        },
+        {
+          "t_s": 9.209200000000001,
+          "x_px": 98.87655372041546,
+          "y_px": 55.295007078572226
+        }
+      ],
+      "frames": {
+        "apex": 253,
+        "end": 276,
+        "start": 241
+      },
+      "ghosts": [
+        {
+          "gravity_m_s2": 1.62,
+          "landing": {
+            "t_s": 9.240218384104743,
+            "x_px": 98.83739756758136,
+            "y_px": 36.0
+          },
+          "points": [
+            {
+              "frame": 241,
+              "t_s": 8.041366666666667,
+              "x_px": 100.35077173030058,
+              "y_px": 36.0
+            },
+            {
+              "frame": 242,
+              "t_s": 8.074733333333333,
+              "x_px": 100.30865121573244,
+              "y_px": 33.598120511832875
+            },
+            {
+              "frame": 243,
+              "t_s": 8.1081,
+              "x_px": 100.26653070116429,
+              "y_px": 31.333767819401245
+            },
+            {
+              "frame": 244,
+              "t_s": 8.141466666666666,
+              "x_px": 100.22441018659615,
+              "y_px": 29.20694192270535
+            },
+            {
+              "frame": 245,
+              "t_s": 8.174833333333334,
+              "x_px": 100.18228967202799,
+              "y_px": 27.217642821744967
+            },
+            {
+              "frame": 246,
+              "t_s": 8.2082,
+              "x_px": 100.14016915745985,
+              "y_px": 25.365870516520303
+            },
+            {
+              "frame": 247,
+              "t_s": 8.241566666666667,
+              "x_px": 100.0980486428917,
+              "y_px": 23.651625007031164
+            },
+            {
+              "frame": 248,
+              "t_s": 8.274933333333333,
+              "x_px": 100.05592812832356,
+              "y_px": 22.07490629327773
+            },
+            {
+              "frame": 249,
+              "t_s": 8.308300000000001,
+              "x_px": 100.0138076137554,
+              "y_px": 20.635714375259838
+            },
+            {
+              "frame": 250,
+              "t_s": 8.341666666666667,
+              "x_px": 99.97168709918726,
+              "y_px": 19.334049252977636
+            },
+            {
+              "frame": 251,
+              "t_s": 8.375033333333333,
+              "x_px": 99.92956658461912,
+              "y_px": 18.169910926431047
+            },
+            {
+              "frame": 252,
+              "t_s": 8.4084,
+              "x_px": 99.88744607005097,
+              "y_px": 17.143299395620016
+            },
+            {
+              "frame": 253,
+              "t_s": 8.441766666666666,
+              "x_px": 99.84532555548283,
+              "y_px": 16.25421466054466
+            },
+            {
+              "frame": 254,
+              "t_s": 8.475133333333334,
+              "x_px": 99.80320504091468,
+              "y_px": 15.502656721204872
+            },
+            {
+              "frame": 255,
+              "t_s": 8.5085,
+              "x_px": 99.76108452634654,
+              "y_px": 14.888625577600749
+            },
+            {
+              "frame": 256,
+              "t_s": 8.541866666666667,
+              "x_px": 99.71896401177838,
+              "y_px": 14.412121229732207
+            },
+            {
+              "frame": 257,
+              "t_s": 8.575233333333333,
+              "x_px": 99.67684349721024,
+              "y_px": 14.073143677599312
+            },
+            {
+              "frame": 258,
+              "t_s": 8.608600000000001,
+              "x_px": 99.63472298264209,
+              "y_px": 13.871692921202023
+            },
+            {
+              "frame": 259,
+              "t_s": 8.641966666666667,
+              "x_px": 99.59260246807395,
+              "y_px": 13.807768960540354
+            },
+            {
+              "frame": 260,
+              "t_s": 8.675333333333333,
+              "x_px": 99.5504819535058,
+              "y_px": 13.8813717956143
+            },
+            {
+              "frame": 261,
+              "t_s": 8.7087,
+              "x_px": 99.50836143893765,
+              "y_px": 14.092501426423876
+            },
+            {
+              "frame": 262,
+              "t_s": 8.742066666666666,
+              "x_px": 99.46624092436952,
+              "y_px": 14.441157852969052
+            },
+            {
+              "frame": 263,
+              "t_s": 8.775433333333334,
+              "x_px": 99.42412040980136,
+              "y_px": 14.927341075249867
+            },
+            {
+              "frame": 264,
+              "t_s": 8.8088,
+              "x_px": 99.38199989523322,
+              "y_px": 15.551051093266274
+            },
+            {
+              "frame": 265,
+              "t_s": 8.842166666666667,
+              "x_px": 99.33987938066507,
+              "y_px": 16.312287907018334
+            },
+            {
+              "frame": 266,
+              "t_s": 8.875533333333333,
+              "x_px": 99.29775886609693,
+              "y_px": 17.21105151650598
+            },
+            {
+              "frame": 267,
+              "t_s": 8.908900000000001,
+              "x_px": 99.25563835152877,
+              "y_px": 18.247341921729284
+            },
+            {
+              "frame": 268,
+              "t_s": 8.942266666666667,
+              "x_px": 99.21351783696063,
+              "y_px": 19.42115912268816
+            },
+            {
+              "frame": 269,
+              "t_s": 8.975633333333333,
+              "x_px": 99.17139732239248,
+              "y_px": 20.73250311938264
+            },
+            {
+              "frame": 270,
+              "t_s": 9.009,
+              "x_px": 99.12927680782434,
+              "y_px": 22.18137391181281
+            },
+            {
+              "frame": 271,
+              "t_s": 9.042366666666666,
+              "x_px": 99.08715629325619,
+              "y_px": 23.767771499978515
+            },
+            {
+              "frame": 272,
+              "t_s": 9.075733333333334,
+              "x_px": 99.04503577868805,
+              "y_px": 25.49169588387994
+            },
+            {
+              "frame": 273,
+              "t_s": 9.1091,
+              "x_px": 99.00291526411989,
+              "y_px": 27.353147063516886
+            },
+            {
+              "frame": 274,
+              "t_s": 9.142466666666667,
+              "x_px": 98.96079474955175,
+              "y_px": 29.352125038889547
+            },
+            {
+              "frame": 275,
+              "t_s": 9.175833333333333,
+              "x_px": 98.91867423498361,
+              "y_px": 31.488629809997718
+            },
+            {
+              "frame": 276,
+              "t_s": 9.209200000000001,
+              "x_px": 98.87655372041546,
+              "y_px": 33.76266137684163
+            }
+          ],
+          "role": "fitting_world",
+          "world": "Moon"
+        },
+        {
+          "gravity_m_s2": 9.81,
+          "landing": {
+            "t_s": 8.239342179638092,
+            "x_px": 100.10085673095246,
+            "y_px": 36.0
+          },
+          "points": [
+            {
+              "frame": 241,
+              "t_s": 8.041366666666667,
+              "x_px": 100.35077173030058,
+              "y_px": 36.0
+            },
+            {
+              "frame": 242,
+              "t_s": 8.074733333333333,
+              "x_px": 100.30865121573244,
+              "y_px": 33.94575768994234
+            },
+            {
+              "frame": 243,
+              "t_s": 8.1081,
+              "x_px": 100.26653070116429,
+              "y_px": 32.72431653183917
+            },
+            {
+              "frame": 244,
+              "t_s": 8.141466666666666,
+              "x_px": 100.22441018659615,
+              "y_px": 32.33567652569063
+            },
+            {
+              "frame": 245,
+              "t_s": 8.174833333333334,
+              "x_px": 100.18228967202799,
+              "y_px": 32.77983767149667
+            },
+            {
+              "frame": 246,
+              "t_s": 8.2082,
+              "x_px": 100.14016915745985,
+              "y_px": 34.05679996925725
+            }
+          ],
+          "role": "earth_counterfactual",
+          "world": "Earth"
+        }
+      ],
+      "id": "hop_a",
+      "key_moments": [
+        {
+          "caption": "leaving the ground",
+          "frame": 241,
+          "t_s": 8.041366666666667,
+          "type": "takeoff"
+        },
+        {
+          "caption": "hanging at the top",
+          "frame": 253,
+          "t_s": 8.441766666666666,
+          "type": "apex"
+        },
+        {
+          "caption": "touching down softly",
+          "frame": 276,
+          "t_s": 9.209200000000001,
+          "type": "landing"
+        }
+      ],
+      "kind": "free_flight",
+      "label": "Jump one",
+      "landing_info": {
+        "airborne_s": 1.1678333333333342,
+        "sigma_s": 0.013621884625144232
+      },
+      "mask": {
+        "artifact": "artifacts/astronaut.230-280.npz",
+        "object_id": "1"
+      },
+      "overlay": [
+        {
+          "bbox": [
+            68.0,
+            36.0,
+            73.0,
+            135.0
+          ],
+          "frame": 241,
+          "outline": [
+            [
+              80.0,
+              37.0
+            ],
+            [
+              77.0,
+              39.0
+            ],
+            [
+              76.0,
+              52.0
+            ],
+            [
+              71.0,
+              58.0
+            ],
+            [
+              68.0,
+              96.0
+            ],
+            [
+              69.0,
+              99.0
+            ],
+            [
+              76.0,
+              105.0
+            ],
+            [
+              78.0,
+              119.0
+            ],
+            [
+              82.0,
+              128.0
+            ],
+            [
+              80.0,
+              149.0
+            ],
+            [
+              81.0,
+              167.0
+            ],
+            [
+              85.0,
+              170.0
+            ],
+            [
+              94.0,
+              167.0
+            ],
+            [
+              95.0,
+              150.0
+            ],
+            [
+              98.0,
+              141.0
+            ],
+            [
+              99.0,
+              131.0
+            ],
+            [
+              102.0,
+              127.0
+            ],
+            [
+              106.0,
+              134.0
+            ],
+            [
+              113.0,
+              155.0
+            ],
+            [
+              114.0,
+              167.0
+            ],
+            [
+              132.0,
+              168.0
+            ],
+            [
+              132.0,
+              163.0
+            ],
+            [
+              128.0,
+              156.0
+            ],
+            [
+              127.0,
+              128.0
+            ],
+            [
+              126.0,
+              125.0
+            ],
+            [
+              125.0,
+              126.0
+            ],
+            [
+              123.0,
+              124.0
+            ],
+            [
+              122.0,
+              115.0
+            ],
+            [
+              120.0,
+              114.0
+            ],
+            [
+              118.0,
+              106.0
+            ],
+            [
+              119.0,
+              103.0
+            ],
+            [
+              118.0,
+              102.0
+            ],
+            [
+              123.0,
+              92.0
+            ],
+            [
+              123.0,
+              89.0
+            ],
+            [
+              118.0,
+              83.0
+            ],
+            [
+              124.0,
+              78.0
+            ],
+            [
+              138.0,
+              72.0
+            ],
+            [
+              140.0,
+              64.0
+            ],
+            [
+              137.0,
+              58.0
+            ],
+            [
+              134.0,
+              56.0
+            ],
+            [
+              127.0,
+              57.0
+            ],
+            [
+              126.0,
+              62.0
+            ],
+            [
+              124.0,
+              64.0
+            ],
+            [
+              121.0,
+              64.0
+            ],
+            [
+              120.0,
+              53.0
+            ],
+            [
+              115.0,
+              47.0
+            ],
+            [
+              111.0,
+              37.0
+            ],
+            [
+              108.0,
+              36.0
+            ]
+          ],
+          "point": [
+            100.35077173030058,
+            36.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            34.0,
+            72.0,
+            134.0
+          ],
+          "frame": 242,
+          "outline": [
+            [
+              78.0,
+              36.0
+            ],
+            [
+              76.0,
+              43.0
+            ],
+            [
+              76.0,
+              50.0
+            ],
+            [
+              71.0,
+              56.0
+            ],
+            [
+              68.0,
+              96.0
+            ],
+            [
+              76.0,
+              103.0
+            ],
+            [
+              77.0,
+              113.0
+            ],
+            [
+              82.0,
+              127.0
+            ],
+            [
+              80.0,
+              150.0
+            ],
+            [
+              81.0,
+              164.0
+            ],
+            [
+              92.0,
+              165.0
+            ],
+            [
+              94.0,
+              163.0
+            ],
+            [
+              95.0,
+              150.0
+            ],
+            [
+              101.0,
+              124.0
+            ],
+            [
+              104.0,
+              127.0
+            ],
+            [
+              109.0,
+              146.0
+            ],
+            [
+              113.0,
+              155.0
+            ],
+            [
+              113.0,
+              161.0
+            ],
+            [
+              116.0,
+              167.0
+            ],
+            [
+              132.0,
+              166.0
+            ],
+            [
+              133.0,
+              164.0
+            ],
+            [
+              129.0,
+              158.0
+            ],
+            [
+              126.0,
+              121.0
+            ],
+            [
+              123.0,
+              112.0
+            ],
+            [
+              120.0,
+              109.0
+            ],
+            [
+              120.0,
+              95.0
+            ],
+            [
+              123.0,
+              91.0
+            ],
+            [
+              123.0,
+              86.0
+            ],
+            [
+              118.0,
+              81.0
+            ],
+            [
+              122.0,
+              77.0
+            ],
+            [
+              137.0,
+              71.0
+            ],
+            [
+              139.0,
+              67.0
+            ],
+            [
+              139.0,
+              62.0
+            ],
+            [
+              136.0,
+              56.0
+            ],
+            [
+              132.0,
+              54.0
+            ],
+            [
+              127.0,
+              55.0
+            ],
+            [
+              126.0,
+              59.0
+            ],
+            [
+              124.0,
+              61.0
+            ],
+            [
+              121.0,
+              61.0
+            ],
+            [
+              120.0,
+              52.0
+            ],
+            [
+              118.0,
+              48.0
+            ],
+            [
+              115.0,
+              46.0
+            ],
+            [
+              113.0,
+              38.0
+            ],
+            [
+              110.0,
+              35.0
+            ],
+            [
+              87.0,
+              34.0
+            ]
+          ],
+          "point": [
+            100.55739568111707,
+            34.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            34.0,
+            72.0,
+            134.0
+          ],
+          "frame": 243,
+          "outline": [
+            [
+              80.0,
+              35.0
+            ],
+            [
+              77.0,
+              37.0
+            ],
+            [
+              76.0,
+              50.0
+            ],
+            [
+              71.0,
+              56.0
+            ],
+            [
+              70.0,
+              83.0
+            ],
+            [
+              68.0,
+              92.0
+            ],
+            [
+              69.0,
+              98.0
+            ],
+            [
+              76.0,
+              103.0
+            ],
+            [
+              77.0,
+              113.0
+            ],
+            [
+              82.0,
+              127.0
+            ],
+            [
+              80.0,
+              161.0
+            ],
+            [
+              82.0,
+              164.0
+            ],
+            [
+              91.0,
+              165.0
+            ],
+            [
+              94.0,
+              163.0
+            ],
+            [
+              100.0,
+              126.0
+            ],
+            [
+              102.0,
+              125.0
+            ],
+            [
+              106.0,
+              131.0
+            ],
+            [
+              115.0,
+              165.0
+            ],
+            [
+              117.0,
+              167.0
+            ],
+            [
+              132.0,
+              166.0
+            ],
+            [
+              133.0,
+              163.0
+            ],
+            [
+              129.0,
+              158.0
+            ],
+            [
+              126.0,
+              124.0
+            ],
+            [
+              124.0,
+              122.0
+            ],
+            [
+              119.0,
+              107.0
+            ],
+            [
+              120.0,
+              105.0
+            ],
+            [
+              119.0,
+              99.0
+            ],
+            [
+              123.0,
+              91.0
+            ],
+            [
+              123.0,
+              87.0
+            ],
+            [
+              117.0,
+              82.0
+            ],
+            [
+              117.0,
+              80.0
+            ],
+            [
+              130.0,
+              73.0
+            ],
+            [
+              135.0,
+              72.0
+            ],
+            [
+              139.0,
+              67.0
+            ],
+            [
+              139.0,
+              62.0
+            ],
+            [
+              136.0,
+              56.0
+            ],
+            [
+              132.0,
+              54.0
+            ],
+            [
+              127.0,
+              55.0
+            ],
+            [
+              125.0,
+              61.0
+            ],
+            [
+              121.0,
+              61.0
+            ],
+            [
+              119.0,
+              49.0
+            ],
+            [
+              114.0,
+              44.0
+            ],
+            [
+              113.0,
+              38.0
+            ],
+            [
+              110.0,
+              35.0
+            ],
+            [
+              104.0,
+              34.0
+            ]
+          ],
+          "point": [
+            100.3792820849041,
+            34.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            32.0,
+            72.0,
+            135.0
+          ],
+          "frame": 244,
+          "outline": [
+            [
+              78.0,
+              33.0
+            ],
+            [
+              76.0,
+              35.0
+            ],
+            [
+              75.0,
+              48.0
+            ],
+            [
+              70.0,
+              55.0
+            ],
+            [
+              71.0,
+              64.0
+            ],
+            [
+              68.0,
+              93.0
+            ],
+            [
+              76.0,
+              100.0
+            ],
+            [
+              78.0,
+              116.0
+            ],
+            [
+              82.0,
+              124.0
+            ],
+            [
+              80.0,
+              160.0
+            ],
+            [
+              82.0,
+              163.0
+            ],
+            [
+              88.0,
+              163.0
+            ],
+            [
+              94.0,
+              160.0
+            ],
+            [
+              99.0,
+              127.0
+            ],
+            [
+              102.0,
+              123.0
+            ],
+            [
+              107.0,
+              133.0
+            ],
+            [
+              113.0,
+              156.0
+            ],
+            [
+              113.0,
+              161.0
+            ],
+            [
+              115.0,
+              165.0
+            ],
+            [
+              117.0,
+              166.0
+            ],
+            [
+              130.0,
+              165.0
+            ],
+            [
+              132.0,
+              162.0
+            ],
+            [
+              128.0,
+              156.0
+            ],
+            [
+              128.0,
+              139.0
+            ],
+            [
+              126.0,
+              121.0
+            ],
+            [
+              124.0,
+              119.0
+            ],
+            [
+              123.0,
+              113.0
+            ],
+            [
+              119.0,
+              106.0
+            ],
+            [
+              118.0,
+              99.0
+            ],
+            [
+              123.0,
+              85.0
+            ],
+            [
+              117.0,
+              80.0
+            ],
+            [
+              117.0,
+              78.0
+            ],
+            [
+              122.0,
+              74.0
+            ],
+            [
+              136.0,
+              69.0
+            ],
+            [
+              139.0,
+              64.0
+            ],
+            [
+              138.0,
+              59.0
+            ],
+            [
+              133.0,
+              53.0
+            ],
+            [
+              130.0,
+              52.0
+            ],
+            [
+              122.0,
+              53.0
+            ],
+            [
+              114.0,
+              43.0
+            ],
+            [
+              113.0,
+              37.0
+            ],
+            [
+              109.0,
+              32.0
+            ]
+          ],
+          "point": [
+            100.2883864671438,
+            32.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            30.0,
+            72.0,
+            135.0
+          ],
+          "frame": 245,
+          "outline": [
+            [
+              77.0,
+              32.0
+            ],
+            [
+              75.0,
+              39.0
+            ],
+            [
+              75.0,
+              46.0
+            ],
+            [
+              70.0,
+              55.0
+            ],
+            [
+              71.0,
+              64.0
+            ],
+            [
+              68.0,
+              93.0
+            ],
+            [
+              73.0,
+              94.0
+            ],
+            [
+              76.0,
+              98.0
+            ],
+            [
+              78.0,
+              115.0
+            ],
+            [
+              82.0,
+              124.0
+            ],
+            [
+              81.0,
+              159.0
+            ],
+            [
+              86.0,
+              162.0
+            ],
+            [
+              94.0,
+              159.0
+            ],
+            [
+              99.0,
+              127.0
+            ],
+            [
+              102.0,
+              123.0
+            ],
+            [
+              106.0,
+              129.0
+            ],
+            [
+              114.0,
+              162.0
+            ],
+            [
+              117.0,
+              164.0
+            ],
+            [
+              130.0,
+              163.0
+            ],
+            [
+              132.0,
+              161.0
+            ],
+            [
+              128.0,
+              155.0
+            ],
+            [
+              126.0,
+              120.0
+            ],
+            [
+              123.0,
+              118.0
+            ],
+            [
+              122.0,
+              112.0
+            ],
+            [
+              118.0,
+              105.0
+            ],
+            [
+              117.0,
+              98.0
+            ],
+            [
+              120.0,
+              95.0
+            ],
+            [
+              123.0,
+              84.0
+            ],
+            [
+              121.0,
+              81.0
+            ],
+            [
+              117.0,
+              79.0
+            ],
+            [
+              117.0,
+              77.0
+            ],
+            [
+              129.0,
+              70.0
+            ],
+            [
+              135.0,
+              69.0
+            ],
+            [
+              138.0,
+              66.0
+            ],
+            [
+              139.0,
+              60.0
+            ],
+            [
+              135.0,
+              54.0
+            ],
+            [
+              131.0,
+              51.0
+            ],
+            [
+              127.0,
+              51.0
+            ],
+            [
+              124.0,
+              53.0
+            ],
+            [
+              121.0,
+              52.0
+            ],
+            [
+              118.0,
+              46.0
+            ],
+            [
+              113.0,
+              41.0
+            ],
+            [
+              113.0,
+              36.0
+            ],
+            [
+              109.0,
+              31.0
+            ],
+            [
+              85.0,
+              30.0
+            ]
+          ],
+          "point": [
+            100.17834394904459,
+            30.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            28.0,
+            71.0,
+            134.0
+          ],
+          "frame": 246,
+          "outline": [
+            [
+              77.0,
+              30.0
+            ],
+            [
+              75.0,
+              32.0
+            ],
+            [
+              74.0,
+              45.0
+            ],
+            [
+              70.0,
+              50.0
+            ],
+            [
+              70.0,
+              74.0
+            ],
+            [
+              68.0,
+              91.0
+            ],
+            [
+              74.0,
+              92.0
+            ],
+            [
+              77.0,
+              96.0
+            ],
+            [
+              76.0,
+              98.0
+            ],
+            [
+              79.0,
+              118.0
+            ],
+            [
+              82.0,
+              124.0
+            ],
+            [
+              81.0,
+              156.0
+            ],
+            [
+              84.0,
+              160.0
+            ],
+            [
+              91.0,
+              160.0
+            ],
+            [
+              94.0,
+              158.0
+            ],
+            [
+              99.0,
+              123.0
+            ],
+            [
+              102.0,
+              121.0
+            ],
+            [
+              107.0,
+              133.0
+            ],
+            [
+              113.0,
+              160.0
+            ],
+            [
+              129.0,
+              161.0
+            ],
+            [
+              131.0,
+              159.0
+            ],
+            [
+              127.0,
+              152.0
+            ],
+            [
+              126.0,
+              121.0
+            ],
+            [
+              123.0,
+              118.0
+            ],
+            [
+              116.0,
+              96.0
+            ],
+            [
+              120.0,
+              93.0
+            ],
+            [
+              122.0,
+              87.0
+            ],
+            [
+              122.0,
+              82.0
+            ],
+            [
+              118.0,
+              78.0
+            ],
+            [
+              118.0,
+              74.0
+            ],
+            [
+              126.0,
+              71.0
+            ],
+            [
+              129.0,
+              68.0
+            ],
+            [
+              135.0,
+              67.0
+            ],
+            [
+              138.0,
+              64.0
+            ],
+            [
+              138.0,
+              59.0
+            ],
+            [
+              131.0,
+              50.0
+            ],
+            [
+              125.0,
+              50.0
+            ],
+            [
+              119.0,
+              48.0
+            ],
+            [
+              113.0,
+              40.0
+            ],
+            [
+              112.0,
+              33.0
+            ],
+            [
+              109.0,
+              29.0
+            ],
+            [
+              92.0,
+              28.0
+            ]
+          ],
+          "point": [
+            99.79993418887793,
+            28.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            27.0,
+            71.0,
+            135.0
+          ],
+          "frame": 247,
+          "outline": [
+            [
+              77.0,
+              29.0
+            ],
+            [
+              75.0,
+              31.0
+            ],
+            [
+              75.0,
+              42.0
+            ],
+            [
+              70.0,
+              50.0
+            ],
+            [
+              70.0,
+              77.0
+            ],
+            [
+              68.0,
+              90.0
+            ],
+            [
+              73.0,
+              91.0
+            ],
+            [
+              75.0,
+              94.0
+            ],
+            [
+              78.0,
+              113.0
+            ],
+            [
+              83.0,
+              123.0
+            ],
+            [
+              82.0,
+              156.0
+            ],
+            [
+              84.0,
+              159.0
+            ],
+            [
+              91.0,
+              159.0
+            ],
+            [
+              94.0,
+              157.0
+            ],
+            [
+              96.0,
+              149.0
+            ],
+            [
+              98.0,
+              125.0
+            ],
+            [
+              102.0,
+              121.0
+            ],
+            [
+              106.0,
+              127.0
+            ],
+            [
+              112.0,
+              158.0
+            ],
+            [
+              114.0,
+              160.0
+            ],
+            [
+              128.0,
+              161.0
+            ],
+            [
+              131.0,
+              159.0
+            ],
+            [
+              127.0,
+              152.0
+            ],
+            [
+              127.0,
+              131.0
+            ],
+            [
+              126.0,
+              130.0
+            ],
+            [
+              127.0,
+              121.0
+            ],
+            [
+              115.0,
+              98.0
+            ],
+            [
+              115.0,
+              96.0
+            ],
+            [
+              120.0,
+              91.0
+            ],
+            [
+              120.0,
+              88.0
+            ],
+            [
+              122.0,
+              86.0
+            ],
+            [
+              122.0,
+              81.0
+            ],
+            [
+              121.0,
+              79.0
+            ],
+            [
+              116.0,
+              77.0
+            ],
+            [
+              116.0,
+              74.0
+            ],
+            [
+              129.0,
+              67.0
+            ],
+            [
+              135.0,
+              66.0
+            ],
+            [
+              138.0,
+              63.0
+            ],
+            [
+              138.0,
+              58.0
+            ],
+            [
+              131.0,
+              49.0
+            ],
+            [
+              120.0,
+              49.0
+            ],
+            [
+              113.0,
+              40.0
+            ],
+            [
+              112.0,
+              33.0
+            ],
+            [
+              108.0,
+              28.0
+            ],
+            [
+              94.0,
+              27.0
+            ]
+          ],
+          "point": [
+            99.85524788592274,
+            27.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            27.0,
+            71.0,
+            135.0
+          ],
+          "frame": 248,
+          "outline": [
+            [
+              77.0,
+              29.0
+            ],
+            [
+              75.0,
+              31.0
+            ],
+            [
+              75.0,
+              42.0
+            ],
+            [
+              70.0,
+              50.0
+            ],
+            [
+              70.0,
+              78.0
+            ],
+            [
+              68.0,
+              90.0
+            ],
+            [
+              75.0,
+              95.0
+            ],
+            [
+              79.0,
+              116.0
+            ],
+            [
+              82.0,
+              121.0
+            ],
+            [
+              82.0,
+              147.0
+            ],
+            [
+              81.0,
+              148.0
+            ],
+            [
+              82.0,
+              156.0
+            ],
+            [
+              84.0,
+              159.0
+            ],
+            [
+              90.0,
+              159.0
+            ],
+            [
+              94.0,
+              157.0
+            ],
+            [
+              96.0,
+              150.0
+            ],
+            [
+              99.0,
+              123.0
+            ],
+            [
+              102.0,
+              121.0
+            ],
+            [
+              106.0,
+              129.0
+            ],
+            [
+              112.0,
+              158.0
+            ],
+            [
+              115.0,
+              160.0
+            ],
+            [
+              125.0,
+              161.0
+            ],
+            [
+              130.0,
+              160.0
+            ],
+            [
+              130.0,
+              157.0
+            ],
+            [
+              126.0,
+              150.0
+            ],
+            [
+              127.0,
+              118.0
+            ],
+            [
+              122.0,
+              115.0
+            ],
+            [
+              119.0,
+              105.0
+            ],
+            [
+              113.0,
+              98.0
+            ],
+            [
+              112.0,
+              93.0
+            ],
+            [
+              113.0,
+              92.0
+            ],
+            [
+              119.0,
+              93.0
+            ],
+            [
+              122.0,
+              86.0
+            ],
+            [
+              122.0,
+              80.0
+            ],
+            [
+              117.0,
+              78.0
+            ],
+            [
+              116.0,
+              74.0
+            ],
+            [
+              130.0,
+              67.0
+            ],
+            [
+              135.0,
+              66.0
+            ],
+            [
+              138.0,
+              63.0
+            ],
+            [
+              138.0,
+              58.0
+            ],
+            [
+              132.0,
+              50.0
+            ],
+            [
+              120.0,
+              48.0
+            ],
+            [
+              114.0,
+              41.0
+            ],
+            [
+              112.0,
+              32.0
+            ],
+            [
+              108.0,
+              28.0
+            ],
+            [
+              93.0,
+              27.0
+            ]
+          ],
+          "point": [
+            99.73251574411667,
+            27.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            26.0,
+            70.0,
+            135.0
+          ],
+          "frame": 249,
+          "outline": [
+            [
+              75.0,
+              29.0
+            ],
+            [
+              74.0,
+              43.0
+            ],
+            [
+              70.0,
+              49.0
+            ],
+            [
+              70.0,
+              75.0
+            ],
+            [
+              68.0,
+              89.0
+            ],
+            [
+              76.0,
+              95.0
+            ],
+            [
+              77.0,
+              108.0
+            ],
+            [
+              83.0,
+              124.0
+            ],
+            [
+              82.0,
+              126.0
+            ],
+            [
+              83.0,
+              157.0
+            ],
+            [
+              85.0,
+              159.0
+            ],
+            [
+              90.0,
+              159.0
+            ],
+            [
+              95.0,
+              156.0
+            ],
+            [
+              99.0,
+              123.0
+            ],
+            [
+              102.0,
+              121.0
+            ],
+            [
+              106.0,
+              127.0
+            ],
+            [
+              112.0,
+              157.0
+            ],
+            [
+              114.0,
+              159.0
+            ],
+            [
+              130.0,
+              160.0
+            ],
+            [
+              130.0,
+              157.0
+            ],
+            [
+              126.0,
+              150.0
+            ],
+            [
+              126.0,
+              117.0
+            ],
+            [
+              122.0,
+              114.0
+            ],
+            [
+              119.0,
+              104.0
+            ],
+            [
+              114.0,
+              98.0
+            ],
+            [
+              113.0,
+              94.0
+            ],
+            [
+              119.0,
+              92.0
+            ],
+            [
+              122.0,
+              84.0
+            ],
+            [
+              122.0,
+              80.0
+            ],
+            [
+              116.0,
+              76.0
+            ],
+            [
+              116.0,
+              73.0
+            ],
+            [
+              120.0,
+              70.0
+            ],
+            [
+              134.0,
+              65.0
+            ],
+            [
+              137.0,
+              62.0
+            ],
+            [
+              137.0,
+              55.0
+            ],
+            [
+              129.0,
+              47.0
+            ],
+            [
+              120.0,
+              47.0
+            ],
+            [
+              113.0,
+              39.0
+            ],
+            [
+              111.0,
+              29.0
+            ],
+            [
+              108.0,
+              27.0
+            ],
+            [
+              93.0,
+              26.0
+            ]
+          ],
+          "point": [
+            99.53999336209758,
+            26.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            25.0,
+            71.0,
+            135.0
+          ],
+          "frame": 250,
+          "outline": [
+            [
+              76.0,
+              27.0
+            ],
+            [
+              74.0,
+              43.0
+            ],
+            [
+              70.0,
+              48.0
+            ],
+            [
+              70.0,
+              73.0
+            ],
+            [
+              68.0,
+              88.0
+            ],
+            [
+              74.0,
+              91.0
+            ],
+            [
+              77.0,
+              95.0
+            ],
+            [
+              78.0,
+              112.0
+            ],
+            [
+              83.0,
+              124.0
+            ],
+            [
+              82.0,
+              126.0
+            ],
+            [
+              83.0,
+              157.0
+            ],
+            [
+              91.0,
+              158.0
+            ],
+            [
+              95.0,
+              155.0
+            ],
+            [
+              97.0,
+              147.0
+            ],
+            [
+              96.0,
+              140.0
+            ],
+            [
+              99.0,
+              122.0
+            ],
+            [
+              102.0,
+              120.0
+            ],
+            [
+              106.0,
+              126.0
+            ],
+            [
+              112.0,
+              156.0
+            ],
+            [
+              115.0,
+              158.0
+            ],
+            [
+              128.0,
+              159.0
+            ],
+            [
+              129.0,
+              155.0
+            ],
+            [
+              125.0,
+              147.0
+            ],
+            [
+              127.0,
+              141.0
+            ],
+            [
+              126.0,
+              133.0
+            ],
+            [
+              127.0,
+              118.0
+            ],
+            [
+              120.0,
+              111.0
+            ],
+            [
+              119.0,
+              104.0
+            ],
+            [
+              112.0,
+              95.0
+            ],
+            [
+              111.0,
+              91.0
+            ],
+            [
+              112.0,
+              90.0
+            ],
+            [
+              119.0,
+              91.0
+            ],
+            [
+              122.0,
+              83.0
+            ],
+            [
+              122.0,
+              79.0
+            ],
+            [
+              116.0,
+              75.0
+            ],
+            [
+              116.0,
+              72.0
+            ],
+            [
+              122.0,
+              68.0
+            ],
+            [
+              135.0,
+              63.0
+            ],
+            [
+              138.0,
+              57.0
+            ],
+            [
+              137.0,
+              54.0
+            ],
+            [
+              130.0,
+              46.0
+            ],
+            [
+              120.0,
+              46.0
+            ],
+            [
+              113.0,
+              38.0
+            ],
+            [
+              111.0,
+              29.0
+            ],
+            [
+              107.0,
+              26.0
+            ],
+            [
+              94.0,
+              25.0
+            ]
+          ],
+          "point": [
+            99.44772386193097,
+            25.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            24.0,
+            71.0,
+            136.0
+          ],
+          "frame": 251,
+          "outline": [
+            [
+              76.0,
+              26.0
+            ],
+            [
+              74.0,
+              28.0
+            ],
+            [
+              75.0,
+              31.0
+            ],
+            [
+              74.0,
+              41.0
+            ],
+            [
+              70.0,
+              46.0
+            ],
+            [
+              69.0,
+              50.0
+            ],
+            [
+              70.0,
+              77.0
+            ],
+            [
+              68.0,
+              88.0
+            ],
+            [
+              70.0,
+              88.0
+            ],
+            [
+              77.0,
+              97.0
+            ],
+            [
+              78.0,
+              110.0
+            ],
+            [
+              82.0,
+              118.0
+            ],
+            [
+              83.0,
+              156.0
+            ],
+            [
+              85.0,
+              158.0
+            ],
+            [
+              88.0,
+              158.0
+            ],
+            [
+              95.0,
+              155.0
+            ],
+            [
+              97.0,
+              148.0
+            ],
+            [
+              96.0,
+              140.0
+            ],
+            [
+              98.0,
+              125.0
+            ],
+            [
+              100.0,
+              119.0
+            ],
+            [
+              102.0,
+              118.0
+            ],
+            [
+              106.0,
+              127.0
+            ],
+            [
+              110.0,
+              144.0
+            ],
+            [
+              110.0,
+              150.0
+            ],
+            [
+              113.0,
+              156.0
+            ],
+            [
+              127.0,
+              159.0
+            ],
+            [
+              130.0,
+              157.0
+            ],
+            [
+              126.0,
+              148.0
+            ],
+            [
+              127.0,
+              116.0
+            ],
+            [
+              122.0,
+              111.0
+            ],
+            [
+              119.0,
+              101.0
+            ],
+            [
+              114.0,
+              96.0
+            ],
+            [
+              112.0,
+              91.0
+            ],
+            [
+              120.0,
+              90.0
+            ],
+            [
+              120.0,
+              86.0
+            ],
+            [
+              122.0,
+              83.0
+            ],
+            [
+              122.0,
+              78.0
+            ],
+            [
+              116.0,
+              73.0
+            ],
+            [
+              116.0,
+              71.0
+            ],
+            [
+              122.0,
+              67.0
+            ],
+            [
+              134.0,
+              63.0
+            ],
+            [
+              137.0,
+              60.0
+            ],
+            [
+              138.0,
+              55.0
+            ],
+            [
+              131.0,
+              46.0
+            ],
+            [
+              119.0,
+              45.0
+            ],
+            [
+              113.0,
+              38.0
+            ],
+            [
+              111.0,
+              28.0
+            ],
+            [
+              108.0,
+              25.0
+            ],
+            [
+              93.0,
+              24.0
+            ]
+          ],
+          "point": [
+            99.55458587189199,
+            24.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            23.0,
+            70.0,
+            136.0
+          ],
+          "frame": 252,
+          "outline": [
+            [
+              77.0,
+              25.0
+            ],
+            [
+              74.0,
+              27.0
+            ],
+            [
+              73.0,
+              37.0
+            ],
+            [
+              74.0,
+              40.0
+            ],
+            [
+              70.0,
+              46.0
+            ],
+            [
+              70.0,
+              75.0
+            ],
+            [
+              68.0,
+              87.0
+            ],
+            [
+              71.0,
+              88.0
+            ],
+            [
+              76.0,
+              94.0
+            ],
+            [
+              77.0,
+              105.0
+            ],
+            [
+              82.0,
+              119.0
+            ],
+            [
+              83.0,
+              156.0
+            ],
+            [
+              87.0,
+              158.0
+            ],
+            [
+              95.0,
+              155.0
+            ],
+            [
+              97.0,
+              149.0
+            ],
+            [
+              96.0,
+              143.0
+            ],
+            [
+              98.0,
+              134.0
+            ],
+            [
+              98.0,
+              125.0
+            ],
+            [
+              100.0,
+              119.0
+            ],
+            [
+              102.0,
+              118.0
+            ],
+            [
+              106.0,
+              126.0
+            ],
+            [
+              111.0,
+              149.0
+            ],
+            [
+              110.0,
+              150.0
+            ],
+            [
+              112.0,
+              154.0
+            ],
+            [
+              116.0,
+              157.0
+            ],
+            [
+              129.0,
+              158.0
+            ],
+            [
+              130.0,
+              154.0
+            ],
+            [
+              126.0,
+              145.0
+            ],
+            [
+              127.0,
+              116.0
+            ],
+            [
+              122.0,
+              110.0
+            ],
+            [
+              118.0,
+              99.0
+            ],
+            [
+              113.0,
+              95.0
+            ],
+            [
+              112.0,
+              90.0
+            ],
+            [
+              113.0,
+              89.0
+            ],
+            [
+              119.0,
+              90.0
+            ],
+            [
+              122.0,
+              83.0
+            ],
+            [
+              122.0,
+              78.0
+            ],
+            [
+              115.0,
+              73.0
+            ],
+            [
+              116.0,
+              70.0
+            ],
+            [
+              128.0,
+              64.0
+            ],
+            [
+              134.0,
+              63.0
+            ],
+            [
+              137.0,
+              60.0
+            ],
+            [
+              137.0,
+              53.0
+            ],
+            [
+              129.0,
+              45.0
+            ],
+            [
+              118.0,
+              44.0
+            ],
+            [
+              112.0,
+              35.0
+            ],
+            [
+              112.0,
+              30.0
+            ],
+            [
+              110.0,
+              26.0
+            ],
+            [
+              106.0,
+              24.0
+            ],
+            [
+              97.0,
+              23.0
+            ]
+          ],
+          "point": [
+            99.527350147396,
+            23.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            23.0,
+            71.0,
+            136.0
+          ],
+          "frame": 253,
+          "outline": [
+            [
+              77.0,
+              25.0
+            ],
+            [
+              74.0,
+              27.0
+            ],
+            [
+              74.0,
+              40.0
+            ],
+            [
+              69.0,
+              49.0
+            ],
+            [
+              70.0,
+              77.0
+            ],
+            [
+              68.0,
+              87.0
+            ],
+            [
+              71.0,
+              88.0
+            ],
+            [
+              76.0,
+              95.0
+            ],
+            [
+              79.0,
+              112.0
+            ],
+            [
+              83.0,
+              121.0
+            ],
+            [
+              82.0,
+              154.0
+            ],
+            [
+              85.0,
+              158.0
+            ],
+            [
+              93.0,
+              157.0
+            ],
+            [
+              95.0,
+              155.0
+            ],
+            [
+              97.0,
+              149.0
+            ],
+            [
+              97.0,
+              135.0
+            ],
+            [
+              99.0,
+              121.0
+            ],
+            [
+              102.0,
+              118.0
+            ],
+            [
+              106.0,
+              124.0
+            ],
+            [
+              111.0,
+              151.0
+            ],
+            [
+              113.0,
+              155.0
+            ],
+            [
+              121.0,
+              158.0
+            ],
+            [
+              129.0,
+              158.0
+            ],
+            [
+              130.0,
+              154.0
+            ],
+            [
+              127.0,
+              148.0
+            ],
+            [
+              126.0,
+              128.0
+            ],
+            [
+              127.0,
+              115.0
+            ],
+            [
+              123.0,
+              111.0
+            ],
+            [
+              118.0,
+              99.0
+            ],
+            [
+              114.0,
+              96.0
+            ],
+            [
+              112.0,
+              90.0
+            ],
+            [
+              113.0,
+              89.0
+            ],
+            [
+              120.0,
+              90.0
+            ],
+            [
+              122.0,
+              83.0
+            ],
+            [
+              122.0,
+              78.0
+            ],
+            [
+              121.0,
+              76.0
+            ],
+            [
+              116.0,
+              74.0
+            ],
+            [
+              115.0,
+              72.0
+            ],
+            [
+              116.0,
+              70.0
+            ],
+            [
+              128.0,
+              64.0
+            ],
+            [
+              134.0,
+              63.0
+            ],
+            [
+              137.0,
+              60.0
+            ],
+            [
+              138.0,
+              55.0
+            ],
+            [
+              131.0,
+              46.0
+            ],
+            [
+              121.0,
+              44.0
+            ],
+            [
+              119.0,
+              45.0
+            ],
+            [
+              112.0,
+              35.0
+            ],
+            [
+              112.0,
+              30.0
+            ],
+            [
+              110.0,
+              26.0
+            ],
+            [
+              106.0,
+              24.0
+            ],
+            [
+              96.0,
+              23.0
+            ]
+          ],
+          "point": [
+            99.58679986898133,
+            23.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            23.0,
+            70.0,
+            136.0
+          ],
+          "frame": 254,
+          "outline": [
+            [
+              76.0,
+              25.0
+            ],
+            [
+              74.0,
+              26.0
+            ],
+            [
+              73.0,
+              41.0
+            ],
+            [
+              70.0,
+              46.0
+            ],
+            [
+              70.0,
+              78.0
+            ],
+            [
+              68.0,
+              87.0
+            ],
+            [
+              71.0,
+              88.0
+            ],
+            [
+              76.0,
+              94.0
+            ],
+            [
+              77.0,
+              104.0
+            ],
+            [
+              82.0,
+              118.0
+            ],
+            [
+              83.0,
+              141.0
+            ],
+            [
+              82.0,
+              154.0
+            ],
+            [
+              86.0,
+              158.0
+            ],
+            [
+              93.0,
+              157.0
+            ],
+            [
+              95.0,
+              155.0
+            ],
+            [
+              97.0,
+              149.0
+            ],
+            [
+              96.0,
+              141.0
+            ],
+            [
+              99.0,
+              121.0
+            ],
+            [
+              102.0,
+              118.0
+            ],
+            [
+              107.0,
+              127.0
+            ],
+            [
+              108.0,
+              136.0
+            ],
+            [
+              113.0,
+              154.0
+            ],
+            [
+              116.0,
+              157.0
+            ],
+            [
+              130.0,
+              158.0
+            ],
+            [
+              131.0,
+              154.0
+            ],
+            [
+              127.0,
+              148.0
+            ],
+            [
+              126.0,
+              128.0
+            ],
+            [
+              127.0,
+              115.0
+            ],
+            [
+              123.0,
+              111.0
+            ],
+            [
+              119.0,
+              101.0
+            ],
+            [
+              113.0,
+              95.0
+            ],
+            [
+              111.0,
+              89.0
+            ],
+            [
+              112.0,
+              88.0
+            ],
+            [
+              116.0,
+              90.0
+            ],
+            [
+              120.0,
+              89.0
+            ],
+            [
+              122.0,
+              78.0
+            ],
+            [
+              119.0,
+              75.0
+            ],
+            [
+              117.0,
+              75.0
+            ],
+            [
+              115.0,
+              72.0
+            ],
+            [
+              117.0,
+              69.0
+            ],
+            [
+              135.0,
+              62.0
+            ],
+            [
+              137.0,
+              59.0
+            ],
+            [
+              137.0,
+              53.0
+            ],
+            [
+              129.0,
+              45.0
+            ],
+            [
+              118.0,
+              44.0
+            ],
+            [
+              112.0,
+              35.0
+            ],
+            [
+              112.0,
+              30.0
+            ],
+            [
+              110.0,
+              26.0
+            ],
+            [
+              107.0,
+              24.0
+            ],
+            [
+              94.0,
+              23.0
+            ]
+          ],
+          "point": [
+            99.51503203548546,
+            23.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            23.0,
+            70.0,
+            136.0
+          ],
+          "frame": 255,
+          "outline": [
+            [
+              76.0,
+              25.0
+            ],
+            [
+              74.0,
+              26.0
+            ],
+            [
+              73.0,
+              41.0
+            ],
+            [
+              69.0,
+              47.0
+            ],
+            [
+              70.0,
+              78.0
+            ],
+            [
+              68.0,
+              87.0
+            ],
+            [
+              71.0,
+              88.0
+            ],
+            [
+              76.0,
+              94.0
+            ],
+            [
+              77.0,
+              105.0
+            ],
+            [
+              80.0,
+              116.0
+            ],
+            [
+              82.0,
+              118.0
+            ],
+            [
+              81.0,
+              151.0
+            ],
+            [
+              83.0,
+              157.0
+            ],
+            [
+              87.0,
+              158.0
+            ],
+            [
+              95.0,
+              155.0
+            ],
+            [
+              97.0,
+              149.0
+            ],
+            [
+              96.0,
+              139.0
+            ],
+            [
+              99.0,
+              122.0
+            ],
+            [
+              101.0,
+              119.0
+            ],
+            [
+              103.0,
+              119.0
+            ],
+            [
+              107.0,
+              127.0
+            ],
+            [
+              108.0,
+              135.0
+            ],
+            [
+              114.0,
+              155.0
+            ],
+            [
+              116.0,
+              157.0
+            ],
+            [
+              129.0,
+              158.0
+            ],
+            [
+              131.0,
+              154.0
+            ],
+            [
+              127.0,
+              146.0
+            ],
+            [
+              126.0,
+              125.0
+            ],
+            [
+              127.0,
+              115.0
+            ],
+            [
+              123.0,
+              111.0
+            ],
+            [
+              119.0,
+              101.0
+            ],
+            [
+              113.0,
+              95.0
+            ],
+            [
+              111.0,
+              89.0
+            ],
+            [
+              112.0,
+              88.0
+            ],
+            [
+              116.0,
+              90.0
+            ],
+            [
+              120.0,
+              89.0
+            ],
+            [
+              122.0,
+              78.0
+            ],
+            [
+              119.0,
+              75.0
+            ],
+            [
+              117.0,
+              75.0
+            ],
+            [
+              115.0,
+              72.0
+            ],
+            [
+              121.0,
+              67.0
+            ],
+            [
+              134.0,
+              62.0
+            ],
+            [
+              137.0,
+              58.0
+            ],
+            [
+              137.0,
+              54.0
+            ],
+            [
+              130.0,
+              46.0
+            ],
+            [
+              117.0,
+              44.0
+            ],
+            [
+              112.0,
+              37.0
+            ],
+            [
+              112.0,
+              31.0
+            ],
+            [
+              108.0,
+              25.0
+            ],
+            [
+              103.0,
+              23.0
+            ]
+          ],
+          "point": [
+            99.3336620644313,
+            23.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            24.0,
+            70.0,
+            135.0
+          ],
+          "frame": 256,
+          "outline": [
+            [
+              74.0,
+              27.0
+            ],
+            [
+              73.0,
+              42.0
+            ],
+            [
+              69.0,
+              47.0
+            ],
+            [
+              70.0,
+              70.0
+            ],
+            [
+              68.0,
+              87.0
+            ],
+            [
+              76.0,
+              95.0
+            ],
+            [
+              77.0,
+              100.0
+            ],
+            [
+              76.0,
+              102.0
+            ],
+            [
+              79.0,
+              115.0
+            ],
+            [
+              81.0,
+              118.0
+            ],
+            [
+              81.0,
+              154.0
+            ],
+            [
+              84.0,
+              158.0
+            ],
+            [
+              92.0,
+              157.0
+            ],
+            [
+              95.0,
+              155.0
+            ],
+            [
+              96.0,
+              152.0
+            ],
+            [
+              95.0,
+              143.0
+            ],
+            [
+              99.0,
+              119.0
+            ],
+            [
+              102.0,
+              116.0
+            ],
+            [
+              107.0,
+              125.0
+            ],
+            [
+              110.0,
+              142.0
+            ],
+            [
+              115.0,
+              156.0
+            ],
+            [
+              129.0,
+              158.0
+            ],
+            [
+              131.0,
+              157.0
+            ],
+            [
+              131.0,
+              153.0
+            ],
+            [
+              128.0,
+              146.0
+            ],
+            [
+              127.0,
+              115.0
+            ],
+            [
+              122.0,
+              110.0
+            ],
+            [
+              119.0,
+              102.0
+            ],
+            [
+              112.0,
+              94.0
+            ],
+            [
+              111.0,
+              88.0
+            ],
+            [
+              112.0,
+              87.0
+            ],
+            [
+              116.0,
+              90.0
+            ],
+            [
+              120.0,
+              89.0
+            ],
+            [
+              122.0,
+              79.0
+            ],
+            [
+              120.0,
+              76.0
+            ],
+            [
+              116.0,
+              75.0
+            ],
+            [
+              115.0,
+              72.0
+            ],
+            [
+              118.0,
+              69.0
+            ],
+            [
+              135.0,
+              62.0
+            ],
+            [
+              137.0,
+              58.0
+            ],
+            [
+              136.0,
+              53.0
+            ],
+            [
+              129.0,
+              46.0
+            ],
+            [
+              117.0,
+              45.0
+            ],
+            [
+              112.0,
+              38.0
+            ],
+            [
+              111.0,
+              29.0
+            ],
+            [
+              106.0,
+              25.0
+            ],
+            [
+              92.0,
+              24.0
+            ]
+          ],
+          "point": [
+            99.1395771390816,
+            24.0
+          ]
+        },
+        {
+          "bbox": [
+            67.0,
+            24.0,
+            71.0,
+            135.0
+          ],
+          "frame": 257,
+          "outline": [
+            [
+              77.0,
+              26.0
+            ],
+            [
+              74.0,
+              28.0
+            ],
+            [
+              73.0,
+              41.0
+            ],
+            [
+              69.0,
+              46.0
+            ],
+            [
+              70.0,
+              68.0
+            ],
+            [
+              69.0,
+              81.0
+            ],
+            [
+              67.0,
+              87.0
+            ],
+            [
+              75.0,
+              93.0
+            ],
+            [
+              77.0,
+              98.0
+            ],
+            [
+              78.0,
+              112.0
+            ],
+            [
+              81.0,
+              119.0
+            ],
+            [
+              80.0,
+              135.0
+            ],
+            [
+              81.0,
+              157.0
+            ],
+            [
+              90.0,
+              158.0
+            ],
+            [
+              94.0,
+              156.0
+            ],
+            [
+              98.0,
+              117.0
+            ],
+            [
+              101.0,
+              115.0
+            ],
+            [
+              107.0,
+              125.0
+            ],
+            [
+              108.0,
+              136.0
+            ],
+            [
+              114.0,
+              156.0
+            ],
+            [
+              120.0,
+              158.0
+            ],
+            [
+              130.0,
+              158.0
+            ],
+            [
+              131.0,
+              153.0
+            ],
+            [
+              127.0,
+              146.0
+            ],
+            [
+              128.0,
+              139.0
+            ],
+            [
+              126.0,
+              127.0
+            ],
+            [
+              127.0,
+              115.0
+            ],
+            [
+              123.0,
+              111.0
+            ],
+            [
+              118.0,
+              101.0
+            ],
+            [
+              113.0,
+              96.0
+            ],
+            [
+              111.0,
+              89.0
+            ],
+            [
+              113.0,
+              88.0
+            ],
+            [
+              115.0,
+              90.0
+            ],
+            [
+              119.0,
+              90.0
+            ],
+            [
+              122.0,
+              80.0
+            ],
+            [
+              119.0,
+              76.0
+            ],
+            [
+              114.0,
+              75.0
+            ],
+            [
+              115.0,
+              71.0
+            ],
+            [
+              128.0,
+              64.0
+            ],
+            [
+              135.0,
+              62.0
+            ],
+            [
+              137.0,
+              56.0
+            ],
+            [
+              134.0,
+              51.0
+            ],
+            [
+              128.0,
+              46.0
+            ],
+            [
+              117.0,
+              45.0
+            ],
+            [
+              113.0,
+              41.0
+            ],
+            [
+              109.0,
+              27.0
+            ],
+            [
+              102.0,
+              24.0
+            ]
+          ],
+          "point": [
+            98.90393230462917,
+            24.0
+          ]
+        },
+        {
+          "bbox": [
+            67.0,
+            24.0,
+            71.0,
+            135.0
+          ],
+          "frame": 258,
+          "outline": [
+            [
+              74.0,
+              27.0
+            ],
+            [
+              72.0,
+              39.0
+            ],
+            [
+              73.0,
+              41.0
+            ],
+            [
+              69.0,
+              47.0
+            ],
+            [
+              70.0,
+              65.0
+            ],
+            [
+              69.0,
+              81.0
+            ],
+            [
+              67.0,
+              87.0
+            ],
+            [
+              74.0,
+              92.0
+            ],
+            [
+              77.0,
+              98.0
+            ],
+            [
+              78.0,
+              113.0
+            ],
+            [
+              81.0,
+              119.0
+            ],
+            [
+              80.0,
+              135.0
+            ],
+            [
+              81.0,
+              157.0
+            ],
+            [
+              91.0,
+              158.0
+            ],
+            [
+              95.0,
+              154.0
+            ],
+            [
+              95.0,
+              141.0
+            ],
+            [
+              98.0,
+              118.0
+            ],
+            [
+              101.0,
+              115.0
+            ],
+            [
+              107.0,
+              125.0
+            ],
+            [
+              109.0,
+              140.0
+            ],
+            [
+              111.0,
+              143.0
+            ],
+            [
+              114.0,
+              156.0
+            ],
+            [
+              120.0,
+              158.0
+            ],
+            [
+              130.0,
+              158.0
+            ],
+            [
+              131.0,
+              153.0
+            ],
+            [
+              127.0,
+              146.0
+            ],
+            [
+              128.0,
+              139.0
+            ],
+            [
+              126.0,
+              127.0
+            ],
+            [
+              127.0,
+              116.0
+            ],
+            [
+              113.0,
+              96.0
+            ],
+            [
+              111.0,
+              89.0
+            ],
+            [
+              113.0,
+              88.0
+            ],
+            [
+              115.0,
+              90.0
+            ],
+            [
+              119.0,
+              90.0
+            ],
+            [
+              122.0,
+              79.0
+            ],
+            [
+              119.0,
+              76.0
+            ],
+            [
+              116.0,
+              75.0
+            ],
+            [
+              115.0,
+              76.0
+            ],
+            [
+              114.0,
+              73.0
+            ],
+            [
+              118.0,
+              69.0
+            ],
+            [
+              133.0,
+              63.0
+            ],
+            [
+              136.0,
+              60.0
+            ],
+            [
+              137.0,
+              56.0
+            ],
+            [
+              133.0,
+              50.0
+            ],
+            [
+              128.0,
+              46.0
+            ],
+            [
+              117.0,
+              45.0
+            ],
+            [
+              111.0,
+              38.0
+            ],
+            [
+              111.0,
+              30.0
+            ],
+            [
+              108.0,
+              26.0
+            ],
+            [
+              96.0,
+              24.0
+            ],
+            [
+              81.0,
+              25.0
+            ]
+          ],
+          "point": [
+            98.84630672408082,
+            24.0
+          ]
+        },
+        {
+          "bbox": [
+            67.0,
+            25.0,
+            70.0,
+            135.0
+          ],
+          "frame": 259,
+          "outline": [
+            [
+              75.0,
+              27.0
+            ],
+            [
+              72.0,
+              39.0
+            ],
+            [
+              73.0,
+              42.0
+            ],
+            [
+              69.0,
+              48.0
+            ],
+            [
+              70.0,
+              65.0
+            ],
+            [
+              69.0,
+              82.0
+            ],
+            [
+              67.0,
+              87.0
+            ],
+            [
+              74.0,
+              91.0
+            ],
+            [
+              77.0,
+              96.0
+            ],
+            [
+              77.0,
+              108.0
+            ],
+            [
+              81.0,
+              120.0
+            ],
+            [
+              80.0,
+              133.0
+            ],
+            [
+              81.0,
+              157.0
+            ],
+            [
+              87.0,
+              159.0
+            ],
+            [
+              93.0,
+              157.0
+            ],
+            [
+              95.0,
+              152.0
+            ],
+            [
+              94.0,
+              144.0
+            ],
+            [
+              96.0,
+              139.0
+            ],
+            [
+              97.0,
+              126.0
+            ],
+            [
+              99.0,
+              118.0
+            ],
+            [
+              101.0,
+              116.0
+            ],
+            [
+              107.0,
+              125.0
+            ],
+            [
+              109.0,
+              139.0
+            ],
+            [
+              112.0,
+              145.0
+            ],
+            [
+              114.0,
+              155.0
+            ],
+            [
+              120.0,
+              158.0
+            ],
+            [
+              132.0,
+              158.0
+            ],
+            [
+              132.0,
+              155.0
+            ],
+            [
+              127.0,
+              146.0
+            ],
+            [
+              128.0,
+              143.0
+            ],
+            [
+              127.0,
+              115.0
+            ],
+            [
+              112.0,
+              95.0
+            ],
+            [
+              111.0,
+              90.0
+            ],
+            [
+              113.0,
+              89.0
+            ],
+            [
+              115.0,
+              91.0
+            ],
+            [
+              118.0,
+              91.0
+            ],
+            [
+              121.0,
+              83.0
+            ],
+            [
+              120.0,
+              77.0
+            ],
+            [
+              115.0,
+              76.0
+            ],
+            [
+              114.0,
+              73.0
+            ],
+            [
+              117.0,
+              70.0
+            ],
+            [
+              134.0,
+              63.0
+            ],
+            [
+              136.0,
+              60.0
+            ],
+            [
+              136.0,
+              56.0
+            ],
+            [
+              128.0,
+              47.0
+            ],
+            [
+              117.0,
+              46.0
+            ],
+            [
+              113.0,
+              42.0
+            ],
+            [
+              111.0,
+              38.0
+            ],
+            [
+              110.0,
+              28.0
+            ],
+            [
+              107.0,
+              26.0
+            ],
+            [
+              92.0,
+              25.0
+            ]
+          ],
+          "point": [
+            98.94573901464713,
+            25.0
+          ]
+        },
+        {
+          "bbox": [
+            67.0,
+            25.0,
+            70.0,
+            135.0
+          ],
+          "frame": 260,
+          "outline": [
+            [
+              77.0,
+              27.0
+            ],
+            [
+              73.0,
+              31.0
+            ],
+            [
+              72.0,
+              38.0
+            ],
+            [
+              73.0,
+              41.0
+            ],
+            [
+              69.0,
+              48.0
+            ],
+            [
+              70.0,
+              63.0
+            ],
+            [
+              69.0,
+              82.0
+            ],
+            [
+              67.0,
+              88.0
+            ],
+            [
+              69.0,
+              90.0
+            ],
+            [
+              72.0,
+              90.0
+            ],
+            [
+              76.0,
+              97.0
+            ],
+            [
+              76.0,
+              109.0
+            ],
+            [
+              80.0,
+              120.0
+            ],
+            [
+              79.0,
+              149.0
+            ],
+            [
+              80.0,
+              157.0
+            ],
+            [
+              82.0,
+              159.0
+            ],
+            [
+              88.0,
+              159.0
+            ],
+            [
+              93.0,
+              156.0
+            ],
+            [
+              94.0,
+              142.0
+            ],
+            [
+              97.0,
+              130.0
+            ],
+            [
+              97.0,
+              121.0
+            ],
+            [
+              99.0,
+              115.0
+            ],
+            [
+              101.0,
+              114.0
+            ],
+            [
+              108.0,
+              129.0
+            ],
+            [
+              109.0,
+              139.0
+            ],
+            [
+              115.0,
+              157.0
+            ],
+            [
+              130.0,
+              159.0
+            ],
+            [
+              132.0,
+              158.0
+            ],
+            [
+              132.0,
+              156.0
+            ],
+            [
+              128.0,
+              149.0
+            ],
+            [
+              127.0,
+              117.0
+            ],
+            [
+              120.0,
+              109.0
+            ],
+            [
+              118.0,
+              103.0
+            ],
+            [
+              110.0,
+              91.0
+            ],
+            [
+              111.0,
+              90.0
+            ],
+            [
+              115.0,
+              92.0
+            ],
+            [
+              119.0,
+              91.0
+            ],
+            [
+              121.0,
+              79.0
+            ],
+            [
+              115.0,
+              77.0
+            ],
+            [
+              114.0,
+              74.0
+            ],
+            [
+              117.0,
+              71.0
+            ],
+            [
+              134.0,
+              63.0
+            ],
+            [
+              136.0,
+              57.0
+            ],
+            [
+              128.0,
+              48.0
+            ],
+            [
+              117.0,
+              47.0
+            ],
+            [
+              114.0,
+              45.0
+            ],
+            [
+              111.0,
+              39.0
+            ],
+            [
+              111.0,
+              32.0
+            ],
+            [
+              109.0,
+              28.0
+            ],
+            [
+              101.0,
+              25.0
+            ]
+          ],
+          "point": [
+            98.53869246164109,
+            25.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            27.0,
+            69.0,
+            135.0
+          ],
+          "frame": 261,
+          "outline": [
+            [
+              75.0,
+              29.0
+            ],
+            [
+              73.0,
+              32.0
+            ],
+            [
+              73.0,
+              44.0
+            ],
+            [
+              69.0,
+              49.0
+            ],
+            [
+              70.0,
+              70.0
+            ],
+            [
+              68.0,
+              90.0
+            ],
+            [
+              72.0,
+              92.0
+            ],
+            [
+              76.0,
+              98.0
+            ],
+            [
+              75.0,
+              100.0
+            ],
+            [
+              76.0,
+              110.0
+            ],
+            [
+              80.0,
+              121.0
+            ],
+            [
+              81.0,
+              159.0
+            ],
+            [
+              87.0,
+              161.0
+            ],
+            [
+              91.0,
+              160.0
+            ],
+            [
+              94.0,
+              157.0
+            ],
+            [
+              95.0,
+              151.0
+            ],
+            [
+              94.0,
+              145.0
+            ],
+            [
+              96.0,
+              140.0
+            ],
+            [
+              98.0,
+              118.0
+            ],
+            [
+              101.0,
+              116.0
+            ],
+            [
+              107.0,
+              127.0
+            ],
+            [
+              109.0,
+              139.0
+            ],
+            [
+              112.0,
+              145.0
+            ],
+            [
+              115.0,
+              158.0
+            ],
+            [
+              119.0,
+              160.0
+            ],
+            [
+              133.0,
+              160.0
+            ],
+            [
+              128.0,
+              148.0
+            ],
+            [
+              127.0,
+              117.0
+            ],
+            [
+              120.0,
+              108.0
+            ],
+            [
+              111.0,
+              92.0
+            ],
+            [
+              113.0,
+              91.0
+            ],
+            [
+              115.0,
+              93.0
+            ],
+            [
+              119.0,
+              93.0
+            ],
+            [
+              121.0,
+              86.0
+            ],
+            [
+              120.0,
+              79.0
+            ],
+            [
+              115.0,
+              78.0
+            ],
+            [
+              114.0,
+              74.0
+            ],
+            [
+              118.0,
+              71.0
+            ],
+            [
+              133.0,
+              65.0
+            ],
+            [
+              136.0,
+              61.0
+            ],
+            [
+              136.0,
+              57.0
+            ],
+            [
+              128.0,
+              49.0
+            ],
+            [
+              115.0,
+              47.0
+            ],
+            [
+              111.0,
+              40.0
+            ],
+            [
+              110.0,
+              31.0
+            ],
+            [
+              106.0,
+              28.0
+            ],
+            [
+              91.0,
+              27.0
+            ]
+          ],
+          "point": [
+            98.84841441142288,
+            27.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            27.0,
+            68.0,
+            135.0
+          ],
+          "frame": 262,
+          "outline": [
+            [
+              74.0,
+              31.0
+            ],
+            [
+              73.0,
+              34.0
+            ],
+            [
+              73.0,
+              45.0
+            ],
+            [
+              69.0,
+              51.0
+            ],
+            [
+              70.0,
+              73.0
+            ],
+            [
+              68.0,
+              90.0
+            ],
+            [
+              72.0,
+              92.0
+            ],
+            [
+              76.0,
+              98.0
+            ],
+            [
+              75.0,
+              99.0
+            ],
+            [
+              76.0,
+              113.0
+            ],
+            [
+              80.0,
+              122.0
+            ],
+            [
+              81.0,
+              160.0
+            ],
+            [
+              91.0,
+              161.0
+            ],
+            [
+              93.0,
+              159.0
+            ],
+            [
+              97.0,
+              124.0
+            ],
+            [
+              99.0,
+              118.0
+            ],
+            [
+              101.0,
+              117.0
+            ],
+            [
+              106.0,
+              125.0
+            ],
+            [
+              115.0,
+              159.0
+            ],
+            [
+              121.0,
+              161.0
+            ],
+            [
+              132.0,
+              161.0
+            ],
+            [
+              133.0,
+              159.0
+            ],
+            [
+              128.0,
+              151.0
+            ],
+            [
+              127.0,
+              132.0
+            ],
+            [
+              128.0,
+              119.0
+            ],
+            [
+              123.0,
+              114.0
+            ],
+            [
+              112.0,
+              95.0
+            ],
+            [
+              119.0,
+              94.0
+            ],
+            [
+              121.0,
+              87.0
+            ],
+            [
+              121.0,
+              82.0
+            ],
+            [
+              118.0,
+              79.0
+            ],
+            [
+              114.0,
+              79.0
+            ],
+            [
+              113.0,
+              78.0
+            ],
+            [
+              114.0,
+              75.0
+            ],
+            [
+              120.0,
+              71.0
+            ],
+            [
+              133.0,
+              66.0
+            ],
+            [
+              135.0,
+              63.0
+            ],
+            [
+              135.0,
+              58.0
+            ],
+            [
+              129.0,
+              51.0
+            ],
+            [
+              125.0,
+              49.0
+            ],
+            [
+              124.0,
+              50.0
+            ],
+            [
+              116.0,
+              49.0
+            ],
+            [
+              111.0,
+              41.0
+            ],
+            [
+              110.0,
+              32.0
+            ],
+            [
+              106.0,
+              29.0
+            ],
+            [
+              100.0,
+              27.0
+            ]
+          ],
+          "point": [
+            98.78663324979115,
+            27.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            28.0,
+            68.0,
+            134.0
+          ],
+          "frame": 263,
+          "outline": [
+            [
+              76.0,
+              30.0
+            ],
+            [
+              73.0,
+              34.0
+            ],
+            [
+              73.0,
+              45.0
+            ],
+            [
+              69.0,
+              51.0
+            ],
+            [
+              70.0,
+              78.0
+            ],
+            [
+              68.0,
+              90.0
+            ],
+            [
+              75.0,
+              95.0
+            ],
+            [
+              76.0,
+              111.0
+            ],
+            [
+              81.0,
+              124.0
+            ],
+            [
+              79.0,
+              151.0
+            ],
+            [
+              80.0,
+              157.0
+            ],
+            [
+              83.0,
+              161.0
+            ],
+            [
+              89.0,
+              161.0
+            ],
+            [
+              93.0,
+              159.0
+            ],
+            [
+              98.0,
+              115.0
+            ],
+            [
+              101.0,
+              114.0
+            ],
+            [
+              106.0,
+              124.0
+            ],
+            [
+              115.0,
+              158.0
+            ],
+            [
+              117.0,
+              160.0
+            ],
+            [
+              132.0,
+              161.0
+            ],
+            [
+              133.0,
+              158.0
+            ],
+            [
+              128.0,
+              150.0
+            ],
+            [
+              127.0,
+              119.0
+            ],
+            [
+              122.0,
+              116.0
+            ],
+            [
+              119.0,
+              105.0
+            ],
+            [
+              113.0,
+              99.0
+            ],
+            [
+              110.0,
+              92.0
+            ],
+            [
+              112.0,
+              90.0
+            ],
+            [
+              115.0,
+              93.0
+            ],
+            [
+              119.0,
+              93.0
+            ],
+            [
+              121.0,
+              82.0
+            ],
+            [
+              119.0,
+              80.0
+            ],
+            [
+              114.0,
+              80.0
+            ],
+            [
+              112.0,
+              77.0
+            ],
+            [
+              115.0,
+              73.0
+            ],
+            [
+              132.0,
+              66.0
+            ],
+            [
+              135.0,
+              63.0
+            ],
+            [
+              135.0,
+              58.0
+            ],
+            [
+              128.0,
+              50.0
+            ],
+            [
+              116.0,
+              50.0
+            ],
+            [
+              111.0,
+              42.0
+            ],
+            [
+              110.0,
+              32.0
+            ],
+            [
+              106.0,
+              29.0
+            ],
+            [
+              92.0,
+              28.0
+            ]
+          ],
+          "point": [
+            98.52764505119454,
+            28.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            29.0,
+            67.0,
+            135.0
+          ],
+          "frame": 264,
+          "outline": [
+            [
+              75.0,
+              32.0
+            ],
+            [
+              73.0,
+              35.0
+            ],
+            [
+              72.0,
+              49.0
+            ],
+            [
+              69.0,
+              52.0
+            ],
+            [
+              70.0,
+              61.0
+            ],
+            [
+              69.0,
+              93.0
+            ],
+            [
+              75.0,
+              97.0
+            ],
+            [
+              76.0,
+              113.0
+            ],
+            [
+              80.0,
+              125.0
+            ],
+            [
+              79.0,
+              151.0
+            ],
+            [
+              80.0,
+              161.0
+            ],
+            [
+              82.0,
+              163.0
+            ],
+            [
+              90.0,
+              163.0
+            ],
+            [
+              93.0,
+              161.0
+            ],
+            [
+              97.0,
+              132.0
+            ],
+            [
+              97.0,
+              122.0
+            ],
+            [
+              98.0,
+              118.0
+            ],
+            [
+              101.0,
+              117.0
+            ],
+            [
+              106.0,
+              126.0
+            ],
+            [
+              115.0,
+              160.0
+            ],
+            [
+              120.0,
+              163.0
+            ],
+            [
+              132.0,
+              163.0
+            ],
+            [
+              133.0,
+              160.0
+            ],
+            [
+              130.0,
+              156.0
+            ],
+            [
+              128.0,
+              145.0
+            ],
+            [
+              127.0,
+              120.0
+            ],
+            [
+              123.0,
+              117.0
+            ],
+            [
+              113.0,
+              97.0
+            ],
+            [
+              114.0,
+              95.0
+            ],
+            [
+              116.0,
+              96.0
+            ],
+            [
+              119.0,
+              94.0
+            ],
+            [
+              121.0,
+              84.0
+            ],
+            [
+              119.0,
+              81.0
+            ],
+            [
+              114.0,
+              81.0
+            ],
+            [
+              113.0,
+              79.0
+            ],
+            [
+              117.0,
+              74.0
+            ],
+            [
+              131.0,
+              69.0
+            ],
+            [
+              135.0,
+              64.0
+            ],
+            [
+              135.0,
+              60.0
+            ],
+            [
+              126.0,
+              51.0
+            ],
+            [
+              114.0,
+              50.0
+            ],
+            [
+              110.0,
+              42.0
+            ],
+            [
+              111.0,
+              39.0
+            ],
+            [
+              110.0,
+              35.0
+            ],
+            [
+              107.0,
+              31.0
+            ],
+            [
+              98.0,
+              29.0
+            ]
+          ],
+          "point": [
+            98.68912787766762,
+            29.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            31.0,
+            68.0,
+            134.0
+          ],
+          "frame": 265,
+          "outline": [
+            [
+              76.0,
+              33.0
+            ],
+            [
+              73.0,
+              35.0
+            ],
+            [
+              72.0,
+              49.0
+            ],
+            [
+              69.0,
+              53.0
+            ],
+            [
+              70.0,
+              77.0
+            ],
+            [
+              68.0,
+              94.0
+            ],
+            [
+              75.0,
+              99.0
+            ],
+            [
+              77.0,
+              121.0
+            ],
+            [
+              80.0,
+              127.0
+            ],
+            [
+              79.0,
+              152.0
+            ],
+            [
+              80.0,
+              161.0
+            ],
+            [
+              82.0,
+              164.0
+            ],
+            [
+              90.0,
+              164.0
+            ],
+            [
+              93.0,
+              161.0
+            ],
+            [
+              97.0,
+              123.0
+            ],
+            [
+              100.0,
+              118.0
+            ],
+            [
+              106.0,
+              127.0
+            ],
+            [
+              115.0,
+              161.0
+            ],
+            [
+              121.0,
+              164.0
+            ],
+            [
+              132.0,
+              164.0
+            ],
+            [
+              133.0,
+              162.0
+            ],
+            [
+              130.0,
+              157.0
+            ],
+            [
+              128.0,
+              147.0
+            ],
+            [
+              127.0,
+              121.0
+            ],
+            [
+              124.0,
+              119.0
+            ],
+            [
+              114.0,
+              101.0
+            ],
+            [
+              114.0,
+              98.0
+            ],
+            [
+              119.0,
+              95.0
+            ],
+            [
+              121.0,
+              86.0
+            ],
+            [
+              119.0,
+              83.0
+            ],
+            [
+              114.0,
+              82.0
+            ],
+            [
+              113.0,
+              80.0
+            ],
+            [
+              116.0,
+              76.0
+            ],
+            [
+              133.0,
+              69.0
+            ],
+            [
+              135.0,
+              66.0
+            ],
+            [
+              135.0,
+              60.0
+            ],
+            [
+              127.0,
+              53.0
+            ],
+            [
+              115.0,
+              52.0
+            ],
+            [
+              112.0,
+              48.0
+            ],
+            [
+              110.0,
+              37.0
+            ],
+            [
+              105.0,
+              32.0
+            ],
+            [
+              95.0,
+              31.0
+            ]
+          ],
+          "point": [
+            98.6388140161725,
+            31.0
+          ]
+        },
+        {
+          "bbox": [
+            68.0,
+            33.0,
+            68.0,
+            135.0
+          ],
+          "frame": 266,
+          "outline": [
+            [
+              74.0,
+              36.0
+            ],
+            [
+              72.0,
+              39.0
+            ],
+            [
+              72.0,
+              50.0
+            ],
+            [
+              68.0,
+              58.0
+            ],
+            [
+              70.0,
+              65.0
+            ],
+            [
+              69.0,
+              97.0
+            ],
+            [
+              74.0,
+              103.0
+            ],
+            [
+              77.0,
+              121.0
+            ],
+            [
+              80.0,
+              129.0
+            ],
+            [
+              79.0,
+              163.0
+            ],
+            [
+              82.0,
+              167.0
+            ],
+            [
+              87.0,
+              167.0
+            ],
+            [
+              92.0,
+              165.0
+            ],
+            [
+              94.0,
+              160.0
+            ],
+            [
+              97.0,
+              124.0
+            ],
+            [
+              99.0,
+              121.0
+            ],
+            [
+              101.0,
+              121.0
+            ],
+            [
+              106.0,
+              129.0
+            ],
+            [
+              113.0,
+              157.0
+            ],
+            [
+              117.0,
+              166.0
+            ],
+            [
+              133.0,
+              167.0
+            ],
+            [
+              134.0,
+              163.0
+            ],
+            [
+              129.0,
+              156.0
+            ],
+            [
+              128.0,
+              125.0
+            ],
+            [
+              127.0,
+              122.0
+            ],
+            [
+              122.0,
+              118.0
+            ],
+            [
+              115.0,
+              105.0
+            ],
+            [
+              115.0,
+              101.0
+            ],
+            [
+              120.0,
+              96.0
+            ],
+            [
+              121.0,
+              87.0
+            ],
+            [
+              120.0,
+              85.0
+            ],
+            [
+              114.0,
+              84.0
+            ],
+            [
+              113.0,
+              82.0
+            ],
+            [
+              116.0,
+              78.0
+            ],
+            [
+              132.0,
+              72.0
+            ],
+            [
+              135.0,
+              68.0
+            ],
+            [
+              135.0,
+              64.0
+            ],
+            [
+              127.0,
+              55.0
+            ],
+            [
+              115.0,
+              55.0
+            ],
+            [
+              111.0,
+              49.0
+            ],
+            [
+              110.0,
+              40.0
+            ],
+            [
+              106.0,
+              35.0
+            ],
+            [
+              96.0,
+              33.0
+            ]
+          ],
+          "point": [
+            98.71121837549933,
+            33.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            35.0,
+            67.0,
+            135.0
+          ],
+          "frame": 267,
+          "outline": [
+            [
+              76.0,
+              37.0
+            ],
+            [
+              73.0,
+              39.0
+            ],
+            [
+              72.0,
+              53.0
+            ],
+            [
+              69.0,
+              58.0
+            ],
+            [
+              70.0,
+              65.0
+            ],
+            [
+              69.0,
+              99.0
+            ],
+            [
+              75.0,
+              107.0
+            ],
+            [
+              76.0,
+              120.0
+            ],
+            [
+              80.0,
+              130.0
+            ],
+            [
+              79.0,
+              143.0
+            ],
+            [
+              80.0,
+              167.0
+            ],
+            [
+              82.0,
+              169.0
+            ],
+            [
+              86.0,
+              169.0
+            ],
+            [
+              88.0,
+              167.0
+            ],
+            [
+              93.0,
+              166.0
+            ],
+            [
+              97.0,
+              125.0
+            ],
+            [
+              99.0,
+              122.0
+            ],
+            [
+              101.0,
+              122.0
+            ],
+            [
+              108.0,
+              136.0
+            ],
+            [
+              116.0,
+              166.0
+            ],
+            [
+              124.0,
+              168.0
+            ],
+            [
+              132.0,
+              168.0
+            ],
+            [
+              134.0,
+              167.0
+            ],
+            [
+              134.0,
+              164.0
+            ],
+            [
+              130.0,
+              157.0
+            ],
+            [
+              127.0,
+              124.0
+            ],
+            [
+              115.0,
+              105.0
+            ],
+            [
+              115.0,
+              102.0
+            ],
+            [
+              120.0,
+              97.0
+            ],
+            [
+              122.0,
+              89.0
+            ],
+            [
+              121.0,
+              87.0
+            ],
+            [
+              115.0,
+              86.0
+            ],
+            [
+              113.0,
+              84.0
+            ],
+            [
+              119.0,
+              78.0
+            ],
+            [
+              132.0,
+              73.0
+            ],
+            [
+              135.0,
+              70.0
+            ],
+            [
+              135.0,
+              64.0
+            ],
+            [
+              127.0,
+              56.0
+            ],
+            [
+              115.0,
+              56.0
+            ],
+            [
+              111.0,
+              50.0
+            ],
+            [
+              110.0,
+              41.0
+            ],
+            [
+              105.0,
+              36.0
+            ],
+            [
+              92.0,
+              35.0
+            ]
+          ],
+          "point": [
+            98.83583333333334,
+            35.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            35.0,
+            67.0,
+            135.0
+          ],
+          "frame": 268,
+          "outline": [
+            [
+              75.0,
+              37.0
+            ],
+            [
+              72.0,
+              42.0
+            ],
+            [
+              72.0,
+              52.0
+            ],
+            [
+              69.0,
+              57.0
+            ],
+            [
+              70.0,
+              65.0
+            ],
+            [
+              69.0,
+              99.0
+            ],
+            [
+              74.0,
+              105.0
+            ],
+            [
+              79.0,
+              128.0
+            ],
+            [
+              79.0,
+              166.0
+            ],
+            [
+              80.0,
+              168.0
+            ],
+            [
+              86.0,
+              169.0
+            ],
+            [
+              88.0,
+              167.0
+            ],
+            [
+              92.0,
+              167.0
+            ],
+            [
+              97.0,
+              136.0
+            ],
+            [
+              97.0,
+              125.0
+            ],
+            [
+              100.0,
+              122.0
+            ],
+            [
+              107.0,
+              134.0
+            ],
+            [
+              110.0,
+              147.0
+            ],
+            [
+              114.0,
+              156.0
+            ],
+            [
+              115.0,
+              164.0
+            ],
+            [
+              117.0,
+              166.0
+            ],
+            [
+              124.0,
+              168.0
+            ],
+            [
+              134.0,
+              167.0
+            ],
+            [
+              134.0,
+              164.0
+            ],
+            [
+              130.0,
+              157.0
+            ],
+            [
+              127.0,
+              136.0
+            ],
+            [
+              127.0,
+              124.0
+            ],
+            [
+              122.0,
+              118.0
+            ],
+            [
+              115.0,
+              105.0
+            ],
+            [
+              115.0,
+              103.0
+            ],
+            [
+              120.0,
+              97.0
+            ],
+            [
+              122.0,
+              89.0
+            ],
+            [
+              121.0,
+              87.0
+            ],
+            [
+              115.0,
+              86.0
+            ],
+            [
+              113.0,
+              84.0
+            ],
+            [
+              117.0,
+              79.0
+            ],
+            [
+              132.0,
+              73.0
+            ],
+            [
+              135.0,
+              70.0
+            ],
+            [
+              135.0,
+              64.0
+            ],
+            [
+              127.0,
+              56.0
+            ],
+            [
+              115.0,
+              57.0
+            ],
+            [
+              111.0,
+              51.0
+            ],
+            [
+              110.0,
+              41.0
+            ],
+            [
+              108.0,
+              37.0
+            ],
+            [
+              102.0,
+              35.0
+            ]
+          ],
+          "point": [
+            98.71388196176227,
+            35.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            37.0,
+            67.0,
+            137.0
+          ],
+          "frame": 269,
+          "outline": [
+            [
+              75.0,
+              40.0
+            ],
+            [
+              72.0,
+              45.0
+            ],
+            [
+              72.0,
+              55.0
+            ],
+            [
+              69.0,
+              60.0
+            ],
+            [
+              70.0,
+              69.0
+            ],
+            [
+              69.0,
+              100.0
+            ],
+            [
+              75.0,
+              110.0
+            ],
+            [
+              76.0,
+              123.0
+            ],
+            [
+              79.0,
+              131.0
+            ],
+            [
+              78.0,
+              161.0
+            ],
+            [
+              79.0,
+              171.0
+            ],
+            [
+              84.0,
+              173.0
+            ],
+            [
+              92.0,
+              169.0
+            ],
+            [
+              93.0,
+              154.0
+            ],
+            [
+              95.0,
+              150.0
+            ],
+            [
+              97.0,
+              137.0
+            ],
+            [
+              97.0,
+              127.0
+            ],
+            [
+              99.0,
+              124.0
+            ],
+            [
+              102.0,
+              126.0
+            ],
+            [
+              106.0,
+              133.0
+            ],
+            [
+              116.0,
+              167.0
+            ],
+            [
+              120.0,
+              169.0
+            ],
+            [
+              131.0,
+              170.0
+            ],
+            [
+              133.0,
+              169.0
+            ],
+            [
+              133.0,
+              165.0
+            ],
+            [
+              129.0,
+              159.0
+            ],
+            [
+              127.0,
+              127.0
+            ],
+            [
+              114.0,
+              108.0
+            ],
+            [
+              114.0,
+              106.0
+            ],
+            [
+              120.0,
+              100.0
+            ],
+            [
+              121.0,
+              91.0
+            ],
+            [
+              118.0,
+              88.0
+            ],
+            [
+              114.0,
+              88.0
+            ],
+            [
+              113.0,
+              85.0
+            ],
+            [
+              120.0,
+              80.0
+            ],
+            [
+              132.0,
+              76.0
+            ],
+            [
+              135.0,
+              72.0
+            ],
+            [
+              135.0,
+              67.0
+            ],
+            [
+              128.0,
+              59.0
+            ],
+            [
+              117.0,
+              59.0
+            ],
+            [
+              117.0,
+              61.0
+            ],
+            [
+              115.0,
+              62.0
+            ],
+            [
+              110.0,
+              50.0
+            ],
+            [
+              110.0,
+              44.0
+            ],
+            [
+              106.0,
+              39.0
+            ],
+            [
+              97.0,
+              37.0
+            ]
+          ],
+          "point": [
+            98.40316072629454,
+            37.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            39.0,
+            67.0,
+            136.0
+          ],
+          "frame": 270,
+          "outline": [
+            [
+              75.0,
+              42.0
+            ],
+            [
+              72.0,
+              46.0
+            ],
+            [
+              72.0,
+              54.0
+            ],
+            [
+              69.0,
+              62.0
+            ],
+            [
+              70.0,
+              73.0
+            ],
+            [
+              69.0,
+              101.0
+            ],
+            [
+              75.0,
+              112.0
+            ],
+            [
+              76.0,
+              124.0
+            ],
+            [
+              79.0,
+              133.0
+            ],
+            [
+              78.0,
+              161.0
+            ],
+            [
+              79.0,
+              173.0
+            ],
+            [
+              86.0,
+              174.0
+            ],
+            [
+              88.0,
+              172.0
+            ],
+            [
+              92.0,
+              172.0
+            ],
+            [
+              93.0,
+              170.0
+            ],
+            [
+              93.0,
+              156.0
+            ],
+            [
+              95.0,
+              152.0
+            ],
+            [
+              97.0,
+              130.0
+            ],
+            [
+              99.0,
+              126.0
+            ],
+            [
+              102.0,
+              128.0
+            ],
+            [
+              106.0,
+              135.0
+            ],
+            [
+              116.0,
+              169.0
+            ],
+            [
+              122.0,
+              172.0
+            ],
+            [
+              133.0,
+              172.0
+            ],
+            [
+              134.0,
+              168.0
+            ],
+            [
+              130.0,
+              159.0
+            ],
+            [
+              129.0,
+              146.0
+            ],
+            [
+              127.0,
+              140.0
+            ],
+            [
+              128.0,
+              139.0
+            ],
+            [
+              127.0,
+              129.0
+            ],
+            [
+              114.0,
+              109.0
+            ],
+            [
+              119.0,
+              104.0
+            ],
+            [
+              121.0,
+              95.0
+            ],
+            [
+              119.0,
+              91.0
+            ],
+            [
+              115.0,
+              91.0
+            ],
+            [
+              113.0,
+              87.0
+            ],
+            [
+              116.0,
+              84.0
+            ],
+            [
+              133.0,
+              77.0
+            ],
+            [
+              135.0,
+              74.0
+            ],
+            [
+              135.0,
+              69.0
+            ],
+            [
+              127.0,
+              61.0
+            ],
+            [
+              122.0,
+              61.0
+            ],
+            [
+              119.0,
+              65.0
+            ],
+            [
+              116.0,
+              66.0
+            ],
+            [
+              113.0,
+              62.0
+            ],
+            [
+              110.0,
+              52.0
+            ],
+            [
+              110.0,
+              46.0
+            ],
+            [
+              105.0,
+              41.0
+            ],
+            [
+              96.0,
+              39.0
+            ]
+          ],
+          "point": [
+            98.48414695520886,
+            39.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            42.0,
+            68.0,
+            137.0
+          ],
+          "frame": 271,
+          "outline": [
+            [
+              76.0,
+              45.0
+            ],
+            [
+              72.0,
+              49.0
+            ],
+            [
+              71.0,
+              63.0
+            ],
+            [
+              69.0,
+              66.0
+            ],
+            [
+              70.0,
+              78.0
+            ],
+            [
+              69.0,
+              104.0
+            ],
+            [
+              74.0,
+              113.0
+            ],
+            [
+              80.0,
+              141.0
+            ],
+            [
+              78.0,
+              166.0
+            ],
+            [
+              79.0,
+              175.0
+            ],
+            [
+              82.0,
+              178.0
+            ],
+            [
+              88.0,
+              178.0
+            ],
+            [
+              92.0,
+              174.0
+            ],
+            [
+              93.0,
+              161.0
+            ],
+            [
+              96.0,
+              152.0
+            ],
+            [
+              97.0,
+              134.0
+            ],
+            [
+              99.0,
+              130.0
+            ],
+            [
+              103.0,
+              133.0
+            ],
+            [
+              108.0,
+              142.0
+            ],
+            [
+              117.0,
+              174.0
+            ],
+            [
+              123.0,
+              175.0
+            ],
+            [
+              133.0,
+              174.0
+            ],
+            [
+              133.0,
+              169.0
+            ],
+            [
+              130.0,
+              163.0
+            ],
+            [
+              127.0,
+              133.0
+            ],
+            [
+              120.0,
+              123.0
+            ],
+            [
+              117.0,
+              112.0
+            ],
+            [
+              120.0,
+              102.0
+            ],
+            [
+              120.0,
+              95.0
+            ],
+            [
+              118.0,
+              93.0
+            ],
+            [
+              114.0,
+              93.0
+            ],
+            [
+              113.0,
+              90.0
+            ],
+            [
+              117.0,
+              86.0
+            ],
+            [
+              133.0,
+              81.0
+            ],
+            [
+              136.0,
+              74.0
+            ],
+            [
+              135.0,
+              71.0
+            ],
+            [
+              130.0,
+              65.0
+            ],
+            [
+              121.0,
+              65.0
+            ],
+            [
+              121.0,
+              69.0
+            ],
+            [
+              116.0,
+              70.0
+            ],
+            [
+              113.0,
+              66.0
+            ],
+            [
+              110.0,
+              50.0
+            ],
+            [
+              108.0,
+              46.0
+            ],
+            [
+              105.0,
+              44.0
+            ],
+            [
+              96.0,
+              42.0
+            ],
+            [
+              90.0,
+              44.0
+            ]
+          ],
+          "point": [
+            98.50897801644571,
+            42.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            45.0,
+            68.0,
+            138.0
+          ],
+          "frame": 272,
+          "outline": [
+            [
+              100.0,
+              45.0
+            ],
+            [
+              74.0,
+              49.0
+            ],
+            [
+              72.0,
+              52.0
+            ],
+            [
+              71.0,
+              65.0
+            ],
+            [
+              69.0,
+              68.0
+            ],
+            [
+              70.0,
+              110.0
+            ],
+            [
+              75.0,
+              118.0
+            ],
+            [
+              80.0,
+              143.0
+            ],
+            [
+              80.0,
+              157.0
+            ],
+            [
+              78.0,
+              170.0
+            ],
+            [
+              80.0,
+              179.0
+            ],
+            [
+              85.0,
+              182.0
+            ],
+            [
+              89.0,
+              181.0
+            ],
+            [
+              92.0,
+              173.0
+            ],
+            [
+              99.0,
+              132.0
+            ],
+            [
+              104.0,
+              136.0
+            ],
+            [
+              117.0,
+              176.0
+            ],
+            [
+              132.0,
+              177.0
+            ],
+            [
+              134.0,
+              175.0
+            ],
+            [
+              129.0,
+              155.0
+            ],
+            [
+              127.0,
+              134.0
+            ],
+            [
+              124.0,
+              131.0
+            ],
+            [
+              118.0,
+              117.0
+            ],
+            [
+              121.0,
+              99.0
+            ],
+            [
+              113.0,
+              92.0
+            ],
+            [
+              116.0,
+              89.0
+            ],
+            [
+              126.0,
+              85.0
+            ],
+            [
+              133.0,
+              84.0
+            ],
+            [
+              136.0,
+              80.0
+            ],
+            [
+              136.0,
+              76.0
+            ],
+            [
+              131.0,
+              68.0
+            ],
+            [
+              124.0,
+              69.0
+            ],
+            [
+              120.0,
+              74.0
+            ],
+            [
+              116.0,
+              73.0
+            ],
+            [
+              113.0,
+              69.0
+            ],
+            [
+              108.0,
+              49.0
+            ]
+          ],
+          "point": [
+            98.79318448883666,
+            45.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            45.0,
+            68.0,
+            138.0
+          ],
+          "frame": 273,
+          "outline": [
+            [
+              99.0,
+              45.0
+            ],
+            [
+              73.0,
+              49.0
+            ],
+            [
+              71.0,
+              58.0
+            ],
+            [
+              72.0,
+              61.0
+            ],
+            [
+              69.0,
+              68.0
+            ],
+            [
+              70.0,
+              110.0
+            ],
+            [
+              75.0,
+              118.0
+            ],
+            [
+              76.0,
+              129.0
+            ],
+            [
+              80.0,
+              141.0
+            ],
+            [
+              78.0,
+              174.0
+            ],
+            [
+              82.0,
+              182.0
+            ],
+            [
+              89.0,
+              181.0
+            ],
+            [
+              90.0,
+              173.0
+            ],
+            [
+              95.0,
+              160.0
+            ],
+            [
+              97.0,
+              137.0
+            ],
+            [
+              99.0,
+              132.0
+            ],
+            [
+              102.0,
+              133.0
+            ],
+            [
+              108.0,
+              144.0
+            ],
+            [
+              116.0,
+              174.0
+            ],
+            [
+              121.0,
+              177.0
+            ],
+            [
+              133.0,
+              176.0
+            ],
+            [
+              131.0,
+              162.0
+            ],
+            [
+              129.0,
+              158.0
+            ],
+            [
+              127.0,
+              134.0
+            ],
+            [
+              124.0,
+              131.0
+            ],
+            [
+              118.0,
+              118.0
+            ],
+            [
+              118.0,
+              111.0
+            ],
+            [
+              120.0,
+              108.0
+            ],
+            [
+              121.0,
+              98.0
+            ],
+            [
+              119.0,
+              96.0
+            ],
+            [
+              115.0,
+              96.0
+            ],
+            [
+              113.0,
+              92.0
+            ],
+            [
+              120.0,
+              87.0
+            ],
+            [
+              133.0,
+              84.0
+            ],
+            [
+              135.0,
+              82.0
+            ],
+            [
+              136.0,
+              76.0
+            ],
+            [
+              134.0,
+              71.0
+            ],
+            [
+              130.0,
+              68.0
+            ],
+            [
+              124.0,
+              69.0
+            ],
+            [
+              120.0,
+              74.0
+            ],
+            [
+              116.0,
+              73.0
+            ],
+            [
+              113.0,
+              69.0
+            ],
+            [
+              108.0,
+              49.0
+            ]
+          ],
+          "point": [
+            98.59326032013479,
+            45.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            49.0,
+            68.0,
+            136.0
+          ],
+          "frame": 274,
+          "outline": [
+            [
+              74.0,
+              52.0
+            ],
+            [
+              71.0,
+              56.0
+            ],
+            [
+              71.0,
+              68.0
+            ],
+            [
+              69.0,
+              72.0
+            ],
+            [
+              70.0,
+              113.0
+            ],
+            [
+              75.0,
+              121.0
+            ],
+            [
+              76.0,
+              132.0
+            ],
+            [
+              81.0,
+              147.0
+            ],
+            [
+              79.0,
+              180.0
+            ],
+            [
+              81.0,
+              183.0
+            ],
+            [
+              87.0,
+              184.0
+            ],
+            [
+              90.0,
+              182.0
+            ],
+            [
+              96.0,
+              151.0
+            ],
+            [
+              98.0,
+              147.0
+            ],
+            [
+              98.0,
+              138.0
+            ],
+            [
+              100.0,
+              135.0
+            ],
+            [
+              103.0,
+              137.0
+            ],
+            [
+              107.0,
+              145.0
+            ],
+            [
+              110.0,
+              160.0
+            ],
+            [
+              117.0,
+              180.0
+            ],
+            [
+              121.0,
+              181.0
+            ],
+            [
+              129.0,
+              180.0
+            ],
+            [
+              131.0,
+              178.0
+            ],
+            [
+              131.0,
+              174.0
+            ],
+            [
+              129.0,
+              169.0
+            ],
+            [
+              127.0,
+              139.0
+            ],
+            [
+              124.0,
+              136.0
+            ],
+            [
+              118.0,
+              121.0
+            ],
+            [
+              119.0,
+              120.0
+            ],
+            [
+              118.0,
+              114.0
+            ],
+            [
+              120.0,
+              111.0
+            ],
+            [
+              120.0,
+              98.0
+            ],
+            [
+              119.0,
+              96.0
+            ],
+            [
+              115.0,
+              97.0
+            ],
+            [
+              114.0,
+              94.0
+            ],
+            [
+              125.0,
+              89.0
+            ],
+            [
+              133.0,
+              88.0
+            ],
+            [
+              136.0,
+              85.0
+            ],
+            [
+              136.0,
+              77.0
+            ],
+            [
+              133.0,
+              74.0
+            ],
+            [
+              127.0,
+              74.0
+            ],
+            [
+              119.0,
+              77.0
+            ],
+            [
+              116.0,
+              76.0
+            ],
+            [
+              113.0,
+              73.0
+            ],
+            [
+              112.0,
+              66.0
+            ],
+            [
+              109.0,
+              60.0
+            ],
+            [
+              109.0,
+              55.0
+            ],
+            [
+              105.0,
+              50.0
+            ],
+            [
+              92.0,
+              49.0
+            ]
+          ],
+          "point": [
+            98.47510231923602,
+            49.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            51.0,
+            69.0,
+            135.0
+          ],
+          "frame": 275,
+          "outline": [
+            [
+              75.0,
+              54.0
+            ],
+            [
+              72.0,
+              57.0
+            ],
+            [
+              71.0,
+              71.0
+            ],
+            [
+              69.0,
+              74.0
+            ],
+            [
+              70.0,
+              116.0
+            ],
+            [
+              73.0,
+              120.0
+            ],
+            [
+              81.0,
+              149.0
+            ],
+            [
+              79.0,
+              181.0
+            ],
+            [
+              83.0,
+              185.0
+            ],
+            [
+              92.0,
+              184.0
+            ],
+            [
+              95.0,
+              168.0
+            ],
+            [
+              95.0,
+              159.0
+            ],
+            [
+              97.0,
+              156.0
+            ],
+            [
+              98.0,
+              139.0
+            ],
+            [
+              101.0,
+              137.0
+            ],
+            [
+              107.0,
+              147.0
+            ],
+            [
+              110.0,
+              156.0
+            ],
+            [
+              115.0,
+              181.0
+            ],
+            [
+              119.0,
+              185.0
+            ],
+            [
+              126.0,
+              185.0
+            ],
+            [
+              130.0,
+              183.0
+            ],
+            [
+              132.0,
+              179.0
+            ],
+            [
+              129.0,
+              172.0
+            ],
+            [
+              127.0,
+              142.0
+            ],
+            [
+              123.0,
+              138.0
+            ],
+            [
+              118.0,
+              124.0
+            ],
+            [
+              118.0,
+              118.0
+            ],
+            [
+              120.0,
+              115.0
+            ],
+            [
+              121.0,
+              104.0
+            ],
+            [
+              118.0,
+              96.0
+            ],
+            [
+              122.0,
+              93.0
+            ],
+            [
+              135.0,
+              90.0
+            ],
+            [
+              137.0,
+              87.0
+            ],
+            [
+              137.0,
+              81.0
+            ],
+            [
+              133.0,
+              77.0
+            ],
+            [
+              129.0,
+              77.0
+            ],
+            [
+              126.0,
+              79.0
+            ],
+            [
+              116.0,
+              79.0
+            ],
+            [
+              113.0,
+              76.0
+            ],
+            [
+              109.0,
+              56.0
+            ],
+            [
+              105.0,
+              52.0
+            ],
+            [
+              95.0,
+              51.0
+            ]
+          ],
+          "point": [
+            98.65627632687448,
+            51.0
+          ]
+        },
+        {
+          "bbox": [
+            69.0,
+            55.0,
+            69.0,
+            133.0
+          ],
+          "frame": 276,
+          "outline": [
+            [
+              74.0,
+              58.0
+            ],
+            [
+              72.0,
+              60.0
+            ],
+            [
+              69.0,
+              88.0
+            ],
+            [
+              71.0,
+              103.0
+            ],
+            [
+              71.0,
+              118.0
+            ],
+            [
+              81.0,
+              151.0
+            ],
+            [
+              79.0,
+              182.0
+            ],
+            [
+              83.0,
+              187.0
+            ],
+            [
+              89.0,
+              187.0
+            ],
+            [
+              92.0,
+              185.0
+            ],
+            [
+              95.0,
+              163.0
+            ],
+            [
+              98.0,
+              157.0
+            ],
+            [
+              98.0,
+              144.0
+            ],
+            [
+              100.0,
+              141.0
+            ],
+            [
+              107.0,
+              151.0
+            ],
+            [
+              115.0,
+              185.0
+            ],
+            [
+              119.0,
+              187.0
+            ],
+            [
+              126.0,
+              187.0
+            ],
+            [
+              130.0,
+              183.0
+            ],
+            [
+              129.0,
+              163.0
+            ],
+            [
+              127.0,
+              157.0
+            ],
+            [
+              127.0,
+              145.0
+            ],
+            [
+              123.0,
+              141.0
+            ],
+            [
+              119.0,
+              131.0
+            ],
+            [
+              121.0,
+              111.0
+            ],
+            [
+              120.0,
+              100.0
+            ],
+            [
+              126.0,
+              97.0
+            ],
+            [
+              128.0,
+              98.0
+            ],
+            [
+              136.0,
+              96.0
+            ],
+            [
+              137.0,
+              87.0
+            ],
+            [
+              132.0,
+              82.0
+            ],
+            [
+              126.0,
+              83.0
+            ],
+            [
+              115.0,
+              82.0
+            ],
+            [
+              112.0,
+              78.0
+            ],
+            [
+              109.0,
+              60.0
+            ],
+            [
+              105.0,
+              56.0
+            ],
+            [
+              93.0,
+              55.0
+            ]
+          ],
+          "point": [
+            98.87655372041546,
+            55.0
+          ]
+        }
+      ],
+      "repetitions": [],
+      "subject": {
+        "description": "foreground suited figure",
+        "kind": "person"
+      },
+      "takeoff_level_y_px": 36.0,
+      "times_s": {
+        "apex": 8.441766666666666,
+        "end": 9.209200000000001,
+        "start": 8.041366666666667
+      },
+      "track": [
+        {
+          "frame": 241,
+          "t_s": 8.041366666666667,
+          "x_m": 0.0,
+          "x_px": 100.35077173030058,
+          "y_m": 0.0,
+          "y_px": 36.0
+        },
+        {
+          "frame": 242,
+          "t_s": 8.074733333333333,
+          "x_m": 0.0027097797750785515,
+          "x_px": 100.55739568111707,
+          "y_m": 0.026229096524102064,
+          "y_px": 34.0
+        },
+        {
+          "frame": 243,
+          "t_s": 8.1081,
+          "x_m": 0.0003739004214161294,
+          "x_px": 100.3792820849041,
+          "y_m": 0.026229096524102064,
+          "y_px": 34.0
+        },
+        {
+          "frame": 244,
+          "t_s": 8.141466666666666,
+          "x_m": -0.0008181545445104015,
+          "x_px": 100.2883864671438,
+          "y_m": 0.05245819304820413,
+          "y_px": 32.0
+        },
+        {
+          "frame": 245,
+          "t_s": 8.174833333333334,
+          "x_m": -0.002261312459000065,
+          "x_px": 100.17834394904459,
+          "y_m": 0.0786872895723062,
+          "y_px": 30.0
+        },
+        {
+          "frame": 246,
+          "t_s": 8.2082,
+          "x_m": -0.007223985521536905,
+          "x_px": 99.79993418887793,
+          "y_m": 0.10491638609640826,
+          "y_px": 28.0
+        },
+        {
+          "frame": 247,
+          "t_s": 8.241566666666667,
+          "x_m": -0.006498571372090283,
+          "x_px": 99.85524788592274,
+          "y_m": 0.1180309343584593,
+          "y_px": 27.0
+        },
+        {
+          "frame": 248,
+          "t_s": 8.274933333333333,
+          "x_m": -0.008108147969110857,
+          "x_px": 99.73251574411667,
+          "y_m": 0.1180309343584593,
+          "y_px": 27.0
+        },
+        {
+          "frame": 249,
+          "t_s": 8.308300000000001,
+          "x_m": -0.010632992039625267,
+          "x_px": 99.53999336209758,
+          "y_m": 0.13114548262051032,
+          "y_px": 26.0
+        },
+        {
+          "frame": 250,
+          "t_s": 8.341666666666667,
+          "x_m": -0.01184306485267558,
+          "x_px": 99.44772386193097,
+          "y_m": 0.14426003088256134,
+          "y_px": 25.0
+        },
+        {
+          "frame": 251,
+          "t_s": 8.375033333333333,
+          "x_m": -0.010441617865662006,
+          "x_px": 99.55458587189199,
+          "y_m": 0.1573745791446124,
+          "y_px": 24.0
+        },
+        {
+          "frame": 252,
+          "t_s": 8.4084,
+          "x_m": -0.01079880208901647,
+          "x_px": 99.527350147396,
+          "y_m": 0.17048912740666342,
+          "y_px": 23.0
+        },
+        {
+          "frame": 253,
+          "t_s": 8.441766666666666,
+          "x_m": -0.010019145846120243,
+          "x_px": 99.58679986898133,
+          "y_m": 0.17048912740666342,
+          "y_px": 23.0
+        },
+        {
+          "frame": 254,
+          "t_s": 8.475133333333334,
+          "x_m": -0.010960348562164662,
+          "x_px": 99.51503203548546,
+          "y_m": 0.17048912740666342,
+          "y_px": 23.0
+        },
+        {
+          "frame": 255,
+          "t_s": 8.5085,
+          "x_m": -0.013338933800841333,
+          "x_px": 99.3336620644313,
+          "y_m": 0.17048912740666342,
+          "y_px": 23.0
+        },
+        {
+          "frame": 256,
+          "t_s": 8.541866666666667,
+          "x_m": -0.015884269921276534,
+          "x_px": 99.1395771390816,
+          "y_m": 0.1573745791446124,
+          "y_px": 24.0
+        },
+        {
+          "frame": 257,
+          "t_s": 8.575233333333333,
+          "x_m": -0.01897464547540595,
+          "x_px": 98.90393230462917,
+          "y_m": 0.1573745791446124,
+          "y_px": 24.0
+        },
+        {
+          "frame": 258,
+          "t_s": 8.608600000000001,
+          "x_m": -0.019730378932635954,
+          "x_px": 98.84630672408082,
+          "y_m": 0.1573745791446124,
+          "y_px": 24.0
+        },
+        {
+          "frame": 259,
+          "t_s": 8.641966666666667,
+          "x_m": -0.018426369359197767,
+          "x_px": 98.94573901464713,
+          "y_m": 0.14426003088256134,
+          "y_px": 25.0
+        },
+        {
+          "frame": 260,
+          "t_s": 8.675333333333333,
+          "x_m": -0.023764601023496996,
+          "x_px": 98.53869246164109,
+          "y_m": 0.14426003088256134,
+          "y_px": 25.0
+        },
+        {
+          "frame": 261,
+          "t_s": 8.7087,
+          "x_m": -0.019702737565267178,
+          "x_px": 98.84841441142288,
+          "y_m": 0.1180309343584593,
+          "y_px": 27.0
+        },
+        {
+          "frame": 262,
+          "t_s": 8.742066666666666,
+          "x_m": -0.020512969591172055,
+          "x_px": 98.78663324979115,
+          "y_m": 0.1180309343584593,
+          "y_px": 27.0
+        },
+        {
+          "frame": 263,
+          "t_s": 8.775433333333334,
+          "x_m": -0.023909482820968976,
+          "x_px": 98.52764505119454,
+          "y_m": 0.10491638609640826,
+          "y_px": 28.0
+        },
+        {
+          "frame": 264,
+          "t_s": 8.8088,
+          "x_m": -0.021791708499695406,
+          "x_px": 98.68912787766762,
+          "y_m": 0.09180183783435722,
+          "y_px": 29.0
+        },
+        {
+          "frame": 265,
+          "t_s": 8.842166666666667,
+          "x_m": -0.022451552064523213,
+          "x_px": 98.6388140161725,
+          "y_m": 0.06557274131025516,
+          "y_px": 31.0
+        },
+        {
+          "frame": 266,
+          "t_s": 8.875533333333333,
+          "x_m": -0.021502001599748684,
+          "x_px": 98.71121837549933,
+          "y_m": 0.0393436447861531,
+          "y_px": 33.0
+        },
+        {
+          "frame": 267,
+          "t_s": 8.908900000000001,
+          "x_m": -0.019867732721061074,
+          "x_px": 98.83583333333334,
+          "y_m": 0.013114548262051032,
+          "y_px": 35.0
+        },
+        {
+          "frame": 268,
+          "t_s": 8.942266666666667,
+          "x_m": -0.021467069869153213,
+          "x_px": 98.71388196176227,
+          "y_m": 0.013114548262051032,
+          "y_px": 35.0
+        },
+        {
+          "frame": 269,
+          "t_s": 8.975633333333333,
+          "x_m": -0.02554203850773881,
+          "x_px": 98.40316072629454,
+          "y_m": -0.013114548262051032,
+          "y_px": 37.0
+        },
+        {
+          "frame": 270,
+          "t_s": 9.009,
+          "x_m": -0.024479940700080544,
+          "x_px": 98.48414695520886,
+          "y_m": -0.0393436447861531,
+          "y_px": 39.0
+        },
+        {
+          "frame": 271,
+          "t_s": 9.042366666666666,
+          "x_m": -0.024154292549091894,
+          "x_px": 98.50897801644571,
+          "y_m": -0.0786872895723062,
+          "y_px": 42.0
+        },
+        {
+          "frame": 272,
+          "t_s": 9.075733333333334,
+          "x_m": -0.020427053050533522,
+          "x_px": 98.79318448883666,
+          "y_m": -0.1180309343584593,
+          "y_px": 45.0
+        },
+        {
+          "frame": 273,
+          "t_s": 9.1091,
+          "x_m": -0.023048968209724623,
+          "x_px": 98.59326032013479,
+          "y_m": -0.1180309343584593,
+          "y_px": 45.0
+        },
+        {
+          "frame": 274,
+          "t_s": 9.142466666666667,
+          "x_m": -0.02459855701505906,
+          "x_px": 98.47510231923602,
+          "y_m": -0.17048912740666342,
+          "y_px": 49.0
+        },
+        {
+          "frame": 275,
+          "t_s": 9.175833333333333,
+          "x_m": -0.022222541748055262,
+          "x_px": 98.65627632687448,
+          "y_m": -0.1967182239307655,
+          "y_px": 51.0
+        },
+        {
+          "frame": 276,
+          "t_s": 9.209200000000001,
+          "x_m": -0.019333703239423242,
+          "x_px": 98.87655372041546,
+          "y_m": -0.2491764169789696,
+          "y_px": 55.0
+        }
+      ],
+      "world_outcomes": [
+        {
+          "landing_time_s": 9.240218384104743,
+          "landing_x_px": 98.83739756758136,
+          "world": "Moon"
+        },
+        {
+          "landing_time_s": 8.239342179638092,
+          "landing_x_px": 100.10085673095246,
+          "world": "Earth"
+        }
+      ]
+    }
+  ],
+  "self_built_tools": [],
+  "sentence": "The measured g of 1.66 +/- 0.22 m/s2 fits Moon (1.62 m/s2) within 2 sigma.",
+  "verdict": {
+    "clock_note": null,
+    "decided_by": "gravity",
+    "direction": null,
+    "factor": null,
+    "g_measured": 1.663028213714586,
+    "kind": "world",
+    "reason": null,
+    "sigma_g": 0.22368193139231798,
+    "world": "Moon"
+  },
+  "video": {
+    "coded_height": 240,
+    "coded_width": 352,
+    "duration_s": 15.548866666666667,
+    "frame_count": 466,
+    "measured_fps": 29.97002997002997,
+    "sample_aspect": {
+      "den": 219,
+      "num": 200
+    }
+  },
+  "worlds": {
+    "candidates": [
+      {
+        "delta_sigma": 0.19236338602208444,
+        "fits_native": true,
+        "g_m_s2": 1.62,
+        "retime_factor": null,
+        "world": "Moon"
+      },
+      {
+        "delta_sigma": 36.422127328632364,
+        "fits_native": false,
+        "g_m_s2": 9.81,
+        "retime_factor": null,
+        "world": "Earth"
+      }
+    ],
+    "excluded": []
+  }
+}

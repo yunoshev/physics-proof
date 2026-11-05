@@ -1,0 +1,645 @@
+{
+  "$id": "https://physics-proof/evidence.schema.json",
+  "title": "Agent evidence (contract v3) — what submit accepts; code computes the rest",
+  "description": "Exactly what the agent submits. Overlay polygons, fits, ghosts, world outcomes, landing numbers, times, calculation steps, verdict and sentence are computed by the validator from these fields plus the run records, never submitted. See brief part 12 section 14.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["first_look", "references", "scale", "segments", "clock", "clock_absent_reason", "worlds", "error_budget", "camera", "provenance"],
+  "properties": {
+    "first_look": {
+      "description": "What the agent saw before measuring: headline question, summary, scene card, naked-eye estimates and viewed frame ranges.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "summary", "scene_card", "by_eye", "views", "motions"],
+      "properties": {
+        "question": {"description": "The viewer's question about what the clip shows or claims, in plain words; the result answers it (part 01, 2026-10-29).", "type": "string", "minLength": 1},
+        "summary": {"description": "One or two sentences on what the frames show.", "type": "string", "minLength": 1},
+        "scene_card": {
+          "description": "Backs the What we see card: plain description of the scene.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scene", "place_date", "confidence", "objects"],
+          "properties": {
+            "scene": {"description": "Plain description of the scene as read from the frames.", "type": "string", "minLength": 1},
+            "place_date": {"description": "Place or date as read from the frames, or null when the frames do not show one; never state outside knowledge.", "anyOf": [{"type": "string"}, {"type": "null"}]},
+            "confidence": {"description": "How confident the scene reading is: low, medium or high.", "type": "string", "enum": ["low", "medium", "high"]},
+            "objects": {"description": "Object chips shown on the card, e.g. suited figure, flag on pole.", "type": "array", "items": {"description": "One visible object name.", "type": "string"}}
+          }
+        },
+        "by_eye": {
+          "description": "Pre-measurement naked-eye estimates for the before/after contrast card; never used in the verdict. Null when no by-eye estimate was made.",
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["jump_m", "airborne_s", "reasoning"],
+              "properties": {
+                "jump_m": {"description": "Naked-eye jump height guess in metres, or null.", "anyOf": [{"type": "number"}, {"type": "null"}]},
+                "airborne_s": {"description": "Naked-eye airtime guess in seconds, or null.", "anyOf": [{"type": "number"}, {"type": "null"}]},
+                "reasoning": {"description": "One line of reasoning behind the guess, e.g. the hop hangs in the air.", "type": "string", "minLength": 1}
+              }
+            }
+          ]
+        },
+        "views": {
+          "description": "Frame ranges already viewed, each saved with view_frames; the artifact cites that tool output under artifacts/.",
+          "type": "array",
+          "items": {
+            "description": "One viewed range and its saved image artifact.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["frame_start", "frame_end", "artifact"],
+            "properties": {
+              "frame_start": {"description": "First frame of the viewed range.", "type": "integer", "minimum": 0},
+              "frame_end": {"description": "Last frame of the viewed range.", "type": "integer", "minimum": 0},
+              "artifact": {"description": "Saved view image, a path under artifacts/ produced by view_frames.", "type": "string", "minLength": 1}
+            }
+          }
+        },
+        "motions": {
+          "description": "Every interval of the motion under test found while viewing the whole clip (R-M4): at least one entry; each entry names its measured segment via segment_id or explains why it was not measured via skip_reason, and at least one of the two must be set. The player shows one mark per segment and a grey tick with the skip reason for listed-but-unmeasured motions.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "description": "One motion interval under test.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["frame_start", "frame_end", "description", "segment_id", "skip_reason"],
+                "properties": {
+                  "frame_start": {"description": "First frame of this motion interval.", "type": "integer", "minimum": 0},
+                  "frame_end": {"description": "Last frame of this motion interval.", "type": "integer", "minimum": 0},
+                  "description": {"description": "Short words for the motion seen in this interval.", "type": "string", "minLength": 1},
+                  "segment_id": {"description": "Id of the measured segment for this interval.", "type": "string", "minLength": 1},
+                  "skip_reason": {"description": "Why this interval was not measured, or null when it was measured.", "anyOf": [{"type": "string"}, {"type": "null"}]}
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["frame_start", "frame_end", "description", "segment_id", "skip_reason"],
+                "properties": {
+                  "frame_start": {"description": "First frame of this motion interval.", "type": "integer", "minimum": 0},
+                  "frame_end": {"description": "Last frame of this motion interval.", "type": "integer", "minimum": 0},
+                  "description": {"description": "Short words for the motion seen in this interval.", "type": "string", "minLength": 1},
+                  "segment_id": {"description": "Measured segment id, or null when this interval was not measured.", "anyOf": [{"type": "string"}, {"type": "null"}]},
+                  "skip_reason": {"description": "Why this interval was not measured.", "type": "string", "minLength": 1}
+                }
+              }
+            ]
+          }
+        },
+        "overview": {
+          "description": "Trajectories the agent decided from (R-M6, part 08): the whole-clip segment masks and the motion_overview result file, plus one candidate per trajectory found, each decided as measured with its segment, or not a free flight / not measurable with a reason. Required on new evidence when a segment exists; part 11 rejects a segment-bearing evidence without it. Every candidate with decision measured also appears in first_look.motions with that segment_id. first_check names the segment measured first and why (R-M7).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["artifact", "object_id", "tool_result", "candidates", "first_check"],
+          "properties": {
+            "artifact": {"description": "Whole-clip segment masks, a path under artifacts/ produced by running the segment tool over the full clip; the overview was made from this object.", "type": "string", "minLength": 1},
+            "object_id": {"description": "Object id of the moving body inside artifact, from the segment tool output.", "type": "string", "minLength": 1},
+            "tool_result": {"description": "Saved motion_overview result file, a path under artifacts/ produced by running the motion_overview tool on artifact and object_id.", "type": "string", "minLength": 1},
+            "candidates": {
+              "description": "One entry per trajectory the overview found, each with its decision: measured names its segment_id, the others carry a reason (R-M6).",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "description": "One candidate trajectory and the agent's decision on it.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["id", "frame_start", "frame_end", "airtime_s", "peak_rise_px", "decision", "segment_id", "reason"],
+                    "properties": {
+                      "id": {"description": "Candidate id, e.g. cand_1, used to refer to this trajectory.", "type": "string", "minLength": 1},
+                      "frame_start": {"description": "First frame of the candidate trajectory.", "type": "integer", "minimum": 0},
+                      "frame_end": {"description": "Last frame of the candidate trajectory.", "type": "integer", "minimum": 0},
+                      "airtime_s": {"description": "Candidate airtime in seconds, from its frames and the timing report.", "type": "number", "minimum": 0},
+                      "peak_rise_px": {"description": "Candidate peak rise in source pixels above its start, read off the overview chart.", "type": "number", "minimum": 0},
+                      "decision": {"description": "Measured when this trajectory is a real free flight measured as its own segment.", "const": "measured", "type": "string"},
+                      "segment_id": {"description": "Id of the segment measuring this trajectory.", "type": "string", "minLength": 1},
+                      "reason": {"description": "Null when the candidate is measured as a segment.", "type": "null"}
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["id", "frame_start", "frame_end", "airtime_s", "peak_rise_px", "decision", "segment_id", "reason"],
+                    "properties": {
+                      "id": {"description": "Candidate id, e.g. cand_1, used to refer to this trajectory.", "type": "string", "minLength": 1},
+                      "frame_start": {"description": "First frame of the candidate trajectory.", "type": "integer", "minimum": 0},
+                      "frame_end": {"description": "Last frame of the candidate trajectory.", "type": "integer", "minimum": 0},
+                      "airtime_s": {"description": "Candidate airtime in seconds, from its frames and the timing report.", "type": "number", "minimum": 0},
+                      "peak_rise_px": {"description": "Candidate peak rise in source pixels above its start, read off the overview chart.", "type": "number", "minimum": 0},
+                      "decision": {"description": "not_a_flight when the trajectory is not a free flight, not_measurable when it cannot be measured.", "type": "string", "enum": ["not_a_flight", "not_measurable"]},
+                      "segment_id": {"description": "Null when the candidate was not measured as a segment.", "type": "null"},
+                      "reason": {"description": "Why the candidate is not a free flight or cannot be measured, e.g. walking step, cut off by the frame edge.", "type": "string", "minLength": 1}
+                    }
+                  }
+                ]
+              }
+            },
+            "first_check": {
+              "description": "The segment measured first and why (R-M7): the free flight the agent measures best, which the other measured segments then confirm.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["segment_id", "why"],
+              "properties": {
+                "segment_id": {"description": "Id of the segment measured first.", "type": "string", "minLength": 1},
+                "why": {"description": "Why this segment was measured first, e.g. most frames with the whole body in frame.", "type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      }
+    },
+    "references": {
+      "description": "Scale evidence: at least two references of different things visible in the footage, each with quotes, mask and blind check; every pair of references must agree within 2 sigma, and a scale resting on one reference gives an undetermined verdict.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "description": "One reference object of known size.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "extent_description", "extent_type", "extent_px", "size_m", "size_tolerance_m", "size_derivation", "sources", "mask", "mask_check"],
+        "properties": {
+          "name": {"description": "Reference name, e.g. backpack height.", "type": "string", "minLength": 1},
+          "extent_description": {"description": "Plain words for exactly which extent was measured, e.g. height of the backpack.", "type": "string", "minLength": 1},
+          "extent_type": {"description": "face_on when the extent faces the camera, rotation_invariant when orientation cannot change its length, projected when seen at an angle and corrected with an allowance.", "type": "string", "enum": ["face_on", "rotation_invariant", "projected"]},
+          "extent_px": {
+            "description": "Endpoints of exactly the measured extent in source pixels on the scale frame; the player draws its ruler between these two points.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["x1", "y1", "x2", "y2", "length_px", "frame"],
+            "properties": {
+              "x1": {"description": "x of the first endpoint in source pixels.", "type": "number"},
+              "y1": {"description": "y of the first endpoint in source pixels.", "type": "number"},
+              "x2": {"description": "x of the second endpoint in source pixels.", "type": "number"},
+              "y2": {"description": "y of the second endpoint in source pixels.", "type": "number"},
+              "length_px": {"description": "Distance between the endpoints in pixels; must equal hypot(x2-x1, y2-y1).", "type": "number", "exclusiveMinimum": 0},
+              "frame": {"description": "Scale frame the endpoints were measured on.", "type": "integer", "minimum": 0}
+            }
+          },
+          "size_m": {"description": "Reference size in metres from the quoted sources.", "type": "number", "exclusiveMinimum": 0},
+          "size_tolerance_m": {"description": "One-sigma tolerance of the size in metres.", "type": "number", "minimum": 0},
+          "size_derivation": {
+            "description": "How multiple sources combine into one size; R-S7 requires stating what the mask shows that the size source covers and what it shows that the source does not, and R-S8 requires a third reference when a derived size disagrees by 5 percent or more.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["mode", "note", "state_match"],
+            "properties": {
+              "mode": {"description": "single for one source, sum when two sizes add, mean when they average.", "type": "string", "enum": ["single", "sum", "mean"]},
+              "note": {"description": "Displayable note on the combination, e.g. mean of quoted heights.", "type": "string"},
+              "state_match": {
+                "description": "R-S7 size-to-state match: what the mask shows that the size source also covers, and what it shows that the source does not; R-S8 uses a mismatch here to call for a third reference.",
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["shown_and_covered", "shown_not_covered"],
+                "properties": {
+                  "shown_and_covered": {"description": "R-S7: what the mask shows that the size source also covers.", "type": "string", "minLength": 1},
+                  "shown_not_covered": {"description": "R-S7: what the mask shows that the size source does not cover (R-S8 prices a large gap with a third reference).", "type": "string", "minLength": 1}
+                }
+              }
+            }
+          },
+          "sources": {
+            "description": "Web sources supporting the size; a size may rest on several.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "description": "One quoted source for the size.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["url", "domain", "quote", "quote_highlight", "value_m", "source_type"],
+              "properties": {
+                "url": {"description": "Source page URL from the filtered web_search.", "type": "string", "minLength": 1},
+                "domain": {"description": "Domain of the URL, e.g. example.com.", "type": "string", "minLength": 1},
+                "quote": {"description": "Verbatim quote carrying the size.", "type": "string", "minLength": 1},
+                "quote_highlight": {"description": "The number inside the quote, highlighted on the card.", "type": "string", "minLength": 1},
+                "value_m": {"description": "Size in metres this quote supports, or null when it only backs the reading qualitatively.", "anyOf": [{"type": "number"}, {"type": "null"}]},
+                "source_type": {"description": "Kind of source, e.g. museum catalogue or encyclopedia article.", "type": "string", "minLength": 1}
+              }
+            }
+          },
+          "mask": {
+            "description": "Segment mask covering the reference object at the scale frame.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["artifact", "object_id", "frame", "outline"],
+            "properties": {
+              "artifact": {"description": "Mask file under artifacts/ produced by segment.", "type": "string", "minLength": 1},
+              "object_id": {"description": "Object id inside the mask file, as a string.", "type": "string", "minLength": 1},
+              "frame": {"description": "Frame the outline below was taken on.", "type": "integer", "minimum": 0},
+              "outline": {"description": "Simplified polygon of the reference mask in source pixels.", "type": "array", "minItems": 3, "maxItems": 80, "items": {"description": "One [x, y] vertex in source pixels.", "type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}}}
+            }
+          },
+          "mask_check": {
+            "description": "Blind check of the reference mask from check_mask.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["artifact", "coverage_answer", "confidence", "alternative_readings"],
+            "properties": {
+              "artifact": {"description": "Saved check record under artifacts/ produced by check_mask.", "type": "string", "minLength": 1},
+              "coverage_answer": {"description": "The blind check's coverage answer in its own words.", "type": "string", "minLength": 1},
+              "confidence": {"description": "The check's self-reported confidence where it gives one, else null.", "anyOf": [{"type": "string"}, {"type": "number"}, {"type": "null"}]},
+              "alternative_readings": {
+                "description": "Other readings the blind coverage admits (R-S2: e.g. a backpack with or without its top unit); needed whenever the coverage answer admits another size, and each alternative with a different size must be priced by the reading_spread budget component.",
+                "type": "array",
+                "items": {
+                  "description": "One alternative size reading.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["description", "size_m"],
+                  "properties": {
+                    "description": {"description": "Words for the alternative reading.", "type": "string", "minLength": 1},
+                    "size_m": {"description": "Size in metres under this reading.", "type": "number", "exclusiveMinimum": 0}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scale": {
+      "description": "Pixel scale from the references above, always cross-checked by two or three references of different things: every pair must agree within 2 sigma, and one reference gives an undetermined verdict. m_per_px and sigma_m_per_px are computed by code from all references; reference_index stays the headline reference the player draws the ruler on, and second_reference_index equals the second used reference, or null with a reason. The agent proposes the numbers, code checks them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame", "m_per_px", "sigma_m_per_px", "reference_index", "extent_px", "second_reference_index", "second_reference_absent_reason", "check_scale"],
+      "properties": {
+        "frame": {"description": "Scale frame the scale was measured on.", "type": "integer", "minimum": 0},
+        "m_per_px": {"description": "Metres per pixel: reference size over extent length.", "type": "number", "exclusiveMinimum": 0},
+        "sigma_m_per_px": {"description": "One-sigma error of metres per pixel.", "type": "number", "minimum": 0},
+        "reference_index": {"description": "Index into references of the primary reference.", "type": "integer", "minimum": 0},
+        "extent_px": {
+          "description": "Copy of the primary reference's extent for the player's convenience.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x1", "y1", "x2", "y2", "length_px", "frame"],
+          "properties": {
+            "x1": {"description": "x of the first endpoint in source pixels.", "type": "number"},
+            "y1": {"description": "y of the first endpoint in source pixels.", "type": "number"},
+            "x2": {"description": "x of the second endpoint in source pixels.", "type": "number"},
+            "y2": {"description": "y of the second endpoint in source pixels.", "type": "number"},
+            "length_px": {"description": "Distance between the endpoints in pixels.", "type": "number", "exclusiveMinimum": 0},
+            "frame": {"description": "Scale frame.", "type": "integer", "minimum": 0}
+          }
+        },
+        "second_reference_index": {"description": "Index of an independent second reference at the same depth, or null when none exists.", "anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+        "second_reference_absent_reason": {"description": "Why no second reference exists, required when the index above is null.", "anyOf": [{"type": "string"}, {"type": "null"}]},
+        "check_scale": {
+          "description": "Scale from the independent second object, stored alongside and never averaged in; null when there is no second reference.",
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["m_per_px", "sigma"],
+              "properties": {
+                "m_per_px": {"description": "Second-object metres per pixel.", "type": "number", "exclusiveMinimum": 0},
+                "sigma": {"description": "Its one-sigma error.", "type": "number", "minimum": 0}
+              }
+            }
+          ]
+        }
+      }
+    },
+    "segments": {
+      "description": "Measured motion: one entry per free flight or wall run. Times, overlays, fits, ghosts and landing numbers are computed by the validator from the track artifact, the masks and the timing. May be empty when range_checks carries the measurement instead; part 11 rejects an evidence with neither (MEASUREMENT_MISSING).",
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "description": "One measured segment.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "kind", "mask", "frames", "key_moments", "track_artifact", "tracked_point", "fit_curve_px", "repetitions"],
+        "properties": {
+          "id": {"description": "Segment id, e.g. hop_a; segment steps repeat per id.", "type": "string", "minLength": 1},
+          "label": {"description": "Display label, e.g. Foreground hop; used for timeline ranges and sidebar steps.", "type": "string", "minLength": 1},
+          "kind": {"description": "free_flight for ballistic motion, wall for wall runs (ghosts are empty for walls).", "type": "string", "enum": ["free_flight", "wall"]},
+          "subject": {
+            "description": "Who or what jumps: kind person, animal or object plus a short description; descriptive only, no rule reads kind.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "description"],
+            "properties": {
+              "kind": {"description": "person, animal or object.", "type": "string", "enum": ["person", "animal", "object"]},
+              "description": {"description": "Short words for the subject, e.g. foreground suited figure.", "type": "string", "minLength": 1}
+            }
+          },
+          "mask": {
+            "description": "Segment mask from segment: artifact plus object id; per-frame outlines are computed from it.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["artifact", "object_id"],
+            "properties": {
+              "artifact": {"description": "Mask file under artifacts/ produced by segment.", "type": "string", "minLength": 1},
+              "object_id": {"description": "Object id inside the mask file, as a string.", "type": "string", "minLength": 1}
+            }
+          },
+          "frames": {
+            "description": "Takeoff, apex and landing frames of the segment.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "apex", "end"],
+            "properties": {
+              "start": {"description": "Takeoff frame: last contact before free flight.", "type": "integer", "minimum": 0},
+              "apex": {"description": "Apex frame: highest point of the tracked point.", "type": "integer", "minimum": 0},
+              "end": {"description": "Landing frame: first contact after free flight.", "type": "integer", "minimum": 0}
+            }
+          },
+          "key_moments": {
+            "description": "Events the player freezes on; times are filled in from frames plus timing. Captions are short and digit-free.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "description": "One freezable event.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type", "frame", "caption"],
+              "properties": {
+                "type": {"description": "takeoff, apex, landing, or wall_start/wall_end for wall runs.", "type": "string", "enum": ["takeoff", "apex", "landing", "wall_start", "wall_end"]},
+                "frame": {"description": "Frame of the event.", "type": "integer", "minimum": 0},
+                "caption": {"description": "Short digit-free display text; numbers come from the computed fields, never the caption.", "type": "string", "minLength": 1}
+              }
+            }
+          },
+          "track_artifact": {"description": "Path under workspace/ or artifacts/ to a JSON list of {frame, x_px, y_px} rows, the tracked point per frame in source pixels, written by run_python or a tool. The only input of the fit recompute.", "type": "string", "minLength": 1},
+          "tracked_point": {"description": "Short words for what was tracked, e.g. top of the helmet.", "type": "string", "minLength": 1},
+          "fit_curve_px": {
+            "description": "Fitted parabola sampled per frame in source pixels with video-second times.",
+            "type": "array",
+            "items": {
+              "description": "One fitted sample.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["t_s", "x_px", "y_px"],
+              "properties": {
+                "t_s": {"description": "Video time of the sample in seconds.", "type": "number", "minimum": 0},
+                "x_px": {"description": "Fitted x in source pixels.", "type": "number"},
+                "y_px": {"description": "Fitted y in source pixels.", "type": "number"}
+              }
+            }
+          },
+          "repetitions": {
+            "description": "Repeated fits over sub-windows, priced by repetition_spread.",
+            "type": "array",
+            "items": {
+              "description": "One repetition fit.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["frames", "g_app", "sigma_g"],
+              "properties": {
+                "frames": {
+                  "description": "Sub-window of the repetition.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["start", "end"],
+                  "properties": {
+                    "start": {"description": "First frame of the sub-window.", "type": "integer", "minimum": 0},
+                    "end": {"description": "Last frame of the sub-window.", "type": "integer", "minimum": 0}
+                  }
+                },
+                "g_app": {"description": "Apparent gravity of the repetition in m/s2.", "type": "number"},
+                "sigma_g": {"description": "Its one-sigma error in m/s2.", "type": "number", "minimum": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    "clock": {
+      "description": "Independent clock claim, or null when no clock is claimed; an empty object is invalid. Stretch and normality are computed by the validator from these fields.",
+      "anyOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["signal_description", "measured_rate_hz", "measured_rate_sigma_hz", "interpretation", "band_hz", "natural_range_hz", "natural_range_source"],
+          "properties": {
+            "signal_description": {"description": "What was timed, e.g. width of the lowest thirty percent of the mask over height, sampled per frame.", "type": "string", "minLength": 1},
+            "measured_rate_hz": {"description": "Measured rate in Hz from the code-built signal.", "type": "number", "exclusiveMinimum": 0},
+            "measured_rate_sigma_hz": {"description": "One-sigma error of the measured rate in Hz.", "type": "number", "minimum": 0},
+            "interpretation": {"description": "step when one cycle is one step, stride when it is two.", "type": "string", "enum": ["step", "stride"]},
+            "band_hz": {"description": "Search band the peak was picked in, as [lo, hi] in Hz.", "type": "array", "minItems": 2, "maxItems": 2, "items": {"description": "Band edge in Hz.", "type": "number"}},
+            "natural_range_hz": {"description": "Natural range for the motion, as [lo, hi] in Hz.", "type": "array", "minItems": 2, "maxItems": 2, "items": {"description": "Range edge in Hz.", "type": "number"}},
+            "natural_range_source": {
+              "description": "Where the natural range comes from; a clock without a sourced range does not exist for the verdict.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["url", "quote"],
+              "properties": {
+                "url": {"description": "Source page URL from the filtered web_search.", "type": "string", "minLength": 1},
+                "quote": {"description": "Verbatim quote carrying the range.", "type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "clock_absent_reason": {"description": "Why no clock is claimed, e.g. no visible independent rhythm; required when clock is null.", "anyOf": [{"type": "string"}, {"type": "null"}]},
+    "worlds": {
+      "description": "Worlds tested and worlds ruled out by the scene. Gravity values, fits and retime factors are computed by the validator; the agent names candidate worlds only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidates", "excluded"],
+      "properties": {
+        "candidates": {
+          "description": "The scene's world only; a second one only when the question names it. Worlds actually tested; the verdict card shows exactly these.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "description": "One candidate world.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["world"],
+            "properties": {
+              "world": {"description": "World name: Earth, Moon or Mars.", "type": "string", "minLength": 1}
+            }
+          }
+        },
+        "excluded": {
+          "description": "Empty unless an earlier contract version listed exclusions. Scene-ruled-out worlds with their visual evidence.",
+          "type": "array",
+          "items": {
+            "description": "One excluded world.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["world", "evidence_text", "evidence_frames", "evidence_artifact"],
+            "properties": {
+              "world": {"description": "World name.", "type": "string", "minLength": 1},
+              "evidence_text": {"description": "Words for the visual evidence ruling it out.", "type": "string", "minLength": 1},
+              "evidence_frames": {"description": "Frames showing the evidence.", "type": "array", "items": {"description": "One frame.", "type": "integer", "minimum": 0}},
+              "evidence_artifact": {"description": "Saved view image under artifacts/ showing the evidence.", "type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "error_budget": {
+      "description": "Itemised one-sigma error budget; the total is recomputed in quadrature by the validator.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["components", "sigma_relative"],
+      "properties": {
+        "components": {
+          "description": "Always required: reference_size, pixel_scale, fit, point_vs_com. reading_spread is required when an alternative reading's size differs from the headline; repetition_spread is required when a segment has repetitions. sigma_total is recomputed as the quadrature sum plus the reading spread, and a sigma smaller than any component is rejected. With no gravity part (range-only evidence, segments empty) list only the components that apply; the validator still requires the four above whenever segments are present.",
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "description": "One budget component.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "sigma_contribution", "basis"],
+            "properties": {
+              "name": {"description": "Controlled component name: reference_size, pixel_scale, fit, point_vs_com, repetition_spread, reading_spread or projection.", "type": "string", "enum": ["reference_size", "pixel_scale", "fit", "point_vs_com", "repetition_spread", "reading_spread", "projection"]},
+              "sigma_contribution": {"description": "One-sigma contribution in m/s2.", "type": "number", "minimum": 0},
+              "basis": {"description": "How the contribution was obtained, e.g. quoted size spread over fitted gravity.", "type": "string", "minLength": 1}
+            }
+          }
+        },
+        "sigma_relative": {"description": "Relative error sigma over g from the agent's numbers; the validator recomputes the total.", "type": "number", "minimum": 0}
+      }
+    },
+    "camera": {
+      "description": "Camera-motion accounting: either a still-scene reference tracked over the fit window, or a relative track.",
+      "anyOf": [
+        {
+          "description": "Still-camera claim with a static reference object.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["still"],
+          "properties": {
+            "still": {
+              "description": "Static scene object tracked over the fit window proving the camera is still.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["reference_phrase", "reference_track_artifact"],
+              "properties": {
+                "reference_phrase": {"description": "Words for the static object, e.g. distant rock.", "type": "string", "minLength": 1},
+                "reference_track_artifact": {"description": "Path under workspace/ or artifacts/ to a JSON list of {frame, x_px, y_px} rows tracking the static object, same row format as the segment track.", "type": "string", "minLength": 1}
+              }
+            }
+          }
+        },
+        {
+          "description": "Relative-track claim measuring the subject against the scene.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["relative_track_artifact"],
+          "properties": {
+            "relative_track_artifact": {"description": "Path under workspace/ or artifacts/ to a JSON list of {frame, x_px, y_px} rows for the scene-relative track, same row format as the segment track.", "type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "provenance": {
+      "description": "Artifacts the evidence cites; model, run id and producers are filled in from the run ledger.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifacts"],
+      "properties": {
+        "artifacts": {
+          "description": "Every file any cited number rests on, as paths under workspace/ or artifacts/.",
+          "type": "array",
+          "items": {
+            "description": "One cited artifact.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "path"],
+            "properties": {
+              "name": {"description": "Display name, e.g. segment masks.", "type": "string", "minLength": 1},
+              "path": {"description": "Run-relative path under workspace/ or artifacts/ created by a tool or run_python.", "type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "range_checks": {
+      "description": "Range checks settling part of the question against a quoted range, e.g. a palm-to-hand ratio against an anthropometric survey. Absent or empty when the clip needs none. Each item: id (short slug), label (plain words), answers (which part of the question it settles, one sentence); unit (ratio, m, s or m/s); frame and extents (one or two objects shaped like references extent_px plus a name); value and sigma in that unit; formula (plain text, e.g. palm_px / hand_px or length_px x m_per_px); uses_scale (whether the value uses the pixel scale); measurement_artifact (the run_python artifact that printed the value, sigma and extents); range (min, max, typical, what, bounds_kind min-max or percentile with percentiles such as [5, 95] when percentile, and sources shaped like references sources but carrying value and bound in place of value_m). The validator adds outcome, delta_sigma and side.",
+      "type": "array",
+      "items": {
+        "description": "One range check against a quoted range.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "answers", "unit", "frame", "extents", "value", "sigma", "formula", "uses_scale", "measurement_artifact", "range"],
+        "properties": {
+          "id": {"description": "Short slug for the check, e.g. palm_hand_ratio; the verdict may name it in decided_by.", "type": "string", "minLength": 1},
+          "label": {"description": "Plain-words label, e.g. palm / hand length.", "type": "string", "minLength": 1},
+          "answers": {"description": "Which part of the question this check settles, one sentence.", "type": "string", "minLength": 1},
+          "unit": {"description": "Unit of value and sigma: ratio, m, s or m/s.", "type": "string", "enum": ["ratio", "m", "s", "m/s"]},
+          "frame": {"description": "Frame the extents are measured on.", "type": "integer", "minimum": 0},
+          "extents": {
+            "description": "One or two measured extents, each shaped like references extent_px plus a name.",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "description": "One measured extent in source pixels.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "x1", "y1", "x2", "y2", "length_px", "frame"],
+              "properties": {
+                "name": {"description": "Name of this extent, e.g. hand length.", "type": "string", "minLength": 1},
+                "x1": {"description": "x of the first endpoint in source pixels.", "type": "number"},
+                "y1": {"description": "y of the first endpoint in source pixels.", "type": "number"},
+                "x2": {"description": "x of the second endpoint in source pixels.", "type": "number"},
+                "y2": {"description": "y of the second endpoint in source pixels.", "type": "number"},
+                "length_px": {"description": "Distance between the endpoints in pixels.", "type": "number", "exclusiveMinimum": 0},
+                "frame": {"description": "Frame the extent was measured on.", "type": "integer", "minimum": 0}
+              }
+            }
+          },
+          "value": {"description": "Measured value in unit, e.g. palm_px / hand_px.", "type": "number"},
+          "sigma": {"description": "One-sigma error of the value in unit.", "type": "number", "minimum": 0},
+          "formula": {"description": "Plain-text formula showing how the value was computed, e.g. palm_px / hand_px or length_px x m_per_px.", "type": "string", "minLength": 1},
+          "uses_scale": {"description": "Whether the value uses the pixel scale (true) or cancels it out, as a pure pixel ratio does (false).", "type": "boolean"},
+          "measurement_artifact": {"description": "The run_python artifact that printed the value, sigma and extents, as a path under workspace/ or artifacts/.", "type": "string", "minLength": 1},
+          "range": {
+            "description": "The quoted range the value is checked against.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["min", "max", "typical", "what", "bounds_kind", "percentiles", "sources"],
+            "properties": {
+              "min": {"description": "Lower bound of the range in unit.", "type": "number"},
+              "max": {"description": "Upper bound of the range in unit.", "type": "number"},
+              "typical": {"description": "Typical value in unit, or null when no typical is quoted.", "anyOf": [{"type": "number"}, {"type": "null"}]},
+              "what": {"description": "Whose range this is, e.g. adult hands, US Army survey ANSUR II, 2012.", "type": "string", "minLength": 1},
+              "bounds_kind": {"description": "min-max for quoted extremes, percentile for percentile bounds.", "type": "string", "enum": ["min-max", "percentile"]},
+              "percentiles": {"description": "Percentile pair such as [5, 95] when bounds_kind is percentile, else null.", "anyOf": [{"type": "null"}, {"type": "array", "minItems": 2, "maxItems": 2, "items": {"description": "One percentile.", "type": "number"}}]},
+              "sources": {
+                "description": "Quoted sources for the range bounds, shaped like references sources but carrying value and bound in place of value_m.",
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "description": "One quoted range source.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["url", "domain", "quote", "quote_highlight", "value", "bound", "source_type"],
+                  "properties": {
+                    "url": {"description": "Source page URL from the filtered web_search.", "type": "string", "minLength": 1},
+                    "domain": {"description": "Domain of the URL.", "type": "string", "minLength": 1},
+                    "quote": {"description": "Verbatim quote carrying the bound.", "type": "string", "minLength": 1},
+                    "quote_highlight": {"description": "The number inside the quote, highlighted on the card.", "type": "string", "minLength": 1},
+                    "value": {"description": "The bound value this quote supports, in unit.", "type": "number"},
+                    "bound": {"description": "Which bound this quote supports: min, max or typical.", "type": "string", "enum": ["min", "max", "typical"]},
+                    "source_type": {"description": "Kind of source, e.g. survey report or encyclopedia article.", "type": "string", "minLength": 1}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "page_texts": {
+      "description": "Optional per-run string overrides for player template chrome; flat key to string map, digit-free, with {g} and {world} placeholders substituted by the player.",
+      "type": "object",
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": {"description": "One template string override.", "type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "query": "average human walking step rate steps per second",
+  "facts": [
+    {
+      "text": "Normal adult walking cadence is 100 to 120 steps per minute, which equals about 1.7 to 2 steps per second.",
+      "url": "http://fizziq.org/en/glossary/pedometer/",
+      "quote": "Normal walking cadence: 100 to 120 steps per minute, that is 1.7 to 2 Hz."
+    },
+    {
+      "text": "About 100 steps per minute, or about 1.67 steps per second, corresponds to moderate-intensity walking in adults.",
+      "url": "https://www.umass.edu/news/article/tudor-locke-examines-walking-cadence",
+      "quote": "approximately 100 steps per minute qualifies as a good metric for moderate intensity levels in health adults, with vigorous walking beginning at approximately 130 steps per minute."
+    },
+    {
+      "text": "About 130 steps per minute, or about 2.17 steps per second, marks the start of vigorous-intensity walking.",
+      "url": "https://www.umass.edu/news/article/tudor-locke-examines-walking-cadence",
+      "quote": "approximately 100 steps per minute qualifies as a good metric for moderate intensity levels in health adults, with vigorous walking beginning at approximately 130 steps per minute."
+    },
+    {
+      "text": "Step rate in steps per second is steps divided by seconds; for example, 1200 steps in 10 minutes equals 2.0 steps per second.",
+      "url": "http://fizziq.org/en/glossary/pedometer/",
+      "quote": "A walk of 1200 steps in 10 minutes corresponds to a cadence of 1200 / 600 = 2.0 steps per second, that is 120 steps per minute"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "on_screen_text": "",
+  "scene": "A flat grey soil plain under a black sky with harsh shadows, showing the surface of the Moon, as seen in the first frame and all following frames.",
+  "things": [
+    "two people in bulky white spacesuits with large backpack units and helmets, one in the foreground seen from behind and one in the background near the flag",
+    "a flag on a vertical pole with a horizontal support holding it extended, showing light and dark stripes",
+    "grey uneven ground with small craters and clods, long shadows cast across it, and a black sky above"
+  ],
+  "what_happens": [
+    "At 0.0s a suited figure in the left foreground is stepping on grey ground while a second suited figure is crouched beside a flag pole in the mid-distance.",
+    "At ~2.1s the foreground figure extends a right arm outward and shifts stance while the background figure remains by the flag pole.",
+    "At ~4.1s the foreground figure lifts both feet, turns slightly, and brings the arms up in a low hop above the ground.",
+    "At ~6.3s the foreground figure has landed and stands facing away with arms lowered while the background figure is still beside the flag pole."
+  ]
+}

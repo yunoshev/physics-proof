@@ -1,0 +1,126 @@
+# PLAN.md — Build Plan (brief part 15 §1, step zero)
+
+Source: `brief/01`–`brief/15` + `skills/` (meta-api, sam-3-1, macos-sandbox, video-ffmpeg, muse-code-headless).
+Status: awaiting single owner review. After approval, parts are generated one at a time through `tools/dev_loop`; spec gaps go into the spec part first, then code is regenerated.
+
+Conventions: `src/` = runtime; `player/` = frozen static template; `tools/dev_loop` = regeneration driver; `tests/` mirrors `src/` per part 04 §3. Contract version 1. Run layout per part 04 §4 (`input/`, `workspace/`, `artifacts/`, `logs/`, `result.json`). Model tiers per part 15 §1 + `skills/muse-code-headless.md`: default `muse-spark-1.3-contributor` / medium; hard parts `06`, `11`, `13` at high.
+
+---
+
+## 1. Module list with interfaces
+
+Each row: module, owning part, what it exposes to the other modules. Boundaries per part 04 §3 (loop→tools only via tool schemas; loop→validate only via submit; sandbox sees only workspace/artifacts/input/helpers + run-gated selfbuilt; runtime never imports `tests/`; player/pagebuild read only part-12 files + provenance-named assets).
+
+| Module | Part | Interface exposed |
+|---|---|---|
+| `src/config.py` | 04 | Single source of limits/prices/paths/model IDs: `load_config()`, price table (Spark input/cached/output tiers, search, SAM), hard caps ($2, 30 min), soft warn ratio (80%), `max_output_tokens=32768`, turn/tool budgets, retry policy (base 2 s ×2+jitter, max 3), sandbox timeouts/mem caps, blindness pattern list, helper constants (gait median window, overlap 50%, residual-trend threshold, identity-swap IoU, camera-still px threshold, band defaults). Tests: `tests/test_config.py`. |
+| `src/cli.py` | 04 | The one command: `cli <video-path> [--run-id …]` → creates `runs/<run-id>/`, calls ingest → loop → validate/accounting, guarantees `result.json` + `summary.json` exist on every exit path. Exposes `main(argv)`, `run_analysis(video_path) -> {run_dir, result_path, summary_path}`. Tests: `tests/test_cli.py`. |
+| `scripts/make_clips.py` | 03 | Clip prep: downloads Apollo source (Apollo Lunar Surface Journal), produces clips A (original, metadata-stripped) and B (×1.5 motion-interpolated slow, same fps, no dups) via raw-frame pipe; exposes `make_clip_a()`, `make_clip_b()`, `main()`; ground-truth params unreachable from runtime (part 03 §5). Tests: `tests/test_make_clips.py`. |
+| `src/ingest/` | 05 | `ingest(video_path, run_dir)` → `input/clip.<ext>` (copied, metadata-stripped, audio dropped), `input/timing.json` (`claimed_fps`, `measured_fps` + delta distribution, `frame_count`, `duration_s`, per-frame timestamps, confirmed/suspect duplicates, cuts, interpolation-suspicion flag), `logs/probe.json`. Exposes `probe()`, `measure_timing()`, `timeline_hygiene()`, `verify_generated_clip()` (shared duplicate definition for A/B). Failure → part-11 synthesis (`undetermined: unreadable video`). Tests: `tests/ingest/`. |
+| `src/contract/` | 12 | Schema + fixtures: `result.schema.json`, `summary.schema.json`, `CONTRACT_VERSION=1`, `validate_result(obj)`, `validate_summary(obj)`, `fixtures/` (hand-made Moon-verdict result exercising both ghost roles; undetermined-by-budget result; matching summaries). Only interface between analysis (05–11) and player (13). Tests: `tests/contract/`. |
+| `player/` | 13 | Frozen static template (vanilla HTML/CSS/JS, no framework/build/external requests): consumes inlined `result.json`+`summary.json`; exposes URL state (`frame=`, `event=`, `autoplay=`), controls (play, prev/next event, frame step, scrubber+markers, ×0.25/0.5/1, pauses toggle, full-calculation toggle, keyboard), template string keys overridable via `page_texts`, frozen SHA-256 recorded in page + build log. Tests: `tests/player/`. |
+| `src/pagebuild/` | 13 | `build_page(result, summary, video, out_dir)`, `build_gallery(runs, out_dir)`: inline data, H.264 page video (`libx264 yuv420p +faststart`), poster, mask-check images, chronophotograph composite from `overlay` outlines (trim intervals first if > cap); asserts page weight < 1 MB w/o video + template-hash match. Tests: `tests/pagebuild/`. |
+| `src/helpers/` | 09 | Pure importable library (no models/net/state), `(value, sigma)` conventions, `ValueError` codes (`peak_at_band_edge`, `empty_mask`, …): `masks_io` (`save/load_masks` npz round-trip, `clip_facts`, `read_frames`), `tracks` (`mask_stats`, `largest_component`, `track_point` modes, `track_quality` gaps/jumps/splits/identity-swaps, `relative_track`), `physics` (`fit_parabola`+residual trend, `scale_from_reference`, `track_to_metres` y-flip single home, `worlds_fit`, `ghost`), `clock` (`gait_signal` lowest-30%-width/height, `step_rate` running-median detrend + in-band-only peak + step/stride pair), `gen_docs.py` (docs from docstrings; diff fails build). Tests: `tests/helpers/`. |
+| `src/accounting/` | 14 | `Ledger` (per-run: turns, wall s, Spark in/cached/out/reasoning, SAM frames, searches, mask checks, execs, $): `debit_*()`, `price_call()` = `(in−cached)*p_in+cached*p_cached+out*p_out` (never double-count), `cost_unknown` on failed/transport deaths, `write_summary()` (part-12 §9), retry classifier (network vs incomplete vs failed), timeout/watchdog helpers. Tests: `tests/accounting/`. |
+| `src/tools/` | 07 | Six tool schemas, all returning `{ok, summary, files, metrics, error?}` with workspace-relative `artifacts/t<turn>_<tool>_<n>.<ext>` names: `view_frames` (range/indices + crop + grid; cell→frame/timestamp index; cut-spanning reported), `segment` (phrase+range; SAM via Meta API; bills `max(50,frames)`; `masks.npz`+previews+stats; run-only cache), `check_mask` (separate context-free Spark call; coverage-not-identity + alternatives), `web_search` (pattern screen + context-free classifier; generic-facts only), `run_python` (sandbox-exec deny-by-default; read workspace/artifacts/input+helpers; write workspace/artifacts; no net; timeouts; returns stdout-truncated + created-files list), `submit` (writes `workspace/submission.json`, calls part-11 `validate()`, returns accept or structured errors; only path to `result.json`). Tests: `tests/tools/`. |
+| `src/loop/` | 06 | `run_loop(run_dir)` : turn = Spark call + tool dispatch; stable prompt prefix (system+schemas+rules) for caching; `max_output_tokens=32768`; incomplete→discard+reprompt-once (counts as turn); context keeps last-2-images, older → `[image omitted; see artifacts/…]`; budget ledger checks pre-call; near-limit (80%) injects finish-notice + closes expensive tools; at-limit/repeated-failure/3-rejected-submits → part-11 synthesis; per-turn `logs/` append (prompt hash, traffic, ledger) for replay + leak test; temp/seed pinned from config. Tests: `tests/loop/`. |
+| `src/rules/` + `prompts/measuring_rules.md` | 08 | Pure check functions used by tools + part 11 (R-T/R-S/R-M/R-C/R-W/R-E/R-G: time-base, duplicate/cut exclusion, mask-check presence, multi-reading pricing, 50%-overlap same-object, extent-type+projection allowance, contact exclusion, residual trend, camera-still-vs-relative, in-band clock, natural-range+source, candidate-only worlds, σ recompute, no cross-run refs); prompt file is the agent-facing statement (code authoritative). Tests: `tests/rules/`. |
+| `src/selfbuilt/` | 10 | `workspace/selfbuilt/sb_<name>.py` + `test_sb_<name>.py`; `try_register()` runs test in fresh temp dir with only the two files under sandbox+timeout; pass → registry entry `{name, sha256s, attempts, passed, purpose, turn}` + import path for later `run_python`; fail → not importable + output to agent; caps 4 tools/run, 3 attempts each; hash-mismatch on edit → unimportable until retest; `python -m src.selfbuilt.promote <run-id> <name>` (human-only; retest standalone, copy to `src/helpers/promoted/` + `tests/helpers/`, refuse conflicts/modified). Tests: `tests/selfbuilt/`. |
+| `src/validate/` | 11 | `validate(submission, run_context) -> {accepted, errors[{code,field,detail}], result?}` implementing V1–V12; on accept computes verdict (part-02 §§4–5 order), ghosts (`earth_counterfactual` when verdict≠Earth; `fitting_world` when fitting world≠Earth; empty on Earth verdict / wall-only; display counterfactuals kept on impossible-with-takeoff), sentence (one formatter, `1.73 ± 0.23` style), writes `result.json` (sole writer); `synthesize_undetermined(reason)` for budget/attempts/crash paths. Tests: `tests/validate/`. |
+| `tools/dev_loop` | 15 | `dev_loop --part NN [--acceptance] [--pages]`: (1) hash-manifest hand-edit refusal, (2) delete only that part's owned files+tests then regenerate via `muse exec` (model/effort per §1 tiers, `--no-foreign-personal-context`, capture `run_usage`), (3) run that part's tests (red → feed back to agent), (4) optional pages+screenshots, (5) append one line to `ITERATIONS.md` (date, part, cost, tests, acceptance, page path). Tests: `tests/dev_loop/`. |
+| `tests/acceptance/` + `scripts/demo/` | 15 | Harness implementing part-03 criteria (regenerated here if 03 changes): 3 fresh runs/clip via one-command entry, 2-of-3 verdict/tolerance eval (harness-only constants), universal checks ($2, 30 min, ≥1 mask check, valid file, provenance), prompt-leak test (scan everything sent to Spark for identities/expected verdicts/tolerances + structural no-import-tests check; leak fails suite), A/B ratio cross-check line in acceptance report/demo narration only. Demo scripts build gallery + rehearse fallbacks. |
+
+Parts 01–02 own no code/tests; 02 is tested through `tests/validate/`.
+
+---
+
+## 2. Generation order (concrete)
+
+README order made executable. One part per `muse exec` invocation (prompt = spec part + this PLAN + relevant skills); each invocation produces the part's owned test files in the same run. Effort: medium default; high for 06/11/13.
+
+0. **This PLAN.md** — owner reviews once. (Done when approved.)
+1. **`tools/dev_loop` skeleton (15a)** — manifest/hash check, per-part delete+regenerate, part-test runner, `ITERATIONS.md` appender. Everything after runs through it. Needs: muse-code-headless skill. Tests: `tests/dev_loop/`.
+2. **`src/config.py` + `src/cli.py` skeleton (04)** — all limits/prices/paths/model IDs; CLI creates run layout, stubs analysis call. Unblocks every later part's imports. Tests: `tests/test_config.py`, `tests/test_cli.py`.
+3. **`scripts/make_clips.py` (03)** — produce A/B early so integration has inputs; duplicate-verifier interface agreed with 05 here, shared implementation lands in 05. Tests: `tests/test_make_clips.py`.
+4. **`src/contract/` (12)** — schema v1 + hand-made fixtures (Moon w/ both ghost roles; undetermined-budget) + summaries. Spec inputs 02/08/11 read as contracts, not code. Tests: `tests/contract/`.
+5. **`player/` (13a, high)** — frozen template against fixtures only: first screen, playback+auto-pauses, events, overlays/trail/fit/ghosts/scale-bar/frame-time, verdict screen, panel (live chart, 8 steps, reference cards, drawer), controls+URLs, degradation for undetermined, presentation rules. Tests: `tests/player/`.
+6. **`src/pagebuild/` (13b, high)** — page+gallery build, H.264 transcode, poster/mask/chrono assets, weight+hash asserts. Depends on 12 + 13a. Tests: `tests/pagebuild/`.
+7. **`src/helpers/` (09)** — pure functions + synthetic tests + `gen_docs.py`. No dependencies beyond config/numpy/scipy/OpenCV. Tests: `tests/helpers/`.
+8. **`src/ingest/` (05)** — anonymisation, measured fps, timeline hygiene, generated-clip verifier (finalises 03's check). Depends on config + contract `video` shape. Tests: `tests/ingest/`.
+9. **`src/accounting/` (14)** — ledger, pricing, retry classes, summary writer. Depends on config + contract summary shape. Tests: `tests/accounting/`.
+10. **`src/tools/` (07)** — six tools + sandbox profile + SAM/search clients + blindness filter; `submit` coded against 11's interface (validator lands later; wire then). Depends on config, ingest timing shape, helpers allowlist, accounting ledger. Skills: meta-api, sam-3-1, macos-sandbox, video-ffmpeg. Tests: `tests/tools/`.
+11. **`src/loop/` (06, high)** — turns, caching prefix, incomplete handling, context pruning, ledger enforcement, synthesis triggers, logging. Depends on 07 schemas, 09 docs injection, 11 submit interface, 14 ledger. Tests: `tests/loop/`.
+12. **`src/rules/` + prompt (08)** — pure checks + agent-facing rules text. Depends on helpers + timing shape. Tests: `tests/rules/`.
+13. **`src/selfbuilt/` (10)** — gating runner, registry, promote command. Depends on helpers, sandbox (07), ledger caps (06/14). Tests: `tests/selfbuilt/`.
+14. **`src/validate/` (11, high)** — V1–V12, verdict/ghost/sentence computation, sole `result.json` writer, synthesis path. Depends on rules, helpers, contract, selfbuilt registry, loop run_context. Tests: `tests/validate/`.
+15. **CLI end-to-end wiring (04 final)** — `cli` → ingest → loop → validate → summary; watchdog; every path yields valid `result.json`. Re-run 04 tests + smoke one fixture-free dry run.
+16. **Acceptance + demo (15b)** — `tests/acceptance/` harness (3×3 runs, 2-of-3, universals, leak test incl. import-graph check, A/B ratio report line), `scripts/demo/`, `--pages` + headless screenshot review (Spark vision defect list; named defects checklist), owner-approval gate → GitHub Pages. Depends on everything.
+17. **Golden runs + iteration** — `make_clips` → analyses → pages → screenshots → owner approval → publish → demo video. Fresh-clone reproduction check (template-hash equality).
+
+If any step reveals a spec gap: edit the owning spec part first, regenerate only its owned modules+tests, re-run named tests.
+
+---
+
+## 3. Test list per part (named before code; paths per part 04 §3)
+
+- **03 — `tests/test_make_clips.py`**: `test_a_metadata_stripped_and_probed`; `test_b_slowed_1p5_same_fps_no_dups` (0 confirmed dups both; equal measured fps); `test_a_b_differ_only_frames_duration`; `test_runtime_cannot_import_make_clips` (structural boundary w/ 15).
+- **04 — `tests/test_config.py`**: `test_no_hardcoded_limits_elsewhere` (spot import scan); `test_price_table_versioned`; `test_caps_match_part03` ($2/30 min). **`tests/test_cli.py`**: `test_one_command_creates_run_layout`; `test_every_exit_yields_valid_result` (incl. unreadable video → undetermined); `test_run_id_carries_no_identity`.
+- **05 — `tests/ingest/`**: `test_anonymous_copy_strips_metadata_and_audio`; `test_measured_fps_from_timestamps_not_claim`; `test_vfr_reports_distribution`; `test_exact_ vs_suspect_duplicates`; `test_cuts_flagged`; `test_cfr_forced_encode_caught`; `test_generated_clips_verify_zero_dups`; `test_timing_json_numbers_only` (no captions/model output); `test_unreadable_video_synthesis_path`.
+- **06 — `tests/loop/`**: `test_incomplete_is_reprompted_not_retried_as_network`; `test_dying_stream_retried_with_backoff_then_tool_error`; `test_max_output_tokens_32k_config`; `test_context_keeps_last_two_images_with_artifact_placeholder`; `test_stable_prefix_byte_identical_across_turns`; `test_near_limit_notice_and_expensive_tools_closed`; `test_hard_cap_synthesises_budget_undetermined`; `test_three_rejected_submits_end_valid`; `test_no_cross_run_state`; `test_blind_calls_get_no_history`; `test_logs_replayable_for_leak_test`.
+- **07 — `tests/tools/`**: `test_tool_results_name_files`; `test_input_validation_rejects_paths_and_ranges`; `test_view_frames_cell_index_uses_measured_timestamps`; `test_segment_bills_max50_and_returns_masks_previews_stats`; `test_segment_cache_run_only`; `test_check_mask_context_free_coverage_not_identity`; `test_search_pattern_screen_rejects_identifying`; `test_search_classifier_rejects_on_uncertain`; `test_run_python_allows_only_workspace_artifacts_input_helpers`; `test_sandbox_unreadable_repo_brief_tests_original` (**maintainer**: needs real `sandbox-exec`; skip-marked in-agent, never weakened); `test_sandbox_no_network_no_escape_writes` (**maintainer**); `test_submit_only_path_to_result`.
+- **08 — `tests/rules/`**: pure-function checks per rule: `test_rt1_refuses_bare_fps`; `test_rt2_rejects_dups_and_cuts_without_logged_correction`; `test_rs1_requires_mask_check`; `test_rs2_multi_reading_requires_per_reading_g_or_justification`; `test_rs3_overlap_over50_same_object_hard_reject`; `test_rs4_projected_requires_allowance`; `test_rm1_fit_excludes_contact`; `test_rm2_residual_trend_gate`; `test_rm3_requires_still_attestation_or_relative_track`; `test_rc2_helper_only_in_band_detrended`; `test_rc3_ambiguity_forces_undetermined_when_verdict_changing`; `test_rc4_requires_natural_range_plus_source`; `test_rw1_fits_only_candidates`; `test_re1_sigma_recompute_and_components`; `test_re2_identical_residuals_rejected`; `test_re3_cross_run_reference_rejected`; `test_prompt_matches_code_checks` (prompt states every coded rule).
+- **09 — `tests/helpers/`**: synthetic known-answer suite: `test_masks_roundtrip_lossless`; `test_clip_facts_matches_planted_timing`; `test_track_recovers_planted_g_within_sigma`; `test_scale_propagates_sigma`; `test_track_to_metres_flips_y_once`; `test_worlds_fit_native_and_retime_arithmetic`; `test_ghost_lands_at_analytic_point`; `test_gait_detrends_perspective_trend`; `test_step_rate_returns_planted_rate_in_band`; `test_band_edge_returns_no_reliable_clock`; `test_step_stride_pair_reported`; `test_helpers_raise_coded_valueerrors`; `test_failing_helper_removed_from_import_set`; `test_gen_docs_diff_fails_build`.
+- **10 — `tests/selfbuilt/`**: `test_two_file_contract_and_sb_prefix`; `test_test_runs_in_isolated_tmpdir_only`; `test_pass_registers_and_importable_fail_not`; `test_edit_hash_mismatch_unimportable_until_retest`; `test_caps_4_tools_3_attempts`; `test_registry_schema`; `test_result_must_name_used_tool`; `test_promote_retests_copies_refuses_conflicts_and_modified`.
+- **11 — `tests/validate/`** (one violating submission per code V1–V12 must reject): `test_v01_schema`; `test_v02_recomputed_fit_must_match`; `test_v03_mask_check_gate`; `test_v04_same_object_second_reference`; `test_v05_reading_spread_unpriced`; `test_v06_contact_dup_cut_intersection`; `test_v07_residual_trend`; `test_v08_camera_unaccounted`; `test_v09_sigma_recompute_and_repetition_residuals`; `test_v10_candidate_only_worlds`; `test_v11_clock_logic_all_branches` (agree→retimed; normal→impossible; unnatural→impossible; scene-pinned-no-clock→retimed+flag; else undetermined; wall-violation+normal-clock→impossible; step/stride-ambiguous→undetermined; segments-conflict→undetermined); `test_v12_selfbuilt_registry_and_digit_free_prose`; `test_verdict_world_unique_fit`; `test_ghosts_roles_and_empty_on_earth_and_wall`; `test_sentence_formatting`; `test_synthesis_budget_and_attempts_valid`; `test_result_json_only_writer`.
+- **12 — `tests/contract/`**: `test_fixtures_validate` (Moon + undetermined-budget + summaries); `test_each_required_field_removed_fails`; `test_unknown_top_level_rejected`; `test_contract_version_bump_rule_documented`.
+- **13 — `tests/player/`**: `test_opens_both_fixtures_zero_js_errors` (headless); `test_no_ghost_invented_empty_list`; `test_degradation_says_whats_missing`; `test_numbers_use_formatter_no_raw_reprs`; `test_contrast_and_reduced_motion_paths`; `test_url_params_frame_event_autoplay`; **`tests/pagebuild/`**: `test_inlines_data_and_records_hash`; `test_h264_page_copy_poster_mask_chrono_assets`; `test_weight_under_1mb_and_trim_log`; `test_gallery_from_results_no_hand_text`; `test_unrecorded_template_hash_fails_build`.
+- **14 — `tests/accounting/`**: `test_terminal_event_only_accounting`; `test_cached_subset_not_addend`; `test_reasoning_inside_output_no_double_count`; `test_incomplete_with_usage_counted`; `test_failed_transport_marks_cost_unknown_estimated`; `test_sam_max50_no_double_bill_on_retry`; `test_hard_caps_checked_pre_call`; `test_summary_breakdown_matches_ledger`.
+- **15 — `tests/dev_loop/`**: `test_hand_edit_refusal_names_file`; `test_regenerate_deletes_only_owned_tests`; `test_red_test_stops_loop_and_feeds_back`; `test_run_usage_costed_run_terminal_gated` (non-completed = failed gen); `test_iterations_line_appended_never_edited`. **`tests/acceptance/`**: `test_3runs_2of3_per_clip_with_harness_only_constants`; `test_universal_cost_time_maskcheck_valid_provenance`; `test_prompt_leak_scan_identities_verdicts_tolerances`; `test_structural_no_runtime_import_of_tests`; `test_result_json_exists_and_validates_every_run`; `test_cross_clip_ratio_report_only_never_on_page`; `test_screenshot_review_named_defects_gate`; `test_publish_requires_owner_approval_record`.
+
+---
+
+## 4. Risks and open questions
+
+### Risks resolved from the spec (no owner decision needed)
+
+- Truncated replies (reasoning counts toward output limit) → 32k `max_output_tokens` + incomplete-as-own-class, discard+reprompt-once (06 §3; skill meta-api).
+- Context bloat / cache misses → stable prompt prefix + keep-last-2-images with artifact placeholders (06 §§1/4).
+- Exact-sentence validation looping the agent → agent submits evidence; code computes verdict/sentence; structured errors; 3-submit cap (06 §2, 11).
+- Sandbox reading repo/answers → deny-by-default profile, explicit allows, network deny; nested-`sandbox-exec` in-agent block → `maintainer`-marked tests run by owner outside; never weaken profile in-agent (07 §6, 15 §3; skill macos-sandbox).
+- Retiming-vs-impossible confusion → independent-clock rule + decision order (02 §5), clock signal path by construction (08 R-C2/C3, 09 clock), validator clock logic (11 V11).
+- Scale as biggest error → blind mask check gate + multi-reading spread + 50%-overlap same-object reject + extent-type/projection rules (08 R-S, 11 V3–V5).
+- Camera motion measuring the camera → scene-relative track requirement (08 R-M3, 11 V8).
+- Duplicates/cuts faking motion → measured timestamps + timeline report + fit exclusion (05, 08 R-T, 11 V6); CFR-forced-encode failure → raw pipe + verifier (05 §4; skill video-ffmpeg).
+- Non-rigid tracked point → rigid-point rule + residual-trend gate (08 R-M2, 11 V7).
+- Prompt/spec leak of answers → anonymised input, blindness filter, harness-only constants, prompt-leak + import-graph tests; leak fails suite (03 §§2/5, 05, 07 §5).
+- "Nearest of all worlds" nonsense → candidates-from-scene + fits-only-over-candidates (02 §2, 08 R-W1, 11 V10).
+- σ as bare residual → itemised error budget + recompute + repetition spread (08 R-E, 11 V9).
+- Self-built numbers without examination → isolated synthetic-test gate + registry + hash binding + human-only promotion (10).
+- Docs/prompt drift → `gen_docs` from docstrings, diff fails build (09 §4); hand-edit drift → dev_loop hash-manifest refusal (15 §2).
+- Cost/time overruns and hangs → ledger from terminal usage only, subset-not-addend pricing, pre-call cap checks, watchdog + per-call timeouts, synthesised undetermined on every dead end (06 §§5–6, 14).
+- HEVC black / page failures on stage → H.264 page copy, `file://`-safe inlined pages, precomputed Pages + local fallback, demo never depends on live run (01 §2, 13, 15 §7).
+- Screenshot-unreviewed pages → headless screenshots at events × widths + Spark vision defect list incl. named historical defects; owner approval recorded before publish (15 §6).
+
+### Open questions for the owner (raised, not decided)
+
+1. Wall-run clip: confirm the local path to pass by CLI and that local analysis use is acceptable (clip stays out of the repo per part 03)?
+2. Apollo source: confirm the exact ALSJ download URL / page the prep script should fetch, and its reuse terms for the repo?
+3. Pages publishing: which repo/branch serves GitHub Pages, and who records the approval line (date + template hash + run IDs) in `ITERATIONS.md`?
+4. API keys/quotas: separate keys for build-time `muse exec` vs runtime Meta API calls; any per-day quota the ledger should also warn on?
+5. SAM 3.1 endpoint: if the owner's API notes add endpoint/shape details beyond `skills/sam-3-1.md`, should part 07 be the first regeneration after they land?
+6. Demo video: which screen recorder / voice policy (product is text-only — confirm demo stays text-only too) and where the video file lives?
+7. Temperature/seed pinning: pin whatever the API supports now per part 06 §7, or leave unpinned until first golden runs show variance?
+
+## 5. Owner review (2026-10-27)
+
+Plan approved. Answers to §4:
+
+1. The harness gets the wall-run clip from the environment variable `WALLRUN_CLIP` (a local path); if unset, case C is skipped and reported as skipped. Local analysis use is fine; the clip never enters the repo.
+2. Clip A source: page https://www.apollojournals.org/alsj/a16/video16.html, file https://www.apollojournals.org/alsj/a16/a16salute.mpg — NASA footage, public domain; the clips may live in the repo.
+3. GitHub Pages: the `gh-pages` branch of the public repo, root folder. The owner writes the approval line in `ITERATIONS.md`.
+4. One key, `META_API_KEY`, for both build-time `muse exec` and runtime calls. No daily quota is known; the ledger warns on the per-run caps only.
+5. `skills/sam-3-1.md` is all we have; generate part 07 in its normal place.
+6. The demo video is recorded by the owner from the approved pages, text-only like the product; the file stays out of the repo.
+7. Leave temperature and seed unpinned; the 2-of-3 protocol absorbs the variance.
+
+Run caps for config: 60 turns, 1500 SAM frames, 6 searches, 4 mask checks, $2, 30 minutes.

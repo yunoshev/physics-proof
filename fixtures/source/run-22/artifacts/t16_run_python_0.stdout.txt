@@ -1,0 +1,7 @@
+astro frames 111 pack frames 86
+200 iou 0.4857002778231737 astro area 6090 pack area 3001
+210 iou 0.4789335088874259 astro area 6049 pack area 2937
+220 iou 0.48497495826377296 astro area 5984 pack area 2911
+230 iou 0.4845865274832817 astro area 6120 pack area 2982
+[{'frame': 200, 't': 6.673333, 'x_px': 92.13462179273576, 'y_px': 93.30556481172943, 'mode': 'centroid'}, {'frame': 201, 't': 6.7067, 'x_px': 92.395, 'y_px': 93.18833333333333, 'mode': 'centroid'}, {'frame': 202, 't': 6.740067, 'x_px': 92.44181393797933, 'y_px': 93.40980326775592, 'mode': 'centroid'}] [{'frame': 283, 't': 9.442767, 'x_px': 91.27711662699762, 'y_px': 102.32335940156409, 'mode': 'centroid'}, {'frame': 284, 't': 9.476133, 'x_px': 90.93890567304464, 'y_px': 103.03289694528365, 'mode': 'centroid'}, {'frame': 285, 't': 9.5095, 'x_px': 90.81934184016119, 'y_px': 103.08428475486905, 'mode': 'centroid'}]
+{'gaps': [], 'jumps': [], 'splits': [], 'identity_swaps': [], 'ok': True}

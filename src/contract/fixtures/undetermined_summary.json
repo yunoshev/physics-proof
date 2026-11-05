@@ -1,0 +1,13 @@
+{
+  "contract_version": 3,
+  "run_id": "synthetic-undetermined",
+  "cost_usd": {"total": 2.0, "spark_input": 1.0, "spark_cached": 0.2, "spark_output": 0.7, "sam": 0.08, "search": 0.02},
+  "turns": 60,
+  "model": "muse-spark-1.3-contributor",
+  "sam_frames_billed": 400,
+  "searches": 4,
+  "mask_checks": 0,
+  "wall_time_s": 1800.0,
+  "budget_outcome": "budget_undetermined",
+  "result_path": "result.json"
+}

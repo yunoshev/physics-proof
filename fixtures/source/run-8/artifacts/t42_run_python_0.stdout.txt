@@ -1,0 +1,1 @@
+stripped to single ref, kind object

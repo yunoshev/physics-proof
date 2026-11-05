@@ -1,0 +1,657 @@
+{
+ "first_look": {
+  "question": "Does the physics add up to the Moon?",
+  "summary": "A suited figure hops in low gravity across grey ground while another figure stands by a planted flag; the foreground figure leaves the ground, hangs, and lands.",
+  "scene_card": {
+   "scene": "A suited figure hops across grey ground with a planted flag nearby while a second figure stands by the flag.",
+   "place_date": null,
+   "confidence": "medium",
+   "objects": [
+    "suited figure",
+    "backpack",
+    "flag and pole",
+    "grey ground"
+   ]
+  },
+  "by_eye": {
+   "jump_m": null,
+   "airborne_s": 1.1,
+   "reasoning": "foreground hop hangs in the air well over half a second"
+  },
+  "views": [
+   {
+    "frame_start": 0,
+    "frame_end": 450,
+    "artifact": "artifacts/t2_view_frames_0.jpg"
+   },
+   {
+    "frame_start": 220,
+    "frame_end": 290,
+    "artifact": "artifacts/t4_view_frames_0.jpg"
+   },
+   {
+    "frame_start": 195,
+    "frame_end": 215,
+    "artifact": "artifacts/t19_view_frames_0.jpg"
+   }
+  ]
+ },
+ "references": [
+  {
+   "name": "reference backpack",
+   "extent_description": "height of the life-support backpack",
+   "extent_type": "face_on",
+   "extent_px": {
+    "x1": 94.0,
+    "y1": 25.0,
+    "x2": 94.0,
+    "y2": 91.0,
+    "length_px": 66.0,
+    "frame": 250
+   },
+   "size_m": 0.66,
+   "size_tolerance_m": 0.03,
+   "size_derivation": {
+    "mode": "single",
+    "note": "quoted backpack height"
+   },
+   "sources": [
+    {
+     "url": "https://en.wikipedia.org/wiki/Primary_life_support_system",
+     "domain": "en.wikipedia.org",
+     "quote": "The PLSS was 26 inches (66 \u00a0 cm) high, 18 inches (46 \u00a0 cm) wide, and 10 inches (25 \u00a0 cm) deep.",
+     "quote_highlight": "66 \u00a0 cm",
+     "value_m": 0.66,
+     "source_type": "encyclopaedia"
+    },
+    {
+     "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+     "domain": "nasa.gov",
+     "quote": "104 pounds; it is 26 inches high, 20.5 inches wide,",
+     "quote_highlight": "26 inches high",
+     "value_m": 0.66,
+     "source_type": "space agency manual"
+    }
+   ],
+   "mask": {
+    "artifact": "workspace/ref_both.npz",
+    "object_id": "bp",
+    "frame": 250,
+    "outline": [
+     [
+      109.0,
+      27.0
+     ],
+     [
+      103.0,
+      25.0
+     ],
+     [
+      80.0,
+      26.0
+     ],
+     [
+      75.0,
+      28.0
+     ],
+     [
+      74.0,
+      42.0
+     ],
+     [
+      70.0,
+      48.0
+     ],
+     [
+      70.0,
+      73.0
+     ],
+     [
+      68.0,
+      84.0
+     ],
+     [
+      69.0,
+      89.0
+     ],
+     [
+      100.0,
+      91.0
+     ],
+     [
+      108.0,
+      88.0
+     ],
+     [
+      112.0,
+      84.0
+     ],
+     [
+      115.0,
+      72.0
+     ],
+     [
+      118.0,
+      67.0
+     ],
+     [
+      120.0,
+      55.0
+     ],
+     [
+      118.0,
+      51.0
+     ],
+     [
+      118.0,
+      45.0
+     ],
+     [
+      113.0,
+      38.0
+     ],
+     [
+      112.0,
+      31.0
+     ]
+    ]
+   },
+   "mask_check": {
+    "artifact": "artifacts/t22_check_mask_0.json",
+    "coverage_answer": "The tinted square covers the pale roughly rectangular bulky mass seen over the upper part of the figure on the left. It includes the top edge, left side edge, and right side edge of that mass, with only a very thin sliver of dark background at the perimeter. Its bottom edge cuts across the mass where it meets the rest of the figure, so it covers only the upper block and excludes the lower body and legs that extend down below the box. It does not extend far onto the background and does not include the second figure or pole on the right.",
+    "confidence": null,
+    "alternative_readings": [
+     {
+      "description": "a smaller upper block stacked on top of a larger lower block, both contained together inside the tinted square",
+      "size_m": 0.91
+     },
+     {
+      "description": "the dark-suited lower body and legs of the same left-side figure that continue downward below the bottom edge of the box and are left outside",
+      "size_m": 0.66
+     },
+     {
+      "description": "the lighter forward protrusion extending to the right of the box from the same mass, left outside the tinted region",
+      "size_m": 0.66
+     }
+    ]
+   }
+  },
+  {
+   "name": "standing suited figure",
+   "extent_description": "standing height of the suited figure before the hop",
+   "extent_type": "rotation_invariant",
+   "extent_px": {
+    "x1": 99.0,
+    "y1": 25.0,
+    "x2": 99.0,
+    "y2": 159.0,
+    "length_px": 134.0,
+    "frame": 250
+   },
+   "size_m": 1.71,
+   "size_tolerance_m": 0.2,
+   "size_derivation": {
+    "mode": "single",
+    "note": "average adult male standing height as proxy for suited figure height"
+   },
+   "sources": [
+    {
+     "url": "https://health.howstuffworks.com/human-body/average-height-for-men.htm",
+     "domain": "health.howstuffworks.com",
+     "quote": "Globally, the average male height stands at about 5 feet 7.5 inches (171 cm), though this varies significantly depending on region.",
+     "quote_highlight": "171 cm",
+     "value_m": 1.71,
+     "source_type": "health reference"
+    },
+    {
+     "url": "https://www.laitimes.com/en/article/zr30_10j1d.html",
+     "domain": "laitimes.com",
+     "quote": "can be worn by people with a height of 1.60 meters to 1.80 meters, and is divided into 6 layers from the inside to the outside.",
+     "quote_highlight": "1.60 meters to 1.80 meters",
+     "value_m": 1.71,
+     "source_type": "news article"
+    }
+   ],
+   "mask": {
+    "artifact": "workspace/ref_both.npz",
+    "object_id": "person",
+    "frame": 250,
+    "outline": [
+     [
+      76.0,
+      27.0
+     ],
+     [
+      70.0,
+      48.0
+     ],
+     [
+      68.0,
+      89.0
+     ],
+     [
+      76.0,
+      99.0
+     ],
+     [
+      83.0,
+      122.0
+     ],
+     [
+      83.0,
+      157.0
+     ],
+     [
+      94.0,
+      156.0
+     ],
+     [
+      102.0,
+      119.0
+     ],
+     [
+      112.0,
+      156.0
+     ],
+     [
+      128.0,
+      159.0
+     ],
+     [
+      127.0,
+      119.0
+     ],
+     [
+      122.0,
+      116.0
+     ],
+     [
+      110.0,
+      90.0
+     ],
+     [
+      114.0,
+      88.0
+     ],
+     [
+      119.0,
+      91.0
+     ],
+     [
+      122.0,
+      79.0
+     ],
+     [
+      115.0,
+      73.0
+     ],
+     [
+      134.0,
+      64.0
+     ],
+     [
+      137.0,
+      54.0
+     ],
+     [
+      130.0,
+      46.0
+     ],
+     [
+      120.0,
+      46.0
+     ],
+     [
+      108.0,
+      26.0
+     ]
+    ]
+   },
+   "mask_check": {
+    "artifact": "artifacts/t28_check_mask_0.json",
+    "coverage_answer": "The tinted region on the left covers the entire large upright light-toned figure in the left foreground. It includes the full height from the top of the upper mass down to the bottoms of the lower masses where they meet the ground, and the full width from its left side to its right side. The box edges sit just outside the figure with only a narrow margin of surrounding dark background and gray ground visible; it does not extend far onto the background and does not cut off any part of that left figure.",
+    "confidence": null,
+    "alternative_readings": [
+     {
+      "description": "the brighter whitish upper section of the left figure inside the tint",
+      "size_m": 1.71
+     },
+     {
+      "description": "the darker brownish lower section with two leg-like parts inside the tint, stacked below the upper section",
+      "size_m": 1.71
+     },
+     {
+      "description": "no part of that same left foreground figure is left outside the tinted box - the small bright figure on the right is a separate shape",
+      "size_m": 1.71
+     }
+    ]
+   }
+  }
+ ],
+ "scale": {
+  "frame": 250,
+  "m_per_px": 0.01,
+  "sigma_m_per_px": 0.0005462956477975741,
+  "reference_index": 0,
+  "extent_px": {
+   "x1": 94.0,
+   "y1": 25.0,
+   "x2": 94.0,
+   "y2": 91.0,
+   "length_px": 66.0,
+   "frame": 250
+  },
+  "second_reference_index": 1,
+  "second_reference_absent_reason": null,
+  "check_scale": {
+   "m_per_px": 0.012761194029850745,
+   "sigma": 0.001540381830752046
+  }
+ },
+ "segments": [
+  {
+   "id": "hop_a",
+   "label": "Jump one",
+   "kind": "free_flight",
+   "mask": {
+    "artifact": "artifacts/t6_segment_0.npz",
+    "object_id": "1"
+   },
+   "frames": {
+    "start": 244,
+    "apex": 254,
+    "end": 275
+   },
+   "key_moments": [
+    {
+     "type": "takeoff",
+     "frame": 244,
+     "caption": "leaving the ground"
+    },
+    {
+     "type": "apex",
+     "frame": 254,
+     "caption": "hanging at the top"
+    },
+    {
+     "type": "landing",
+     "frame": 275,
+     "caption": "touching down softly"
+    }
+   ],
+   "track_artifact": "workspace/track_hop_a.json",
+   "tracked_point": "top of the helmet",
+   "subject": {
+    "kind": "person",
+    "description": "foreground suited figure"
+   },
+   "fit_curve_px": [
+    {
+     "t_s": 8.2082,
+     "x_px": 99.43396157006677,
+     "y_px": 28.268748283266106
+    },
+    {
+     "t_s": 8.241567,
+     "x_px": 99.39670139949517,
+     "y_px": 27.124911667597658
+    },
+    {
+     "t_s": 8.274933,
+     "x_px": 99.35944234560085,
+     "y_px": 26.122379888889903
+    },
+    {
+     "t_s": 8.3083,
+     "x_px": 99.32218217502925,
+     "y_px": 25.261092854127355
+    },
+    {
+     "t_s": 8.341667,
+     "x_px": 99.28492200445767,
+     "y_px": 24.541082726833114
+    },
+    {
+     "t_s": 8.375033,
+     "x_px": 99.24766295056334,
+     "y_px": 23.962364734533907
+    },
+    {
+     "t_s": 8.4084,
+     "x_px": 99.21040277999175,
+     "y_px": 23.524904188145527
+    },
+    {
+     "t_s": 8.441767,
+     "x_px": 99.17314260942015,
+     "y_px": 23.2287205492255
+    },
+    {
+     "t_s": 8.475133,
+     "x_px": 99.13588355552584,
+     "y_px": 23.073816343334855
+    },
+    {
+     "t_s": 8.5085,
+     "x_px": 99.09862338495424,
+     "y_px": 23.06018228532068
+    },
+    {
+     "t_s": 8.541867,
+     "x_px": 99.06136321438264,
+     "y_px": 23.187825134774858
+    },
+    {
+     "t_s": 8.575233,
+     "x_px": 99.02410416048832,
+     "y_px": 23.45673471529276
+    },
+    {
+     "t_s": 8.6086,
+     "x_px": 98.98684398991672,
+     "y_px": 23.866927145652774
+    },
+    {
+     "t_s": 8.641967,
+     "x_px": 98.94958381934514,
+     "y_px": 24.41839648348116
+    },
+    {
+     "t_s": 8.675333,
+     "x_px": 98.9123247654508,
+     "y_px": 25.11111985040761
+    },
+    {
+     "t_s": 8.7087,
+     "x_px": 98.87506459487922,
+     "y_px": 25.945138769141856
+    },
+    {
+     "t_s": 8.742067,
+     "x_px": 98.83780442430762,
+     "y_px": 26.92043459534446
+    },
+    {
+     "t_s": 8.775433,
+     "x_px": 98.8005453704133,
+     "y_px": 28.036971748679402
+    },
+    {
+     "t_s": 8.8088,
+     "x_px": 98.7632851998417,
+     "y_px": 29.294817155787854
+    },
+    {
+     "t_s": 8.842167,
+     "x_px": 98.7260250292701,
+     "y_px": 30.693939470364658
+    },
+    {
+     "t_s": 8.875533,
+     "x_px": 98.68876597537579,
+     "y_px": 32.234290410108215
+    },
+    {
+     "t_s": 8.9089,
+     "x_px": 98.65150580480419,
+     "y_px": 33.915962305590796
+    },
+    {
+     "t_s": 8.942267,
+     "x_px": 98.6142456342326,
+     "y_px": 35.73891110854181
+    },
+    {
+     "t_s": 8.975633,
+     "x_px": 98.57698658033827,
+     "y_px": 37.70307583469391
+    },
+    {
+     "t_s": 9.009,
+     "x_px": 98.53972640976669,
+     "y_px": 39.80857421855078
+    },
+    {
+     "t_s": 9.042367,
+     "x_px": 98.50246623919509,
+     "y_px": 42.05534950987602
+    },
+    {
+     "t_s": 9.075733,
+     "x_px": 98.46520718530077,
+     "y_px": 44.443328022436546
+    }
+   ],
+   "repetitions": [
+    {
+     "frames": {
+      "start": 246,
+      "end": 260
+     },
+     "g_app": 1.4616858778980826,
+     "sigma_g": 0.1663712909327721
+    },
+    {
+     "frames": {
+      "start": 260,
+      "end": 272
+     },
+     "g_app": 1.2113652322158557,
+     "sigma_g": 0.25150303303704546
+    }
+   ]
+  }
+ ],
+ "clock": null,
+ "clock_absent_reason": "no visible independent rhythm with a stated natural range; hop is a single jump",
+ "worlds": {
+  "candidates": [
+   {
+    "world": "Moon"
+   },
+   {
+    "world": "Earth"
+   }
+  ],
+  "excluded": [
+   {
+    "world": "Mars",
+    "evidence_text": "grey airless ground with stark shadows and no red soil or pink sky",
+    "evidence_frames": [
+     50
+    ],
+    "evidence_artifact": "artifacts/t2_view_frames_0.jpg"
+   }
+  ]
+ },
+ "error_budget": {
+  "components": [
+   {
+    "name": "reference_size",
+    "sigma_contribution": 0.05767852904324606,
+    "basis": "source spread on backpack size"
+   },
+   {
+    "name": "pixel_scale",
+    "sigma_contribution": 0.03845235269549738,
+    "basis": "extent pixels"
+   },
+   {
+    "name": "fit",
+    "sigma_contribution": 0.03840383515371742,
+    "basis": "parabola residuals"
+   },
+   {
+    "name": "point_vs_com",
+    "sigma_contribution": 0.10151421111611308,
+    "basis": "tracked point versus centre"
+   },
+   {
+    "name": "repetition_spread",
+    "sigma_contribution": 0.12516032284111345,
+    "basis": "split-window spread"
+   },
+   {
+    "name": "reading_spread",
+    "sigma_contribution": 0.12,
+    "basis": "stacked upper block alternative reading"
+   }
+  ],
+  "sigma_relative": 0.1702124245548692
+ },
+ "provenance": {
+  "artifacts": [
+   {
+    "name": "segment_masks",
+    "path": "artifacts/t6_segment_0.npz"
+   },
+   {
+    "name": "backpack_masks",
+    "path": "artifacts/t14_segment_0.npz"
+   },
+   {
+    "name": "flag_masks",
+    "path": "artifacts/t8_segment_0.npz"
+   },
+   {
+    "name": "mask_check_backpack",
+    "path": "artifacts/t22_check_mask_0.json"
+   },
+   {
+    "name": "mask_check_person",
+    "path": "artifacts/t28_check_mask_0.json"
+   },
+   {
+    "name": "view_grid",
+    "path": "artifacts/t2_view_frames_0.jpg"
+   },
+   {
+    "name": "view_hop",
+    "path": "artifacts/t4_view_frames_0.jpg"
+   },
+   {
+    "name": "view_stand",
+    "path": "artifacts/t19_view_frames_0.jpg"
+   },
+   {
+    "name": "track_hop_a",
+    "path": "workspace/track_hop_a.json"
+   },
+   {
+    "name": "ref_flag_track",
+    "path": "workspace/ref_flag_track.json"
+   },
+   {
+    "name": "ref_both",
+    "path": "workspace/ref_both.npz"
+   }
+  ]
+ },
+ "camera": {
+  "still": {
+   "reference_phrase": "flag and pole",
+   "reference_track_artifact": "workspace/ref_flag_track.json"
+  }
+ },
+ "page_texts": {}
+}

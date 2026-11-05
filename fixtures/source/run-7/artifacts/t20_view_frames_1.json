@@ -1,0 +1,20 @@
+[
+  {
+    "cell": 0,
+    "sheet": "artifacts/t20_view_frames_0.jpg",
+    "frame": 245,
+    "t_s": 8.174833
+  },
+  {
+    "cell": 1,
+    "sheet": "artifacts/t20_view_frames_0.jpg",
+    "frame": 250,
+    "t_s": 8.341667
+  },
+  {
+    "cell": 2,
+    "sheet": "artifacts/t20_view_frames_0.jpg",
+    "frame": 255,
+    "t_s": 8.5085
+  }
+]

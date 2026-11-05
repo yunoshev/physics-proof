@@ -1,0 +1,4 @@
+flag vert {'x1': 231, 'y1': 58, 'x2': 221, 'y2': 93, 'length_px': 36.40054944640259}
+flag horiz {'x1': 213, 'y1': 65, 'x2': 251, 'y2': 80, 'length_px': 40.85339643163099}
+flag bbox x0213 x1251 y058 y193 area949
+fig bbox x012 x191 y058 y1213

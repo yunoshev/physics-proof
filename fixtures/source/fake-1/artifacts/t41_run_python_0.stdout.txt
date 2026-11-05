@@ -1,0 +1,12 @@
+136-150 n=15 a=721.8 sigma=18.0 rmse=0.577 trend=1.55
+137-149 n=13 a=725.6 sigma=21.2 rmse=0.464 trend=0.72
+136-151 n=16 a=731.3 sigma=15.3 rmse=0.581 trend=0.54
+137-150 n=14 a=702.5 sigma=19.7 rmse=0.525 trend=0.59
+138-150 n=13 a=700.4 sigma=24.9 rmse=0.544 trend=0.61
+136-149 n=14 a=744.0 sigma=18.7 rmse=0.498 trend=0.39
+135-152 n=18 a=728.2 sigma=15.3 rmse=0.793 trend=2.90
+135-151 n=17 a=748.4 sigma=14.8 rmse=0.659 trend=1.63
+137-151 n=15 a=717.8 sigma=17.3 rmse=0.552 trend=0.38
+138-149 n=12 a=729.7 sigma=27.3 rmse=0.481 trend=0.68
+139-149 n=11 a=726.7 sigma=36.1 rmse=0.502 trend=1.04
+137-148 n=12 a=693.6 sigma=20.2 rmse=0.356 trend=1.18

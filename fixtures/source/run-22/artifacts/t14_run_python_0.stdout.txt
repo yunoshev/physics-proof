@@ -1,0 +1,19 @@
+86
+200 top=58 bot=128 h=71 w=55 area=3001 cy=93.3 cx=92.1
+210 top=59 bot=129 h=71 w=56 area=2937 cy=94.2 cx=93.7
+220 top=65 bot=134 h=70 w=55 area=2911 cy=100.0 cx=94.2
+230 top=63 bot=132 h=70 w=54 area=2982 cy=97.4 cx=95.7
+235 top=48 bot=117 h=70 w=52 area=2977 cy=82.4 cx=95.3
+240 top=38 bot=104 h=67 w=53 area=2925 cy=71.3 cx=94.5
+243 top=34 bot=99 h=66 w=53 area=2930 cy=67.1 cx=93.8
+244 top=31 bot=97 h=67 w=53 area=2940 cy=64.6 cx=93.6
+245 top=30 bot=96 h=67 w=53 area=2955 cy=63.2 cx=93.7
+250 top=25 bot=91 h=67 w=70 area=3283 cy=58.6 cx=96.7
+255 top=23 bot=89 h=67 w=70 area=3285 cy=57.1 cx=96.1
+260 top=25 bot=91 h=67 w=69 area=3224 cy=59.0 cx=95.1
+265 top=31 bot=97 h=67 w=68 area=3200 cy=64.7 cx=95.2
+270 top=39 bot=106 h=68 w=67 area=3200 cy=73.5 cx=94.6
+273 top=45 bot=111 h=67 w=68 area=3151 cy=79.3 cx=94.8
+275 top=51 bot=118 h=68 w=69 area=3158 cy=85.6 cx=94.6
+280 top=64 bot=132 h=69 w=48 area=2895 cy=99.2 cx=91.7
+285 top=68 bot=138 h=71 w=48 area=2978 cy=103.1 cx=90.8

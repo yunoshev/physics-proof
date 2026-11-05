@@ -1,0 +1,16 @@
+bp 234 top 51 bot 121 h 71 w 52 l 71 r 122
+  full 234 top 52 bot 186 h 135
+bp 240 top 38 bot 104 h 67 w 53 l 69 r 121
+  full 240 top 38 bot 186 h 149
+bp 245 top 30 bot 96 h 67 w 53 l 68 r 120
+  full 245 top 30 bot 176 h 147
+bp 250 top 25 bot 91 h 67 w 53 l 68 r 120
+  full 250 top 25 bot 159 h 135
+bp 255 top 23 bot 89 h 67 w 52 l 68 r 119
+  full 255 top 23 bot 158 h 136
+bp 260 top 25 bot 91 h 67 w 53 l 67 r 119
+  full 260 top 25 bot 159 h 135
+bp 265 top 31 bot 96 h 66 w 51 l 68 r 118
+  full 265 top 31 bot 165 h 135
+bp 270 top 39 bot 106 h 68 w 50 l 69 r 118
+  full 270 top 39 bot 174 h 136

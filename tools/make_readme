@@ -1,0 +1,490 @@
+#!/usr/bin/env python3
+# generated from brief/15 · part 15 owns this file
+"""Write README.md from the repository itself, so its numbers cannot drift.
+
+Implements brief part 15 section 14 plus the 2026-11-03 addendum: above
+section 1 come the title, the bold tagline, the Live line, one See-it-work
+link per results/<clip>/ (slug from page.txt), the Demo video line when
+results/demo.txt exists, and the two blocks ("One system for any clip",
+with the average from results/costs.json, and "Rebuilt from text", with
+section 4's total). When results/limits.md exists, its paragraph follows
+the "One system" block as the "**Limits.** " line (2026-11-04 addendum).
+Section 1 keeps only the three-state sentence. Part
+costs come from the last ITERATIONS.md line for each part in
+tools/parts.json; the "all generations so far" line sums every costed
+ITERATIONS.md line. Results rows come from results/<clip>/ (result.json +
+summary.json + source.txt). Pure local reads only: no model calls, no
+network, no money. Output is deterministic: the same tree always yields
+byte-identical text (no timestamps, sorted order).
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import sys
+from pathlib import Path
+
+MAX_LINES = 160
+
+TAGLINE = (
+    "Drop in any video; it asks what is worth proving, measures it, "
+    "and shows every step on the footage."
+)
+
+PAGES_BASE = "https://yunoshev.github.io/physics-proof/"
+
+GENERAL_PARAGRAPH = (
+    "It is one general system, not a script for one clip; nothing in the "
+    "code is tuned to a particular video. For each clip Muse Spark works "
+    "out from the frames what a viewer would doubt, finds objects of known "
+    "size and their sourced sizes, and plans the checks: a free flight "
+    "against the world's gravity, a size or speed against a sourced human "
+    "range, a step rate against a natural clock. During the hackathon it "
+    "was verified end to end on a limited set of clips, listed under Results."
+)
+
+REBUILD_PARAGRAPH = (
+    "No hand-written code: the 15 briefs are the only human-written part "
+    "(the owner's requests, turned into briefs by Muse Wonder). Muse Spark "
+    "generates every part through Muse Code, one part at a time "
+    "(`tools/dev_loop --part NN`). The full test suite checks each "
+    "generation, and a live run that went wrong changed the brief, not "
+    "the code."
+)
+
+VIDEO_SUFFIXES = {
+    ".mp4", ".mov", ".mpg", ".mpeg", ".avi", ".mkv", ".webm", ".m4v",
+}
+
+PART_RE = re.compile(r"\|\s*part\s+(\d+)\s*\|")
+COST_RE = re.compile(r"cost\s*\$([0-9]+(?:\.[0-9]+)?)")
+
+
+def repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def parse_iterations_line(line: str) -> tuple[str | None, float | None]:
+    """(part number, cost) from one ITERATIONS.md line; either may be None."""
+    part_match = PART_RE.search(line)
+    cost_match = COST_RE.search(line)
+    part = part_match.group(1).zfill(2) if part_match else None
+    cost = float(cost_match.group(1)) if cost_match else None
+    return part, cost
+
+
+def iteration_costs(text: str) -> list[tuple[str | None, float | None]]:
+    """One (part, cost) entry per non-empty line, in file order."""
+    return [
+        parse_iterations_line(line)
+        for line in text.splitlines()
+        if line.strip()
+    ]
+
+
+def last_cost_per_part(
+    entries: list[tuple[str | None, float | None]],
+) -> dict[str, float | None]:
+    """The last costed line per part; parts whose lines never carry a cost
+    map to None (shown as unknown, never invented)."""
+    last: dict[str, float | None] = {}
+    for part, cost in entries:
+        if part is None:
+            continue
+        if cost is not None:
+            last[part] = cost
+        else:
+            last.setdefault(part, None)
+    return last
+
+
+def all_generations_total(
+    entries: list[tuple[str | None, float | None]],
+) -> tuple[float, int]:
+    """(sum, count) over every line that carries a cost."""
+    costed = [cost for _, cost in entries if cost is not None]
+    return sum(costed), len(costed)
+
+
+def money(dollars: float | None) -> str:
+    if dollars is None:
+        return "unknown"
+    return f"${dollars:.4f}"
+
+
+def money2(dollars: float) -> str:
+    """Headline dollars (the README-top blocks): two decimals, e.g. $0.36."""
+    return f"${dollars:.2f}"
+
+
+def load_costs(root: Path) -> dict | None:
+    """The owner-placed per-clip average in results/costs.json, or None.
+
+    Expected shape: {"runs": N, "dates": "...", "spark_usd": a,
+    "sam_usd": b, "search_usd": c, "total_usd": X}. Anything missing or
+    malformed yields None, and the per-clip cost line is left out.
+    """
+    data = read_json(root / "results" / "costs.json")
+    if data is None:
+        return None
+    try:
+        runs = int(data["runs"])
+        dates = str(data["dates"])
+        spark = float(data["spark_usd"])
+        sam = float(data["sam_usd"])
+        search = float(data["search_usd"])
+        total = float(data["total_usd"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if not dates:
+        return None
+    return {
+        "runs": runs,
+        "dates": dates,
+        "spark_usd": spark,
+        "sam_usd": sam,
+        "search_usd": search,
+        "total_usd": total,
+    }
+
+
+def clip_slug(clip_dir: Path) -> str | None:
+    """The published page slug from results/<clip>/page.txt, or None."""
+    try:
+        slug = (clip_dir / "page.txt").read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return slug or None
+
+
+def demo_url(root: Path) -> str | None:
+    """The demo video link from results/demo.txt, or None when absent."""
+    try:
+        url = (root / "results" / "demo.txt").read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return url or None
+
+
+def load_limits(root: Path) -> str | None:
+    """The owner-placed limits paragraph in results/limits.md, or None.
+
+    The file holds one short paragraph of plain text (2026-11-04
+    addendum). Without the file — or when it is empty — nothing is
+    written. The text is used unchanged.
+    """
+    try:
+        text = (root / "results" / "limits.md").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    text = text.strip()
+    return text or None
+
+
+def verdict_short(result: dict) -> str:
+    """Compact verdict wording with the number, for the See-it-work links."""
+    verdict = result.get("verdict") or {}
+    kind = verdict.get("kind")
+    g = verdict.get("g_measured")
+    sigma = verdict.get("sigma_g")
+    measured = (
+        f"{g:.2f} ± {sigma:.2f} m/s²"
+        if isinstance(g, (int, float)) and isinstance(sigma, (int, float))
+        else None
+    )
+    if kind == "world" and measured is not None:
+        return f"{verdict.get('world')}, g = {measured}"
+    if kind == "retimed":
+        factor = verdict.get("factor")
+        prefix = (
+            f"retimed ×{factor:.2f}"
+            if isinstance(factor, (int, float))
+            else "retimed"
+        )
+        return f"{prefix}, g = {measured}" if measured else prefix
+    if kind == "impossible":
+        return "physically impossible"
+    if kind == "undetermined":
+        reason = verdict.get("reason")
+        return f"undetermined ({reason})" if reason else "undetermined"
+    sentence = result.get("sentence")
+    return str(sentence) if sentence else "—"
+
+
+def part_title(brief_path: Path) -> str:
+    """The brief's first heading minus its number: `# 04 — X` -> `X`."""
+    try:
+        text = brief_path.read_text(encoding="utf-8")
+    except OSError:
+        return "(brief missing)"
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            heading = stripped.lstrip("#").strip()
+            match = re.match(r"^\d+\s*[—–-]\s*(.+)$", heading)
+            return match.group(1).strip() if match else heading
+    return "(untitled)"
+
+
+def load_parts(root: Path) -> dict:
+    path = root / "tools" / "parts.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))["parts"]
+    except (OSError, ValueError, KeyError):
+        return {}
+
+
+def read_json(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def clip_entries(root: Path) -> list[dict]:
+    """One entry per results/<clip>/ holding a summary.json, sorted by name.
+
+    Each entry carries the display title and source URL from source.txt
+    (`title | source URL | rights note`), the verdict sentence and measured
+    value from result.json, and cost/turns/wall time from summary.json.
+    Clips without a readable summary.json are skipped: the table only
+    shows rows whose cost is known.
+    """
+    results = root / "results"
+    if not results.is_dir():
+        return []
+    entries = []
+    for clip_dir in sorted(results.iterdir(), key=lambda p: p.name):
+        if not clip_dir.is_dir():
+            continue
+        summary = read_json(clip_dir / "summary.json")
+        if summary is None:
+            continue
+        try:
+            title, url, _rights = [
+                field.strip()
+                for field in (
+                    clip_dir / "source.txt"
+                ).read_text(encoding="utf-8").strip().split("|")
+            ][:3]
+        except (OSError, ValueError):
+            title, url = clip_dir.name, ""
+        result = read_json(clip_dir / "result.json") or {}
+        verdict = result.get("verdict") or {}
+        sentence = str(result.get("sentence") or "—")
+        measured = "—"
+        if (
+            verdict.get("kind") == "world"
+            and isinstance(verdict.get("g_measured"), (int, float))
+            and isinstance(verdict.get("sigma_g"), (int, float))
+        ):
+            measured = (
+                f"{verdict['g_measured']:.2f} ± "
+                f"{verdict['sigma_g']:.2f} m/s²"
+            )
+        try:
+            cost = float((summary.get("cost_usd") or {}).get("total", 0.0))
+        except (TypeError, ValueError):
+            cost = 0.0
+        try:
+            wall_min = float(summary.get("wall_time_s", 0.0)) / 60
+        except (TypeError, ValueError):
+            wall_min = 0.0
+        entries.append({
+            "title": title or clip_dir.name,
+            "url": url,
+            "sentence": sentence,
+            "measured": measured,
+            "short": verdict_short(result),
+            "slug": clip_slug(clip_dir),
+            "cost": cost,
+            "turns": summary.get("turns", "—"),
+            "wall_min": wall_min,
+        })
+    return entries
+
+
+def build_readme(root: Path) -> str:
+    """Render the whole README.md for the tree at root (deterministic)."""
+    parts = load_parts(root)
+    try:
+        iterations_text = (root / "ITERATIONS.md").read_text(encoding="utf-8")
+    except OSError:
+        iterations_text = ""
+    entries = iteration_costs(iterations_text)
+    last_costs = last_cost_per_part(entries)
+    grand_total, grand_count = all_generations_total(entries)
+    clips = clip_entries(root)
+    costs = load_costs(root)
+    table_total = 0.0
+    for number in sorted(parts, key=lambda n: int(n)):
+        cost = last_costs.get(number)
+        if cost is not None:
+            table_total += cost
+
+    lines = ["# Physics Proof", ""]
+    lines += [f"**{TAGLINE}**", ""]
+    lines += [
+        f"Live: [{PAGES_BASE}]({PAGES_BASE}) — press Play to watch "
+        "each analysis play out on the footage.",
+        "",
+    ]
+    linked = [clip for clip in clips if clip["slug"]]
+    if linked:
+        see_links = " · ".join(
+            f"[{clip['title']} — {clip['short']}]"
+            f"({PAGES_BASE}{clip['slug']}/)"
+            for clip in linked
+        )
+        lines += [f"See it work: {see_links}", ""]
+    demo = demo_url(root)
+    if demo:
+        lines += [f"Demo video: [watch]({demo})", ""]
+    lines += [
+        f"**One system for any clip — {money2(costs['total_usd']) if costs else '…'} per clip**",
+        "",
+        GENERAL_PARAGRAPH,
+        "",
+    ]
+    if costs:
+        lines += [
+            f"Average cost per clip: **{money2(costs['total_usd'])}** = "
+            f"Muse Spark {money2(costs['spark_usd'])} + "
+            f"SAM 3.1 {money2(costs['sam_usd'])} + "
+            f"web search {money2(costs['search_usd'])} "
+            f"(average of {costs['runs']} live runs, {costs['dates']}).",
+            "",
+        ]
+    limits = load_limits(root)
+    if limits:
+        lines += [f"**Limits.** {limits}", ""]
+    lines += [
+        f"**Rebuilt from text — {money(table_total)} for a full rebuild**",
+        "",
+        REBUILD_PARAGRAPH,
+        "",
+        f"A full rebuild of all {len(parts)} parts by Muse Spark: "
+        f"**{money(table_total)}** (the last generation of each part, "
+        "section 4).",
+        "",
+        "## 1. What it is",
+        "",
+        "A video goes in, and a player page with a physics verdict comes out.",
+        "Every analysis ends in one of three states: the motion fits one",
+        "scene-allowed world at native speed, it fits only under a corroborated",
+        "retiming, or no world fits and the result says why (physically",
+        "impossible, or undetermined with a reason).",
+        "",
+        "## 2. How it was built",
+        "",
+        "Built during the Meta hackathon, from 2026-10-27. The briefs in `brief/`",
+        "are the only human-written part (the owner's requests, turned into briefs",
+        "by Muse Wonder). All code, tests and the player are",
+        "generated by Muse Spark through Muse Code (`tools/dev_loop`). Every",
+        "analysis run is done by Muse Spark with SAM 3.1 through the Meta Model API.",
+        "",
+        "## 3. Run one video",
+        "",
+        "```sh",
+        "uv run python -m src.cli <video> --runs-dir runs",
+        "```",
+        "",
+        "It needs `META_API_KEY` in the environment. The run writes",
+        "`runs/<run-id>/`: the anonymised clip and timing in `input/`, scratch in",
+        "`workspace/`, tool outputs in `artifacts/`, the operator-only log in",
+        "`logs/`, and the validated `result.json` plus `summary.json`.",
+        "Then build its player page with `src.pagebuild.build_page`:",
+        "",
+        "```sh",
+        "uv run python -c \"from src.pagebuild import build_page; "
+        "build_page('runs/<run-id>/result.json', 'runs/<run-id>/input/clip.mp4', "
+        "'pages/<clip>')\"",
+        "```",
+        "",
+        "## 4. Regenerate the code",
+        "",
+        "```sh",
+        "tools/dev_loop --part NN",
+        "```",
+        "",
+        "One row per part in `tools/parts.json`, with the cost of the part's last",
+        "generation (the last `ITERATIONS.md` line for that part):",
+        "",
+        "| Part | Title | Last generation |",
+        "| --- | --- | --- |",
+    ]
+    for number in sorted(parts, key=lambda n: int(n)):
+        title = part_title(root / parts[number].get("spec", ""))
+        cost = last_costs.get(number)
+        lines.append(f"| {number} | {title} | {money(cost)} |")
+    lines += [
+        f"| Total | {len(parts)} parts | {money(table_total)} |",
+        "",
+        f"All generations so far: {money(grand_total)} "
+        f"across {grand_count} recorded runs.",
+        "",
+        "## 5. Results",
+        "",
+    ]
+    if clips:
+        lines += [
+            "| Clip | Verdict | Measured | Cost | Turns | Wall time | Source |",
+            "| --- | --- | --- | --- | --- | --- | --- |",
+        ]
+        for clip in clips:
+            source = (
+                f"[source]({clip['url']})" if clip["url"] else "—"
+            )
+            lines.append(
+                f"| {clip['title']} | {clip['sentence']} | {clip['measured']} "
+                f"| {money(clip['cost'])} | {clip['turns']} "
+                f"| {clip['wall_min']:.1f} min | {source} |"
+            )
+    else:
+        lines += [
+            "No published results yet: `results/` holds copies of live runs,",
+            "placed by the owner.",
+        ]
+    lines += [
+        "",
+        "## 6. Meta tools used",
+        "",
+        "Muse Wonder (wrote the briefs from the owner's requests), Muse Spark",
+        "(the agent loop, blind checks and code generation), SAM 3.1",
+        "(segmentation on the agent's request), and web search with sources.",
+        "",
+        "## 7. Clips and rights",
+        "",
+        "The Moon clip is NASA footage in the public domain. Every other clip is",
+        "only linked, with its author.",
+        "",
+        "## 8. License",
+        "",
+        "MIT — see `LICENSE`.",
+        "",
+    ]
+    text = "\n".join(lines)
+    if len(lines) > MAX_LINES:
+        raise ValueError(
+            f"README would be {len(lines)} lines, over the {MAX_LINES} cap"
+        )
+    return text
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = list(argv) if argv is not None else sys.argv[1:]
+    root = Path(args[0]).resolve() if args else repo_root()
+    try:
+        text = build_readme(root)
+    except ValueError as exc:
+        print(f"make_readme: {exc}", file=sys.stderr)
+        return 1
+    (root / "README.md").write_text(text, encoding="utf-8")
+    print(f"make_readme: wrote README.md ({len(text.splitlines())} lines)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

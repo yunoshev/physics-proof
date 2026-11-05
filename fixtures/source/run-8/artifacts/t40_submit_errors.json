@@ -1,0 +1,7 @@
+[
+  {
+    "code": "SECOND_REFERENCE_SAME_OBJECT",
+    "field": "references",
+    "detail": "reference masks overlap by 100% of the smaller mask (> 50%) on frame 250: two extents of the same object are not two references"
+  }
+]

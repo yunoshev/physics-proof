@@ -1,0 +1,122 @@
+[
+  {
+    "cell": 0,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 115,
+    "t_s": 3.837171
+  },
+  {
+    "cell": 1,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 119,
+    "t_s": 3.970637
+  },
+  {
+    "cell": 2,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 123,
+    "t_s": 4.104104
+  },
+  {
+    "cell": 3,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 127,
+    "t_s": 4.237571
+  },
+  {
+    "cell": 4,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 131,
+    "t_s": 4.371038
+  },
+  {
+    "cell": 5,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 135,
+    "t_s": 4.504505
+  },
+  {
+    "cell": 6,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 139,
+    "t_s": 4.637971
+  },
+  {
+    "cell": 7,
+    "sheet": "artifacts/t5_view_frames_0.jpg",
+    "frame": 143,
+    "t_s": 4.771438
+  },
+  {
+    "cell": 8,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 147,
+    "t_s": 4.904905
+  },
+  {
+    "cell": 9,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 151,
+    "t_s": 5.038372
+  },
+  {
+    "cell": 10,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 155,
+    "t_s": 5.171839
+  },
+  {
+    "cell": 11,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 159,
+    "t_s": 5.305305
+  },
+  {
+    "cell": 12,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 163,
+    "t_s": 5.438772
+  },
+  {
+    "cell": 13,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 167,
+    "t_s": 5.572239
+  },
+  {
+    "cell": 14,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 171,
+    "t_s": 5.705706
+  },
+  {
+    "cell": 15,
+    "sheet": "artifacts/t5_view_frames_1.jpg",
+    "frame": 175,
+    "t_s": 5.839173
+  },
+  {
+    "cell": 16,
+    "sheet": "artifacts/t5_view_frames_2.jpg",
+    "frame": 179,
+    "t_s": 5.972639
+  },
+  {
+    "cell": 17,
+    "sheet": "artifacts/t5_view_frames_2.jpg",
+    "frame": 183,
+    "t_s": 6.106106
+  },
+  {
+    "cell": 18,
+    "sheet": "artifacts/t5_view_frames_2.jpg",
+    "frame": 187,
+    "t_s": 6.239573
+  },
+  {
+    "cell": 19,
+    "sheet": "artifacts/t5_view_frames_2.jpg",
+    "frame": 191,
+    "t_s": 6.37304
+  }
+]

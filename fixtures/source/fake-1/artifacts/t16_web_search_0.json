@@ -1,0 +1,25 @@
+{
+  "query": "Apollo OPS oxygen purge system height inches on top PLSS",
+  "facts": [
+    {
+      "text": "The Apollo Oxygen Purge System (OPS) was mounted on top of the PLSS.",
+      "url": "https://en.wikipedia.org/wiki/Portable_life_support_system",
+      "quote": "An emergency backup was provided in case the main system failed, by a separate unit called the Oxygen Purge System (OPS), mounted on top of the PLSS,"
+    },
+    {
+      "text": "The OPS was positioned immediately behind the astronaut's helmet.",
+      "url": "https://en.wikipedia.org/wiki/Portable_life_support_system",
+      "quote": "immediately behind the astronaut's helmet."
+    },
+    {
+      "text": "The Apollo OPS purge unit was 10 inches high.",
+      "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+      "quote": "inches long, 10 inches high, and 8 inches deep."
+    },
+    {
+      "text": "A Smithsonian Apollo OPS example is listed with dimensions of 1 ft. 3 in. x 7 in. x 8 in.",
+      "url": "https://airandspace.si.edu/collection-objects/oxygen-purge-system-apollo-cutaway/nasm_A19740611000",
+      "quote": "3-D: 38.1cm \u00d7 17.8cm \u00d7 20.3cm, 12.3kg (1 ft. 3 in. \u00d7 7 in. \u00d7 8 in., 27 1/16lb.)"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+opened True
+352 240 466 29.97002997002997
+read True (240, 352, 3)
+flag stats {'top': 41, 'bottom': 140, 'left': 216, 'right': 262, 'height': 100, 'width': 47, 'area': 1526, 'centroid': {'x': 240.6743119266055, 'y': 76.34600262123197}}
+astro stats {'top': 58, 'bottom': 188, 'left': 67, 'right': 150, 'height': 131, 'width': 84, 'area': 6090, 'centroid': {'x': 100.9256157635468, 'y': 118.97077175697865}}
+mask shapes (240, 352) (240, 352)

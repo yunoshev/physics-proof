@@ -1,0 +1,369 @@
+{
+  "defaults": {
+    "effort": "medium",
+    "max_attempts": 3,
+    "max_model_steps": 60,
+    "model": "muse-spark-1.3-contributor",
+    "python": "3.13",
+    "test_runner": [
+      "uv",
+      "run",
+      "--python",
+      "3.13",
+      "pytest"
+    ]
+  },
+  "notes": "Default config for tools/dev_loop (brief part 15 section 2). Model and effort follow skills/muse-code-headless.md: contributor/medium default, high for hard parts 06, 11, 13. max_model_steps comes from this config per that skill; values are chosen defaults, not spec-pinned. owned_paths lists everything the part owns including its own test paths; regenerating a part deletes exactly these paths and nothing else. test_command runs the part's tests (brief 15 section 2 item 3).",
+  "parts": {
+    "03": {
+      "effort": "medium",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "scripts/make_clips.py",
+        "tests/test_make_clips.py"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/video-ffmpeg.md"
+      ],
+      "spec": "brief/03-test-clips-and-acceptance.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/test_make_clips.py",
+        "-q"
+      ]
+    },
+    "04": {
+      "effort": "high",
+      "max_model_steps": 120,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "pyproject.toml",
+        "src/cli.py",
+        "src/config.py",
+        "tests/test_cli.py",
+        "tests/test_config.py",
+        "src/clients/",
+        "tests/clients/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/meta-api.md",
+        "skills/sam-3-1.md"
+      ],
+      "spec": "brief/04-architecture-and-constraints.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/test_cli.py",
+        "tests/test_config.py",
+        "tests/clients/",
+        "-q"
+      ]
+    },
+    "05": {
+      "effort": "medium",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/ingest/",
+        "tests/ingest/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/video-ffmpeg.md"
+      ],
+      "spec": "brief/05-ingest-and-anonymisation.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/ingest/",
+        "-q"
+      ]
+    },
+    "06": {
+      "effort": "high",
+      "max_model_steps": 120,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/loop/",
+        "tests/loop/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/meta-api.md"
+      ],
+      "spec": "brief/06-spark-agent-loop.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/loop/",
+        "-q"
+      ]
+    },
+    "07": {
+      "effort": "high",
+      "max_model_steps": 120,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/tools/",
+        "tests/tools/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/meta-api.md",
+        "skills/sam-3-1.md",
+        "skills/macos-sandbox.md",
+        "skills/video-ffmpeg.md"
+      ],
+      "spec": "brief/07-agent-tools.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/tools/",
+        "-q"
+      ],
+      "browser": true
+    },
+    "08": {
+      "effort": "medium",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/rules/",
+        "prompts/measuring_rules.md",
+        "tests/rules/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md"
+      ],
+      "spec": "brief/08-measuring-rules.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/rules/",
+        "-q"
+      ]
+    },
+    "09": {
+      "effort": "medium",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/helpers/",
+        "tests/helpers/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md"
+      ],
+      "spec": "brief/09-verified-helper-library.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/helpers/",
+        "-q"
+      ]
+    },
+    "10": {
+      "effort": "medium",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/selfbuilt/",
+        "tests/selfbuilt/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/macos-sandbox.md"
+      ],
+      "spec": "brief/10-self-built-tools.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/selfbuilt/",
+        "-q"
+      ]
+    },
+    "11": {
+      "effort": "high",
+      "max_model_steps": 120,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/validate/",
+        "tests/validate/",
+        "fixtures/run-7/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md"
+      ],
+      "spec": "brief/11-result-validation.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/validate/",
+        "-q"
+      ]
+    },
+    "12": {
+      "effort": "high",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/contract/",
+        "fixtures/clip-a/",
+        "fixtures/still-range/",
+        "tests/contract/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md"
+      ],
+      "spec": "brief/12-result-data-contract.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/contract/",
+        "-q"
+      ]
+    },
+    "13": {
+      "effort": "high",
+      "max_model_steps": 200,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "player/",
+        "src/pagebuild/",
+        "tests/player/",
+        "tests/pagebuild/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/video-ffmpeg.md"
+      ],
+      "spec": "brief/13-player-template.md",
+      "test_command": [
+        "env",
+        "PHYSICS_PROOF_BROWSER=1",
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/player/",
+        "tests/pagebuild/",
+        "-q"
+      ],
+      "browser": true
+    },
+    "14": {
+      "effort": "medium",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "src/accounting/",
+        "tests/accounting/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md",
+        "skills/meta-api.md"
+      ],
+      "spec": "brief/14-cost-runtime-and-failures.md",
+      "test_command": [
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/accounting/",
+        "-q"
+      ]
+    },
+    "15": {
+      "effort": "medium",
+      "max_model_steps": 60,
+      "model": "muse-spark-1.3-contributor",
+      "owned_paths": [
+        "tools/dev_loop",
+        "tools/make_readme",
+        "tests/dev_loop/",
+        "tests/acceptance/",
+        "scripts/demo/"
+      ],
+      "skills": [
+        "skills/muse-code-headless.md"
+      ],
+      "spec": "brief/15-build-test-and-demo.md",
+      "test_command": [
+        "env",
+        "PHYSICS_PROOF_BROWSER=1",
+        "uv",
+        "run",
+        "--python",
+        "3.13",
+        "python",
+        "-m",
+        "pytest",
+        "tests/dev_loop/",
+        "tests/acceptance/",
+        "-q"
+      ],
+      "browser": true
+    }
+  },
+  "version": 1
+}

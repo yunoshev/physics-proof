@@ -1,0 +1,19 @@
+objs ['0', '1']
+oid 0 n 111
+ oid 0 f200 top=58 bot=188 h=131 w=84 area=6090
+ oid 0 f218 top=63 bot=188 h=126 w=89 area=6054
+ oid 0 f236 top=44 bot=185 h=142 w=73 area=6334
+oid 1 n 111
+1 200 empty
+ oid 1 f218 top=98 bot=158 h=61 w=28 area=1328
+ oid 1 f236 top=98 bot=157 h=60 w=29 area=1294
+ pack f200 top=58 bot=128 h=71 w=55 area=3001
+ pack f214 top=61 bot=129 h=69 w=56 area=2936
+ pack f228 top=68 bot=136 h=69 w=54 area=2909
+astro0 {'x1': 100, 'y1': 58, 'x2': 115, 'y2': 188, 'length_px': 130.86252328302402}
+pack {'x1': 100, 'y1': 58, 'x2': 91, 'y2': 128, 'length_px': 70.57619995437555}
+ flag f200 top=41 bot=140 h=100 w=47 area=1526
+ flag f218 top=42 bot=141 h=100 w=48 area=1541
+ flag f236 top=41 bot=138 h=98 w=47 area=1505
+ flag f254 top=41 bot=140 h=100 w=48 area=1546
+ flag f272 top=41 bot=140 h=100 w=47 area=1543

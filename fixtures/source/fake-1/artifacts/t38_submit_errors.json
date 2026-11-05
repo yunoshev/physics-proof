@@ -1,0 +1,38 @@
+[
+  {
+    "code": "FIT_INCLUDES_CONTACT_OR_DUP",
+    "field": "segments[0].track_artifact",
+    "detail": "segments[0]: fitted frames [153] lie outside the [135, 152] window"
+  },
+  {
+    "code": "RESIDUAL_TREND",
+    "field": "segments[0].track_artifact",
+    "detail": "segments[0]: residual_trend_z is 4.42 (above 3.0): the window is not one stretch of constant acceleration: it mixes phases (support, a change of surface, a turn) or the point deforms; fit one phase (R-M1, R-M5)"
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[0].mask_check.alternative_readings",
+    "detail": "references[0] (backpack unit height): the blind check alternative 'a smaller upper box-like protrusion forming the top of the pack inside the tint' is not answered: add {\"description\": 'a smaller upper box-like protrusion forming the top of the pack inside the tint', \"size_m\": <size>} to mask_check.alternative_readings if it is another size of this reference; or add to size_derivation: 'a smaller upper box-like protrusion forming the top of the pack inside the tint': does not apply because ..."
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[0].mask_check.alternative_readings",
+    "detail": "references[0] (backpack unit height): the blind check alternative 'the dark background and ground immediately to the right and above the pack only marginally included at the edge of the tint' is not answered: add {\"description\": 'the dark background and ground immediately to the right and above the pack only marginally included at the edge of the tint', \"size_m\": <size>} to mask_check.alternative_readings if it is another size of this reference; or add to size_derivation: 'the dark background and ground immediately to the right and above the pack only marginally included at the edge of the tint': does not apply because ..."
+  },
+  {
+    "code": "ERROR_BUDGET_INCOMPLETE",
+    "field": "error_budget.sigma_relative",
+    "detail": "error_budget: submitted sigma 1.0863 is smaller than the recomputed quadrature total 1.1189"
+  },
+  {
+    "code": "RANGE_LINE_NOT_CONFIRMED",
+    "field": "range_checks[0].extents[0]",
+    "detail": "range_checks[0].extents[0] (suited figure height) on frame 10 has no confirming check_line record: check this line with check_line(frame=10, lines=[{x1: 66.0, y1: 58.0, x2: 61.0, y2: 213.0, claim: 'suited figure height'}])"
+  },
+  {
+    "code": "SECOND_REFERENCE_REQUIRED",
+    "field": "references",
+    "detail": "references: measure a second thing of independently known size at the depth of the motion: the moving thing itself, something it wears or carries, or a fixed thing beside it (R-S6)",
+    "push": true
+  }
+]

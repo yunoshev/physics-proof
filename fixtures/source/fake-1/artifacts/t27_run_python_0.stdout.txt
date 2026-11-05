@@ -1,0 +1,22 @@
+{
+  "overlay_artifact": "artifacts/t12_segment_preview_0.jpg",
+  "mask_extents_px": {
+    "x0": 0,
+    "x1": 352,
+    "y0": 0,
+    "y1": 240
+  },
+  "question": "An overlay image shows a translucent coloured mask drawn on one video frame, with one bounding box per masked region. Describe, in plain words, WHAT THE MASK COVERS: which part of the visible object or surface the tinted region covers, and which edges it includes or excludes (for example, whether it covers only part of an object or extends past it onto the background). Do NOT name or guess what the object is, where the footage comes from, or what experiment this is. Where the covering is ambiguous, list each alternative reading. As alternatives, name any separable or stacked parts inside the tinted region (for example a unit mounted on top of another) and any part of the same object left outside the tinted region.",
+  "coverage_answer": "On the left side of the frame the pale tint covers the large light rectangular pack on the back of the light-suited figure seen from behind. It includes the top of the pack against the dark background, the left side at the frame edge, and the right side with a narrow margin onto the background, while its bottom edge cuts straight across the figure at about waist to upper-leg level. It covers only the pack unit and excludes the white legs and lower suit below it and excludes the surrounding ground and background.",
+  "alternatives": [
+    "a smaller upper box-like protrusion forming the top of the pack inside the tint",
+    "a larger lower rectangular section forming the main body of the pack below it inside the tint",
+    "the white suited lower body and legs of the same figure continuing down below the bottom edge of the tint and left outside",
+    "the dark background and ground immediately to the right and above the pack only marginally included at the edge of the tint"
+  ],
+  "confidence": null,
+  "turn": 21
+}
+
+{'frame': 0, 't_s': 0.0, 'objects': {'0': {'frame': 0, 't_s': 0.0, 'area_px': 980, 'bbox': {'x0': 213, 'y0': 58, 'x1': 252, 'y1': 94}, 'centroid': {'x': 230.8795918367347, 'y': 77.25510204081633}}}}
+{'frame': 10, 't_s': 0.333667, 'objects': {'0': {'frame': 10, 't_s': 0.333667, 'area_px': 949, 'bbox': {'x0': 213, 'y0': 58, 'x1': 251, 'y1': 93}, 'centroid': {'x': 230.5827186512118, 'y': 77.23287671232876}}}}

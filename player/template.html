@@ -1,0 +1,1963 @@
+<!doctype html>
+<!-- frozen player template (part 13). hash: __PP_TEMPLATE_HASH__ -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@KATEX_VERSION_PIN/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@KATEX_VERSION_PIN/dist/katex.min.js"></script>
+<style>
+/*__PP_TEMPLATE_HASH__*/
+:root{
+  --page:#04070C; --header:#060B13; --panel:#070C14; --card:#05090F;
+  --line:#1B2A3C; --line2:#22344A; --grid:#141E2C; --grid2:#3A4F68;
+  --txt:#E8EEF4; --txt2:#9AA8B8; --mut:#66788C; --mut2:#7A8798;
+  --cyan:#4FE3F0; --amber:#FFB54D; --peri:#8A8FFF; --mars:#FF7A4D;
+  --red:#FF4D4D; --red2:#FF5A5A;
+  --sans:-apple-system,"Segoe UI",Roboto,Inter,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --serif:"Times New Roman",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--page);color:var(--txt);font-family:var(--sans);overflow:hidden}
+header{height:56px;background:var(--header);border-bottom:1px solid #162233;display:flex;align-items:center;gap:24px;padding:0 24px}
+header h1{font-size:16px;font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav.tabs{display:flex;gap:28px;margin-left:286px}
+nav.tabs button{background:none;border:0;color:var(--mut2);font-size:13px;font-family:var(--sans);cursor:pointer;padding:4px 0}
+nav.tabs button.on{color:var(--txt);font-weight:500;border-bottom:2px solid var(--cyan)}
+main{display:flex;gap:12px;padding:14px 18px 0 18px;height:calc(100vh - 56px)}
+#left{flex:0 0 68.4%;display:flex;flex-direction:column;min-width:0;min-height:0}
+/* (42.4) the stage keeps the video's display aspect; fitStage sizes
+   it into the free column space, so header, stage and controls stay
+   fully visible with no page scroll */
+#stage{position:relative;background:#000;border:1px solid var(--line);border-radius:4px;overflow:hidden;flex:0 0 auto;margin:0 auto}
+#side{flex:1;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden;min-width:0}
+/* (42.8) the chart sits on top, outside the column's scrolling area */
+#chartBlock{flex:0 0 auto;padding:16px 16px 10px;border-bottom:1px solid #162233}
+#sideInner{padding:16px;overflow-y:auto;flex:1;min-height:0}
+/* (43.6) the bar grows with its label lanes so every label
+   stays inside the control bar, never over the stage */
+#controls{display:flex;align-items:center;gap:10px;height:auto;min-height:52px;flex:0 0 auto;color:var(--txt2);font-size:11px}
+#playBtn{width:40px;height:40px;border-radius:50%;background:#DCE6EF;border:0;color:#000;font-size:14px;cursor:pointer}
+.stepbtn{width:32px;height:32px;border-radius:4px;border:1px solid #2A3C52;background:#0A111C;color:var(--txt2);cursor:pointer;font-size:11px}
+#timeline{position:relative;flex:1;height:56px;min-width:40px;padding-top:0;cursor:pointer;touch-action:none}
+#timeline.tall{height:64px}
+#timeline.pt2{padding-top:22px;height:70px}
+#tlTrack{position:absolute;left:0;right:0;top:30px;height:2px;background:#22344A;pointer-events:none}
+#tlPlay{position:absolute;left:0;top:30px;height:2px;background:var(--cyan);width:0;pointer-events:none}
+#tlSegs,#tlTicks{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none}
+.tlseg{position:absolute;top:22px;height:5px;background:#1F6E73}
+.tlseg span{position:absolute;bottom:8px;left:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:var(--mut);white-space:nowrap}
+.tlseg.grey{background:#3A4F68}
+.tltick{position:absolute;top:30px;width:2px;height:10px;background:var(--amber)}
+.tltick .tlbl{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:max-content;max-width:140px;overflow:hidden;text-overflow:ellipsis;text-align:center;font-size:11px;color:var(--mut);white-space:nowrap}
+#timeRead{font-family:var(--mono);font-size:12px;color:#C7D2DE;white-space:nowrap}
+#speed{background:#0A111C;color:var(--txt);border:1px solid #2A3C52;border-radius:2px;font-family:var(--mono);font-size:12px;height:28px;width:62px}
+.chk{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2);white-space:nowrap}
+.chk .box{width:14px;height:14px;border-radius:2px;border:1px solid var(--grid2);display:inline-block;text-align:center;line-height:12px;font-size:11px;color:#000}
+.chk.on .box{background:var(--cyan);border-color:var(--cyan)}
+/* video box: every stage layer shares it (29); the camera transform below
+   is the ONLY zoom — the freeze canvas is always a whole-frame draw (30) */
+#vbox{position:absolute;inset:0;transform-origin:0 0}
+#vbox video,#vbox canvas#freeze{position:absolute;inset:0;width:100%;height:100%}
+#vbox video{filter:contrast(1.06) saturate(.92)}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.42) 95%)}
+#dim{position:absolute;inset:0;background:rgba(2,4,8,0);pointer-events:none}
+#stageOverlay{position:absolute;inset:0;pointer-events:none}
+#stageOverlay svg{position:absolute;inset:0;width:100%;height:100%}
+#ptitle{display:none}
+#phoneSlot{display:none;max-width:100%;min-width:0}
+.ov{font-family:var(--mono)}
+#hud{position:absolute;top:18px;left:18px;font-family:var(--mono);font-size:11px;color:#C7D2DE;background:rgba(0,0,0,.72);padding:3px 8px;border-radius:2px;z-index:5}
+#hud .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-right:6px}
+#hud.frozen .dot{background:var(--amber)}
+#hud .frz{color:var(--amber);font-weight:700;margin-left:12px}
+#badge{position:absolute;top:18px;right:18px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--cyan);border:1px solid var(--cyan);padding:3px 8px;border-radius:2px;background:rgba(0,0,0,.72);z-index:5}
+/* (42.5) the HUD line and the SAM badge are gone from the visible
+   page; geometry code still reads their (zero) rects. The keys keep
+   working and the play button's title lists them. */
+#hud,#badge{display:none}
+#caption{position:absolute;left:18px;bottom:18px;z-index:5;max-width:70%}
+#caption .t{background:rgba(0,0,0,.72);border-left:3px solid var(--amber);color:#FFF;font-size:24px;font-weight:700;padding:6px 12px}
+#caption .n{background:rgba(0,0,0,.72);color:#C7D2DE;font-size:13px;padding:6px 12px;margin-top:2px}
+#caption .n b{font-family:var(--mono);font-weight:700;color:#FFF}
+#holdbar{position:absolute;top:0;left:0;height:2px;background:var(--amber);width:0;box-shadow:0 0 6px var(--amber);z-index:6}
+#flash{position:absolute;inset:0;background:#DFF6FF;opacity:0;pointer-events:none;z-index:7}
+#intro{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:safe center;padding:0 5%;background:rgba(4,7,12,.45);overflow-y:auto;pointer-events:none}
+#intro button{pointer-events:auto}
+#intro h2{font-size:42px;font-weight:800;line-height:1.05;color:#EDF3F8;margin:0 0 8px;max-width:62%}
+#intro .sub{font-size:14px;color:var(--txt2);margin:0 0 6px;max-width:62%}
+#intro .claim{font-size:13px;color:var(--txt2);margin:2px 0;max-width:62%}
+#intro .claim b{color:var(--txt)}
+#intro .checks{margin:4px 0 0;max-width:62%}
+#intro .checks .h{font-size:11px;color:var(--mut2);margin-bottom:4px}
+#intro .checkrow{font-size:12px;color:#D5DEE8;background:rgba(10,17,28,.88);border:1px solid var(--line2);border-radius:2px;padding:6px 10px;margin-bottom:4px;overflow-wrap:break-word}
+#introCards{display:flex;gap:14px;width:92%;margin-top:10px}
+.icard{flex:1;background:rgba(10,17,28,.88);border:1px solid var(--line2);border-radius:2px;padding:14px}
+.icard .eb{font-size:11px;color:var(--mut2)}
+.icard .big{font-family:var(--mono);font-size:30px;font-weight:700;color:#EDF3F8}
+.icard .u{font-size:10px;color:var(--txt2)}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;border:1px solid #3A4F68;border-radius:10px;padding:3px 8px;color:#D5DEE8;margin:2px 4px 2px 0}
+#watchBtn{background:var(--cyan);color:#000;font-weight:700;font-size:14px;border:0;border-radius:3px;padding:12px 18px;cursor:pointer;margin-top:12px}
+#watchNote{font-size:11px;color:var(--txt2);margin-left:14px}
+#refcard{position:absolute;top:17%;right:2.5%;width:38%;max-height:60%;overflow:hidden;background:rgba(7,12,20,.92);border:1px solid var(--line2);border-top:2px solid var(--amber);border-radius:2px;padding:16px;z-index:5}
+#refcard .eb{font-size:11px;color:var(--mut2)}
+#refcard h3{font-size:14px;margin:2px 0 6px}
+#refcard .huge{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--amber)}
+#refcard .huge small{font-size:13px;color:var(--txt2)}
+#refcard .cap{font-size:11px;color:var(--txt2)}
+#refcard .src{font-size:11px;color:var(--txt2);margin-top:6px;font-style:italic}
+#refcard .src b{font-family:var(--mono);font-style:normal;color:var(--amber);font-size:12px;display:inline-block;width:28%}
+#verdict{position:absolute;left:6%;right:6%;bottom:4%;background:rgba(5,9,15,.94);border:1px solid #2A3C52;border-radius:2px;padding:20px 24px;z-index:5}
+#verdict .eb{font-size:12px;color:var(--mut2)}
+#verdict .g{font-family:var(--mono);font-size:40px;font-weight:700}
+#verdict .g small{font-size:18px;color:#8A99AB}
+#gauge{position:relative;height:88px;margin:8px 0}
+#gaxis{position:absolute;left:0;right:0;top:52px;height:1px;background:var(--grid2)}
+.gtick{position:absolute;top:48px;width:1px;height:9px;background:var(--grid2)}
+.gtick span{position:absolute;top:-16px;left:-14px;width:40px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--mut)}
+.gunit{position:absolute;right:2px;bottom:0;font-family:var(--mono);font-size:11px;color:var(--mut2)}
+.gmark{position:absolute;top:38px;width:2px;height:18px}
+.gmark span{position:absolute;bottom:30px;left:-32px;width:84px;text-align:center;font-size:12px;font-weight:700;font-family:var(--mono)}
+.gband{position:absolute;top:48px;height:8px;background:rgba(79,227,240,.25)}
+#stamp{position:absolute;top:-32px;right:6%;border:3px double;padding:6px 14px;transform:rotate(-6deg);background:rgba(4,7,12,.85);text-align:center;max-width:44%}
+#stamp .w{font-weight:800;font-size:32px;white-space:nowrap}
+#stamp .s{font-family:var(--mono);font-size:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:2.6em}
+#verdict .sent{font-size:13px;color:#C7D2DE;margin-top:6px}
+.sigrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sig{font-family:var(--mono);font-size:11px;border:1px solid;border-radius:10px;padding:4px 10px;background:transparent;overflow-wrap:anywhere;max-width:100%}
+/* (41) world chips wrap; they never overflow the verdict card */
+.sigrow .sig{flex:0 1 auto;min-width:0}
+#revealBtn{background:transparent;border:1px solid var(--grid2);color:#D5DEE8;font-size:12px;padding:8px 14px;border-radius:2px;cursor:pointer;margin-top:10px}
+#gtBlock{font-size:13px;margin-top:8px}
+#gtBlock .eb{font-size:11px;color:var(--mut2)}
+.rbar{margin:10px 0}
+.rbar .track{position:relative;height:8px;background:#16222F;border-radius:2px}
+.rbar .typ{position:absolute;top:-3px;width:2px;height:14px;background:#8A99AB}
+.rbar .mark{position:absolute;top:-5px;width:3px;height:18px}
+.rbar .band2{position:absolute;top:-3px;height:14px;opacity:.35}
+.rbar .dom{font-family:var(--mono);font-size:10px;color:var(--mut2);margin-top:6px}
+.rbar .side{font-family:var(--mono);font-size:11px;margin-top:2px}
+#chartHead{display:flex;justify-content:space-between;align-items:baseline}
+#chartHead h3{font-size:13px;margin:0}
+#chartHead .u{font-family:var(--mono);font-size:11px;color:var(--mut2)}
+#legendRow{display:flex;gap:14px;font-size:10px;color:var(--txt2);margin:4px 0}
+#legendRow i{display:inline-block;width:14px;height:0;border-top:2px solid;margin-right:4px;vertical-align:middle}
+#chart{width:100%;height:150px;display:block;background:var(--card)}
+#chartEmpty{font-size:11px;color:var(--txt2);text-align:center;padding-top:60px}
+#steps{position:relative;padding-left:22px}
+#steps::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:1px;background:#1E2C3E}
+.step{position:relative;margin:0 0 14px}
+.step .sdot{position:absolute;left:-19px;top:3px;width:9px;height:9px;border-radius:50%;border:1px solid #3A4F68;background:var(--panel)}
+.step.open .sdot{border-color:var(--cyan)}
+.step.cur .sdot{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.step .shead{display:flex;justify-content:space-between;cursor:pointer}
+.step .st{font-size:13px;font-weight:500;color:#5F7085}
+.step.open .st{font-weight:700;color:var(--txt)}
+.step .sfr{font-family:var(--mono);font-size:10px;color:var(--mut);white-space:nowrap}
+.step .sbody{display:none;font-size:12px;color:var(--txt2);line-height:1.45}
+.step.open .sbody{display:block}
+.step .sbody .ln{opacity:0;transition:opacity .45s}
+.step .sbody .ln.shown{opacity:1}
+.fx{font-family:var(--serif);font-style:italic;font-size:14px;color:#D5DEE8;margin:6px 0}
+.fx .katex{font-size:14px}
+.fx .fb{font-family:var(--mono);font-style:normal;font-size:12px;color:#D5DEE8}
+/* (39) wordy formulas are plain monospace text, never math italics */
+.fx.plain{font-family:var(--mono);font-style:normal;font-size:12px}
+.chip{display:inline-block;font-family:var(--mono);font-weight:700;font-size:13px;padding:4px 8px;border-radius:2px;margin:4px 0}
+.chip.final{background:var(--amber);color:#0A0A0A}
+.chip.inter{background:transparent;border:1px solid var(--cyan);color:var(--cyan)}
+.warn{border-left:3px solid var(--amber);background:rgba(255,181,77,.08);color:#D8C9A8;font-size:11px;padding:6px 10px;margin:6px 0}
+.bars .brow{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--txt2);margin:3px 0}
+.bars .bl{flex:0 0 55%}
+.bars .bt{width:90px;height:5px;background:#16222F}
+.bars .bf{height:5px;background:var(--cyan)}
+.bars .bp{font-family:var(--mono);font-size:11px;color:var(--txt);flex:0 0 12%;text-align:right;white-space:nowrap}
+.mchkimg{width:100%;height:150px;object-fit:contain;object-position:top left;background:#05090F;border:1px solid #24334A;display:block}
+#mchkChip{display:block;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;max-width:100%}
+.mchkcap{font-size:11.5px;color:var(--mut2)}
+#summaryBlock{border:1px solid var(--line2);border-radius:2px;padding:12px;margin:10px 0;background:rgba(5,9,15,.6)}
+#summaryBlock h4{margin:0 0 6px;font-size:13px}
+#howmade{font-size:11px;color:var(--txt2)}
+.kb{font-size:11px;color:var(--mut2);margin-top:8px}
+text{user-select:none}
+@media (max-width:700px){
+  /* (42.4) one screen on a phone too: the column goes below the
+     control bar and only the column scrolls, never the page */
+  main{flex-direction:column;height:100dvh;overflow:hidden}
+  #left{flex:none}
+  #side{flex:1 1 auto;min-height:0}
+  #controls{position:sticky;bottom:0;background:var(--page);flex-wrap:wrap;height:auto;min-height:52px;row-gap:6px}
+  header{display:none}
+  /* phone: the question lives above the video, never twice (35) */
+  #ptitle{display:block;font-size:22px;font-weight:800;color:#EDF3F8;margin:0 0 8px;line-height:1.2}
+  /* phone: the timeline gets its own full-width row, never squeezed (35) */
+  #timeline{flex:1 1 100%;order:9}
+  /* phone: the intro starts below the HUD and scrolls, never cut (35) */
+  #intro{padding-top:52px;pointer-events:auto;overflow-y:auto}
+  /* phone: the verdict and reference cards go below the video,
+     not over it (35) */
+  #phoneSlot{display:block}
+  #verdict.below{position:relative;left:auto;right:auto;top:auto;bottom:auto;margin:8px 0 0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+  /* (39) nothing sticks out on a phone: the slot and the side column
+     clip inside the viewport instead of widening the document */
+  #side{min-width:0;max-width:100%}
+  #sideInner{overflow-x:hidden}
+  .rbar .dom{overflow-wrap:anywhere}
+  #refcard.below{position:relative;width:auto;max-height:none;margin:8px 0 0;
+    top:auto;bottom:auto;right:auto;overflow:visible}
+  #hud{font-size:10px;max-width:64%;top:8px;left:8px}
+  #badge{font-size:9px;top:8px;right:8px}
+  #intro h2{font-size:30px}
+  #introCards{flex-direction:column}
+  #caption .t{font-size:18px}
+  .stepbtn{width:28px;height:28px}
+  #timeRead{font-size:11px}
+  .chk{font-size:10px}
+  /* phone: compact card, clipped with … by clampCardText, clear of
+     the caption below (35) */
+  #refcard{width:56%;max-height:42%;padding:10px;overflow:hidden}
+  #verdict{padding:14px}
+  #verdict .g{font-size:28px}
+}
+</style>
+</head>
+<body>
+<header><h1 id="ttl">Player</h1><nav class="tabs" id="tabs"></nav></header>
+<main>
+<div id="left">
+  <div id="ptitle"></div>
+  <div id="stage" data-testid="stage">
+    <div id="vbox">
+      <video id="vid" playsinline preload="auto" muted></video>
+      <img id="posterImg" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000">
+      <canvas id="freeze"></canvas>
+      <div id="vig"></div><div id="dim"></div>
+      <div id="stageOverlay" data-testid="stage-overlay"><svg id="ov" preserveAspectRatio="none"></svg></div>
+    </div>
+    <div id="hud"><span class="dot"></span><span id="hudTx"></span><span class="frz" id="hudFrz" style="display:none"></span></div>
+    <div id="badge"></div>
+    <div id="caption" style="display:none"><div class="t" id="capT"></div><div class="n" id="capN"></div></div>
+    <div id="refcard" style="display:none"></div>
+    <div id="verdict" style="display:none"></div>
+    <div id="holdbar"></div><div id="flash"></div>
+    <div id="intro"></div>
+  </div>
+  <div id="phoneSlot"></div>
+  <div id="controls">
+    <button id="playBtn" aria-label="play" title="space = play/pause · ←/→ = frame step · ↑/↓ = prev/next event">▶</button>
+    <button class="stepbtn" id="prevEv" aria-label="previous event">|◀</button>
+    <button class="stepbtn" id="nextEv" aria-label="next event">▶|</button>
+    <div id="timeline"><div id="tlSegs"></div><div id="tlTrack"></div><div id="tlPlay"></div><div id="tlTicks"></div></div>
+    <span id="timeRead">0.00 / 0.00 s</span>
+    <select id="speed"><option value="1">×1</option><option value="0.5">×0.5</option><option value="0.25">×0.25</option></select>
+    <label class="chk on" id="ckPause"><span class="box">✓</span>Pause on events</label>
+    <label class="chk" id="ckFull"><span class="box"></span>Full calculation</label>
+  </div>
+</div>
+<div id="side">
+  <div id="chartBlock"><div id="chartHead"><h3>Height vs time after takeoff</h3><span class="u">m / s</span></div><div id="legendRow"></div><svg id="chart" role="img"></svg><div id="chartEmpty" style="display:none">waiting for takeoff</div></div>
+  <div id="sideInner">
+  <div id="steps"></div>
+  <div id="howmade"></div>
+</div></div>
+</main>
+<script id="result-data" type="application/json">/*__PP_RESULT_JSON__*/null</script>
+<script id="summary-data" type="application/json">/*__PP_SUMMARY_JSON__*/null</script>
+<script id="page-flags" type="application/json">/*__PP_FLAGS_JSON__*/null</script>
+<script>
+"use strict";
+const R=JSON.parse(document.getElementById("result-data").textContent||"null");
+const SUM=JSON.parse(document.getElementById("summary-data").textContent||"null");
+const FLAGS=JSON.parse(document.getElementById("page-flags").textContent||"{}");
+const $=id=>document.getElementById(id);
+const VID=(R&&R.video)||{coded_width:352,coded_height:240,sample_aspect:{num:1,den:1},measured_fps:30,frame_count:1,duration_s:1};
+const FPS=VID.measured_fps||30, NF=VID.frame_count||1;
+const SAR=(VID.sample_aspect&&VID.sample_aspect.den?VID.sample_aspect.num/VID.sample_aspect.den:1);
+const DW=VID.coded_width*SAR, DH=VID.coded_height;
+const WORLD_C={Moon:"#FFB54D",Earth:"#8A8FFF",Mars:"#FF7A4D"};
+/* cut-out composites (20.1, 25.2): colour+alpha inlined as data URLs by
+   the build (file:// canvases stay origin-clean), composited once here */
+const CUTURL=new Map();let cutsReady=false;
+function ghostWorlds(){const s=new Set();for(const sg of (R.segments||[]))for(const g of (sg.ghosts||[]))s.add(g.world);return[...s];}
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("img"));i.src=src;});}
+function tintCanvas(base,world){const w=base.width,h=base.height;const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.filter="grayscale(1) brightness(1.15)";x.drawImage(base,0,0);x.filter="none";x.globalCompositeOperation="source-atop";x.globalAlpha=0.38;x.fillStyle=WORLD_C[world]||"#FFF";x.fillRect(0,0,w,h);x.globalAlpha=1;return c;}
+async function preloadCutouts(){
+  const jobs=[];
+  for(const sg of (R.segments||[])){
+    for(const c of ((FLAGS.cutouts||{})[sg.id]||[])){
+      if(!c.data||!c.adata)continue;
+      jobs.push((async()=>{try{
+        const[col,alp]=await Promise.all([loadImg(c.data),loadImg(c.adata)]);
+        const base=document.createElement("canvas");base.width=col.naturalWidth;base.height=col.naturalHeight;
+        const b=base.getContext("2d");b.drawImage(col,0,0);b.globalCompositeOperation="destination-in";b.drawImage(alp,0,0,base.width,base.height);b.globalCompositeOperation="source-over";
+        CUTURL.set(sg.id+":"+c.frame+":neutral",base.toDataURL("image/png"));
+        for(const w of ghostWorlds())CUTURL.set(sg.id+":"+c.frame+":"+w,tintCanvas(base,w).toDataURL("image/png"));
+      }catch(e){}})());
+    }
+  }
+  await Promise.all(jobs);cutsReady=true;S.cutsReady=true;
+}
+function cutFor(seg,fr){const cut=(FLAGS.cutouts||{})[seg.id]||[];if(!cut.length)return null;let best=cut[0];for(const c of cut)if(Math.abs(c.frame-fr)<Math.abs(best.frame-fr))best=c;return best;}
+/* ---------- the one rounding function (part 13 section 13) ---------- */
+function fmtVal(v,sig){if(v==null||!isFinite(v))return"–";if(sig==null||!isFinite(sig)||sig===0){return fmtSig(v,3);}const d=Math.max(0,-Math.floor(Math.log10(Math.abs(sig)))+1);if(!isFinite(d))return fmtSig(v,3);return Number(v).toFixed(Math.min(d,10));}
+function fmtSig(v,n){if(v==null||!isFinite(v))return"–";if(v===0)return"0";n=n||3;const e=Math.floor(Math.log10(Math.abs(v)));const f=n-1-e;if(f>=0)return Number(v).toFixed(Math.min(f,10));const p=Math.pow(10,-f);return String(Math.round(Number(v)/p)*p);}
+function fmtInt(v){return String(Math.round(v));}
+function fmtPct(v){return Number(v).toFixed(1)+"%";}
+function fmtS(v,sig){if(v==null)return"–";const d=sig!=null&&isFinite(sig)?Math.max(0,-Math.floor(Math.log10(Math.abs(sig)))+1):2;return Number(v).toFixed(Math.min(d,10))+" s";}
+function fmtM(v,sig){return fmtVal(v,sig)+" m";}
+function fmtG(v,sig){return fmtVal(v,sig)+" m/s²";}
+function fmtSigmaMult(d){return (Math.round(Number(d)*10)/10).toFixed(1)+"σ";}
+function fmtFactor(f){return "×"+(Math.round(Number(f)*100)/100);}
+/* pass over rendered text: latex->unicode, stray precision (17.7, 32).
+   Never touches data blocks: script/style skipped by the walker. */
+function roundVisible(root){
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  for(const n of nodes){
+    const el=n.parentElement;
+    if(!n.nodeValue||!n.nodeValue.trim())continue;
+    if(!el||el.closest("script,style"))continue;
+    if(el.closest(".katex-mathml"))continue;
+    let u=n.nodeValue;
+    const t0=u;
+    u=u.replace(/\^2/g,"²").replace(/(?<![A-Za-z])sigma(?![A-Za-z])/g,"σ");
+    u=u.replace(/(\d+\.\d+)σ/g,(m,g)=>fmtSigmaMult(parseFloat(g)));
+    u=u.replace(/(\d+\.\d{3,})(\s*s\b)/g,(m,g,s)=>parseFloat(g).toFixed(2)+s);
+    // visible text never carries 4+ decimals (17.7): three significant
+    // figures, capped at three decimal places for tiny values
+    u=u.replace(/(\d+\.\d{4,})/g,(m,g)=>{const s=fmtSig(parseFloat(g),3);const dec=(s.split(".")[1]||"").length;return dec>3?parseFloat(g).toFixed(3):s;});
+    if(u!==t0)n.nodeValue=u;
+  }
+}
+function roundAll(){
+  for(const id of ["stage","sideInner","timeline","timeRead","controls","ptitle","ttl"])
+    {const e=$(id);if(e)roundVisible(e);}
+  const ih=$("intro");if(ih&&ih.style.display!=="none")roundVisible(ih);
+}
+/* ---------- events ---------- */
+function segOf(id){return (R.segments||[]).find(s=>s.id===id);}
+function buildEvents(){
+  const ev=[];
+  if(R.scale&&R.scale.frame!=null)ev.push({id:"scale",kind:"scale",frame:R.scale.frame,t:"Scale",dur:3.8,zoom:1.30});
+  for(const rc of (R.range_checks||[]))ev.push({id:"range_"+rc.id,kind:"range",frame:rc.frame,t:rc.label||"Range",dur:2.0,zoom:1.30,rc});
+  const segs=R.segments||[];
+  for(const sg of segs){const F=sg.frames||{};
+    if(F.start!=null)ev.push({id:"takeoff_"+sg.id,kind:"takeoff",frame:F.start,t:"Takeoff",dur:1.5,zoom:1.20,seg:sg.id});
+    if(F.apex!=null)ev.push({id:"apex_"+sg.id,kind:"apex",frame:F.apex,t:"Apex",dur:2.8,zoom:1.20,seg:sg.id});
+    if(F.end!=null)ev.push({id:"landing_"+sg.id,kind:"landing",frame:F.end,t:"Landing",dur:5.6,zoom:1.03,seg:sg.id});
+  }
+  /* (42.3) the verdict hold starts only when the video reaches its
+     last frame, never earlier; the ride only moves forward. */
+  ev.push({id:"verdict",kind:"verdict",frame:NF-1,t:"Verdict",dur:0,zoom:1.03,sticky:true});
+  ev.sort((a,b)=>a.frame-b.frame);
+  return ev;
+}
+const EVENTS=buildEvents();
+const GROUP={mask_check:"scale",scale:"takeoff",segment:"takeoff",fit:"apex",time_from_frames:"landing",measured_g:"verdict",clock:"verdict",uncertainty:"verdict",verdict:"verdict"};
+function stepEvent(st){
+  if(st._um)return"unmeas";
+  if(st._rc||st.id.startsWith("range_"))return"range";
+  if(GROUP[st.id])return GROUP[st.id];
+  if(st.frame==null)return"verdict";
+  let best="scale",bd=1e12;for(const e of EVENTS){const d=Math.abs(e.frame-st.frame);if(d<bd){bd=d;best=e.kind;}}
+  if(best.startsWith("takeoff"))return"takeoff";
+  if(best.startsWith("apex"))return"apex";
+  if(best.startsWith("landing"))return"landing";
+  if(["scale","verdict","range"].includes(best))return best;
+  return"verdict";
+}
+function verdictFrame(){const e=EVENTS[EVENTS.length-1];return e?e.frame:1e12;}
+function stepSortKey(st){
+  const ev=stepEvent(st);
+  if(ev==="verdict")return verdictFrame()+1;
+  if(ev==="range"||ev==="unmeas")return st.frame==null?1e12:st.frame;
+  let best=null,bd=1e18;
+  for(const e of EVENTS){if(e.kind!==ev)continue;const d=Math.abs((st.frame==null?e.frame:st.frame)-e.frame);if(d<bd){bd=d;best=e;}}
+  return best?best.frame:1e12;
+}
+/* ---------- state ---------- */
+const S={frame:0,playing:false,hold:null,holdQueue:[],holdT:0,cam:{x:DW/2,y:DH/2,z:1.03},camT:{x:DW/2,y:DH/2,z:1.03},camFit:1.03,started:false,scaleDone:false,prevFrame:0,full:false,ended:false,seen:[],fired:[],clock:0,cutsReady:false,renderKey:""};
+window.__pp={frame:()=>S.frame,hold:()=>S.hold?{kind:S.hold.kind,t:S.holdT,dur:S.hold.dur}:null,camera:()=>({...S.cam}),events:()=>EVENTS.map(e=>e.id),cutsReady:()=>!!S.cutsReady,seen:()=>S.seen.slice(),fired:()=>S.fired.slice(),videoReady:()=>!!S.videoReady,pendingStart:()=>!!S.pendingStart};
+/* ---------- video + virtual camera (18.2, 22.1, 29, 30) ---------- */
+const vid=$("vid"),stage=$("stage"),vbox=$("vbox"),ov=$("ov"),freeze=$("freeze"),fctx=freeze.getContext("2d");
+function fitStage(){
+  /* (42.4) the stage keeps the video's display aspect (coded size ×
+     SAR); its height is min(free height, free width / aspect), so a
+     portrait clip gives a tall, narrow, centred stage with the side
+     column beside it. vbox fills the stage exactly: one video box for
+     every stage layer (29). */
+  const left=$("left"),controls=$("controls"),mainEl=document.querySelector("main");
+  const availW=Math.max(50,left.clientWidth);
+  const pt=$("ptitle");
+  const ptH=(pt&&getComputedStyle(pt).display!=="none")?pt.offsetHeight+8:0;
+  const ctrlH=controls?controls.offsetHeight:52;
+  let availH=Math.max(50,mainEl.clientHeight-ctrlH-ptH-14);
+  if(window.matchMedia&&window.matchMedia("(max-width: 700px)").matches)
+    availH=Math.max(50,availH-120);
+  const ar=DW/Math.max(1,DH);
+  let w=availW,h=w/ar;
+  if(h>availH){h=availH;w=h*ar;}
+  stage.style.width=Math.max(2,Math.floor(w))+"px";
+  stage.style.height=Math.max(2,Math.floor(h))+"px";
+  sizeFreeze();
+}
+function sizeFreeze(){
+  const w=Math.max(2,Math.round(vbox.clientWidth||vbox.getBoundingClientRect().width));
+  const h=Math.max(2,Math.round(vbox.clientHeight||vbox.getBoundingClientRect().height));
+  if(freeze.width!==w||freeze.height!==h){freeze.width=w;freeze.height=h;}
+}
+let rszT=null;
+window.addEventListener("resize",()=>{fitStage();placeVerdict();clearTimeout(rszT);rszT=setTimeout(layoutTimelineLabels,120);});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>layoutTimelineLabels());
+/* one draw per freeze (30): clear, draw the whole video frame once into
+   the whole canvas; zoom comes only from the box transform (29) */
+function drawFreeze(){
+  sizeFreeze();
+  if(vid.videoWidth){fctx.clearRect(0,0,freeze.width,freeze.height);
+    try{fctx.drawImage(vid,0,0,freeze.width,freeze.height);}catch(e){}}
+  else{fctx.clearRect(0,0,freeze.width,freeze.height);fctx.fillStyle="#0a0f16";fctx.fillRect(0,0,freeze.width,freeze.height);}
+  freeze.dataset.drawn=S.frame;
+  syncFreezeVis();
+}
+/* (46.1) the freeze canvas shows only while the video is paused: while
+   the video plays it is hidden and the viewer sees the live video. */
+function syncFreezeVis(){
+  freeze.style.visibility=(S.playing&&!S.hold)?"hidden":"visible";
+}
+function srcToDisp(x,y){return [(x/DW)*vbox.clientWidth,(y/DH)*vbox.clientHeight];}
+function tOf(f){return f/FPS;}
+/* layout px per source px (untransformed: transforms never enter geometry) */
+function K(){return (vbox.clientWidth||1)/DW||1;}
+function FS(px){return px/K();}
+function SW(px){return px/K();}
+function DS(a,b){return SW(a)+","+SW(b);}
+/* camera: transform-origin is 0 0, so screen = L + z*p + t with p in
+   vbox-local px. The target maps to the stage centre; t is clamped so
+   the zoomed picture rect always contains the stage rect (22.1). */
+function camBox(){
+  const L=parseFloat(vbox.style.left||"0")||0,T=parseFloat(vbox.style.top||"0")||0;
+  const W=vbox.clientWidth||1,H=vbox.clientHeight||1;
+  const sr=stage.getBoundingClientRect();
+  return{L:L,T:T,W:W,H:H,SW:sr.width,SH:sr.height};
+}
+function applyCam(){
+  const{x,y,z}=S.cam;const b=camBox();
+  const pcx=x/DW*b.W, pcy=y/DH*b.H;
+  let tx=b.SW/2-b.L-z*pcx, ty=b.SH/2-b.T-z*pcy;
+  const loX=b.SW-b.L-z*b.W, hiX=-b.L, loY=b.SH-b.T-z*b.H, hiY=-b.T;
+  // 1 px safety inset so sub-pixel rounding never exposes an edge (22.1)
+  tx=z*b.W>=b.SW+2?Math.max(loX+1,Math.min(hiX-1,tx)):(b.SW-z*b.W)/2-b.L;
+  ty=z*b.H>=b.SH+2?Math.max(loY+1,Math.min(hiY-1,ty)):(b.SH-z*b.H)/2-b.T;
+  vbox.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${z})`;
+  S.camTX=tx;S.camTY=ty;
+}
+function moveCam(dt,k){
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    {S.cam={x:DW/2,y:DH/2,z:1.03};return;}
+  const c=S.cam,t=S.camT,a=1-Math.exp(-dt*k);
+  c.x+=(t.x-c.x)*a;c.y+=(t.y-c.y)*a;c.z+=(t.z-c.z)*a;
+}
+function clampTarget(x,y,z){
+  // clamp the target the same way applyCam clamps t, in target space
+  const b=camBox();
+  const pcx=x/DW*b.W, pcy=y/DH*b.H;
+  let tx=b.SW/2-b.L-z*pcx, ty=b.SH/2-b.T-z*pcy;
+  const loX=b.SW-b.L-z*b.W, hiX=-b.L, loY=b.SH-b.T-z*b.H, hiY=-b.T;
+  if(z*b.W>=b.SW)tx=Math.max(loX,Math.min(hiX,tx));
+  if(z*b.H>=b.SH)ty=Math.max(loY,Math.min(hiY,ty));
+  return{x:((b.SW/2-b.L-tx)/z)/b.W*DW,y:((b.SH/2-b.T-ty)/z)/b.H*DH,z:z};
+}
+/* (42.7) the hold camera frames the union of the figure's bbox
+   and the ghosts' bboxes at the hold frame; at Scale the union is
+   the figure's bbox and the reference's bbox. The zoom is the table
+   zoom capped by the fit, never below 1.03. */
+function holdUnion(ev){
+  const sg=(R.segments||[]).find(s=>s.id===ev.seg)||(R.segments||[])[0];
+  if(!sg&&ev.kind!=="range")return null;
+  if(ev.kind==="range"&&ev.rc){
+    const e=(ev.rc.extents||[])[0]||{};
+    const x1=e.x1==null?0:e.x1,x2=e.x2==null?DW:e.x2;
+    const y1=e.y1==null?0:e.y1,y2=e.y2==null?DH:e.y2;
+    return{x0:Math.min(x1,x2),y0:Math.min(y1,y2),
+           x1:Math.max(x1,x2),y1:Math.max(y1,y2),seg:null};
+  }
+  const bb=segBBox(sg,ev.frame);
+  let x0=bb[0],y0=bb[1],x1=bb[0]+bb[2],y1=bb[1]+bb[3];
+  if(ev.kind==="scale"){
+    const rl=refLoop(R.scale?R.scale.reference_index||0:0);
+    if(rl&&rl.length){
+      for(const p of rl){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);}
+    }else{
+      const ep=((R.scale||{}).extent_px||{});
+      if(ep.x1!=null){x0=Math.min(x0,ep.x1,ep.x2);x1=Math.max(x1,ep.x1,ep.x2);}
+      if(ep.y1!=null){y0=Math.min(y0,ep.y1,ep.y2);y1=Math.max(y1,ep.y1,ep.y2);}
+    }
+  }else{
+    const F=sg.frames||{};
+    const frc=Math.min(ev.frame,F.end==null?ev.frame:F.end);
+    const tp=trackAt(sg,ev.frame)||trackAt(sg,frc);
+    const b2=segBBox(sg,frc);
+    for(const g of (sg.ghosts||[])){
+      const gp=ghostPointAtOrBefore(g,frc);
+      if(!tp||!gp)continue;
+      const gm=ghostGeom(sg,frc,tp,b2,gp,g);
+      x0=Math.min(x0,gm.fx);y0=Math.min(y0,gm.fy);
+      x1=Math.max(x1,gm.fx+gm.w);y1=Math.max(y1,gm.fy+gm.h);
+    }
+  }
+  return{x0:x0,y0:y0,x1:x1,y1:y1,seg:sg};
+}
+/* (43.3) no zoom past the source's resolution: one source pixel
+   is never larger than 2.5 screen pixels. */
+function resCap(){const w=stage.clientWidth||1;return Math.max(1.03,2.5*DW/Math.max(1,w));}
+function camTargetFor(ev){
+  let x=DW/2,y=DH/2;let z=ev?(ev.zoom||1.03):1.03;
+  if(ev){
+    const u=holdUnion(ev);
+    if(u){
+      x=(u.x0+u.x1)/2;y=(u.y0+u.y1)/2;
+      const sr=stage.getBoundingClientRect();
+      const k0=((vbox.clientWidth||1)/DW)||1;
+      const uw=Math.max(1,(u.x1-u.x0)*k0),uh=Math.max(1,(u.y1-u.y0)*k0);
+      if(sr.width>1&&sr.height>1)
+        z=Math.min(z,0.85*Math.min(sr.width/uw,sr.height/uh));
+      z=Math.max(1.03,z);
+    }
+    z=Math.min(z,resCap());
+    const c=clampTarget(x,y,z);x=c.x;y=c.y;
+  }
+  return{x:x,y:y,z:z};
+}
+/* ---------- overlays ---------- */
+const NS="http://www.w3.org/2000/svg";
+function el(n,at,parent){const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);(parent||ov).appendChild(e);return e;}
+function txt(parent,x,y,s,cls,anchor){const t=el("text",{x:x,y:y,class:"ov "+(cls||""),"text-anchor":anchor||"start",fill:"#C7D2DE","font-size":11},parent);t.textContent=s;return t;}
+function clearOv(){while(ov.firstChild)ov.removeChild(ov.firstChild);}
+/* (45) loops are stored before smoothing: the build writes each
+   marching-squares loop as integers in half-pixel units (first point
+   absolute, then deltas, one compact string per loop). The player
+   decodes the string and runs the two Chaikin passes itself, with
+   the same result as the build-side smoothing (within 0.05 px). */
+const _LOOPCACHE=new Map();
+function _decodeLoop(s){if(!s)return null;const toks=s.split(";");const pts=[];let x=0,y=0;for(let i=0;i<toks.length;i++){const c=toks[i].split(",");if(c.length!==2)return null;const dx=parseInt(c[0],10),dy=parseInt(c[1],10);if(!isFinite(dx)||!isFinite(dy))return null;if(i===0){x=dx;y=dy;}else{x+=dx;y+=dy;}pts.push([x/2,y/2]);}return pts;}
+function _chaikinLoop(loop){if(!loop||loop.length<3)return loop;const out=[];for(let i=0;i<loop.length;i++){const a=loop[i],b=loop[(i+1)%loop.length];out.push([a[0]+0.25*(b[0]-a[0]),a[1]+0.25*(b[1]-a[1])]);out.push([a[0]+0.75*(b[0]-a[0]),a[1]+0.75*(b[1]-a[1])]);}return out;}
+function _dropRightAngles(loop){for(let k=0;k<20;k++){const n=loop.length;if(n<=10)break;const kill=new Set();for(let i=0;i<n;i++){const a=loop[i],b=loop[(i+1)%n],c=loop[(i+2)%n];const v1x=b[0]-a[0],v1y=b[1]-a[1],v2x=c[0]-b[0],v2y=c[1]-b[1];const l1=Math.hypot(v1x,v1y),l2=Math.hypot(v2x,v2y);if(l1>0.5&&l2>0.5){if(Math.abs((v1x*v2x+v1y*v2y)/(l1*l2))<Math.cos(85*Math.PI/180))kill.add((i+1)%n);}}if(!kill.size)break;loop=loop.filter((_,i)=>!kill.has(i));}return loop;}
+function _smoothRaw(raw){let loop=raw.map(p=>[+p[0],+p[1]]);for(let k=0;k<2;k++)loop=_chaikinLoop(loop);if(loop.length>400){const st=Math.ceil(loop.length/400);loop=loop.filter((_,i)=>i%st===0);}loop=_dropRightAngles(loop);return loop;}
+function decodeSmoothLoop(s){if(!s)return null;if(_LOOPCACHE.has(s))return _LOOPCACHE.get(s);const raw=_decodeLoop(s);if(!raw)return null;const sm=_smoothRaw(raw);_LOOPCACHE.set(s,sm);return sm;}
+function smoothLoop(segId,fr){const m=(FLAGS.smooth_loops||{})[segId||""];const s=m&&m[String(fr)];if(s==null)return undefined;if(typeof s==="string")return decodeSmoothLoop(s);return s;}
+function refLoop(i){const s=(FLAGS.ref_loops||{})[String(i)];if(s==null)return undefined;if(typeof s==="string")return decodeSmoothLoop(s);return s;}
+/* (43.4) outlines are thin: the core is 1.5 CSS px and the single
+   glow is 3.2x the core at 28% opacity (the prototype's rim()). Widths
+   are CSS px at any zoom: the svg scales by the screen scale, so the
+   attribute divides it out. */
+function screenScale(){try{const m=ov.getScreenCTM();if(m&&m.a)return m.a;}catch(e){}return (K()||1)*(S.cam&&S.cam.z||1);}
+function pathOf(parent,loop,stroke,w,op,glow,tid){if(!loop||!loop.length)return null;const d="M"+loop.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join("L")+"Z";const o=op==null?1:op;const k=screenScale()||1;const core=(w||1.5)/k;if(glow){const g=el("path",{d,fill:"none",stroke:stroke||"#4FE3F0","stroke-width":(3.2*(w||1.5))/k,opacity:o*0.28,"stroke-linejoin":"round"},parent);if(tid)g.dataset.testid=tid;}const p=el("path",{d,fill:"none",stroke:stroke||"#4FE3F0","stroke-width":core,opacity:o,"stroke-linejoin":"round"},parent);if(tid)p.dataset.testid=tid;return p;}
+/* ---------- chart ---------- */
+const chart=$("chart");
+function drawChart(upto){
+  while(chart.firstChild)chart.removeChild(chart.firstChild);
+  const W=chart.clientWidth||600,H=chart.clientHeight||150,P={l:44,r:14,t:8,b:52};
+  const segs=R.segments||[];
+  const emp=$("chartEmpty");
+  if(!segs.length||upto==null){emp.style.display="block";chart.style.display="none";return;}
+  emp.style.display="none";chart.style.display="block";
+  chart.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const t0=0;let t1=1.2;for(const sg of segs){const ts=sg.times_s||{};t1=Math.max(t1,((ts.end==null?1.2:ts.end)-(ts.start==null?0:ts.start))-t0);}
+  let ys=segs.flatMap(sg=>(sg.track||[]).map(p=>p.y_m));
+  let lo=Math.min(0,...ys),hi=Math.max(0.2,...ys);if(hi-lo<0.2)hi=lo+0.2;
+  /* world curves, full length first (37, 38): the white fit is
+     fit_curve_px converted with the scale; the world curves are the
+     ghost tracks. No curve is ever recomputed from a takeoff speed. */
+  const sg=segs[0],ts=sg.times_s||{};
+  const mpp=(R.scale&&R.scale.m_per_px)||0;
+  const lvlOf=g=>(g.takeoff_level_y_px!=null)?g.takeoff_level_y_px:(((g.track||[])[0]||{}).y_px);
+  const lvl=lvlOf(sg);
+  const yOfPx=y=>(lvl-y)*mpp;
+  const yOfPxFor=g=>{const l=lvlOf(g);return y=>(l-y)*mpp;};
+  const tByF={};for(const p of (sg.track||[]))tByF[p.frame]=p;
+  const wcol={Moon:"#FFB54D",Earth:"#8A8FFF",Mars:"#FF7A4D"};
+  const worldFull={};const seenW=[];
+  for(const g of (sg.ghosts||[])){
+    const full=[];
+    for(const p of (g.points||[])){
+      const t=(p.t_s??0)-(ts.start||0);
+      const tp=tByF[p.frame];
+      const ym=tp?tp.y_m+((tp.y_px-p.y_px)||0)*mpp:0;
+      full.push({t:t,y:ym});
+    }
+    if(!seenW.includes(g.world)){seenW.push(g.world);worldFull[g.world]=full;}
+  }
+  /* (38) the height range covers every drawn point: dots, fit and
+     every world curve down to its landing */
+  for(const w of seenW)for(const q of (worldFull[w]||[]))ys.push(q.y);
+  if(sg.fit_curve_px&&sg.fit_curve_px.length&&(mpp>0&&lvl!=null))
+    for(const p of sg.fit_curve_px)ys.push(yOfPx(p.y_px));
+  /* (48.2) every jump shares one time-since-takeoff axis: the range
+     covers each confirmation jump's points and fit too. */
+  for(let si=1;si<segs.length;si++){
+    const go=segs[si],conv=yOfPxFor(go);
+    for(const p of (go.track||[]))ys.push(p.y_m);
+    if(go.fit_curve_px&&go.fit_curve_px.length&&(mpp>0&&lvlOf(go)!=null))
+      for(const p of go.fit_curve_px)ys.push(conv(p.y_px));
+  }
+  lo=Math.min(lo,...ys);hi=Math.max(hi,...ys);if(hi-lo<0.2)hi=lo+0.2;
+  const X=t=>P.l+(t-t0)/(t1-t0)*(W-P.l-P.r),Y=v=>P.t+(1-(v-lo)/(hi-lo))*(H-P.t-P.b);
+  const grid=el("g",{},chart);
+  /* footer rows (37): axis, x-tick labels, then end-label rows below them,
+     so end labels never share a row with the ticks they would overlap */
+  const tstep=0.5;for(let t=0;t<=t1+1e-9;t+=tstep){el("line",{x1:X(t),y1:P.t,x2:X(t),y2:H-P.b,stroke:"#141E2C","stroke-width":1},grid);const tx=el("text",{x:X(t),y:H-40,"text-anchor":"middle",fill:"#66788C","font-size":9,"font-family":"monospace"},grid);tx.textContent=t.toFixed(1);}
+  /* zero is written "0", never "-0.0" (35) */
+  const ystep=(hi-lo)/4;for(let i=0;i<=4;i++){const v=lo+i*ystep;el("line",{x1:P.l,y1:Y(v),x2:W-P.r,y2:Y(v),stroke:"#141E2C","stroke-width":1},grid);if((H-40)-(Y(v)+3)<14)continue;const tx=el("text",{x:P.l-5,y:Y(v)+3,"text-anchor":"end",fill:"#66788C","font-size":9,"font-family":"monospace"},grid);const lab=Math.abs(Number(v.toFixed(1)))===0?0:v;tx.textContent=lab===0?"0":lab.toFixed(1);}
+  el("line",{x1:P.l,y1:H-P.b,x2:W-P.r,y2:H-P.b,stroke:"#22344A","stroke-width":1},chart);
+  el("line",{x1:P.l,y1:H-P.b,x2:W-P.r,y2:H-P.b,stroke:"#22344A","stroke-width":1},chart);
+  const lg=$("legendRow");lg.innerHTML="";
+  const items=[["measured","#4FE3F0","2,0"],["fit","#FFFFFF","0"],["Moon","#FFB54D","7,4"],["Earth","#8A8FFF","0"]];
+  for(const[nm,c,dash]of items){const s=document.createElement("span");s.innerHTML=`<i style="border-color:${c};border-top-style:${dash==="2,0"?"dotted":dash==="0"?"solid":"dashed"}"></i>${nm}`;lg.appendChild(s);}
+  for(const p of (sg.track||[])){const t=(p.t_s??0)-(ts.start||0);if(t<0)continue;if(upto!=null&&t>upto)continue;const c=el("circle",{cx:X(t),cy:Y(p.y_m),r:2.4,fill:"#4FE3F0"},chart);c.style.filter="drop-shadow(0 0 4px #4FE3F0)";}
+  if(sg.fit_curve_px&&sg.fit_curve_px.length){
+    let pts=[];
+    if(mpp>0&&lvl!=null){
+      for(const p of (sg.fit_curve_px||[])){const t=(p.t_s??0)-(ts.start||0);if(upto!=null&&t>upto)continue;pts.push(X(t)+","+Y(yOfPx(p.y_px)));}
+    }else{
+      for(const p of (sg.track||[])){const t=(p.t_s??0)-(ts.start||0);if(t<0)continue;if(upto!=null&&t>upto)continue;pts.push(X(t)+","+Y(p.y_m));}
+    }
+    if(pts.length>1)el("polyline",{points:pts.join(" "),fill:"none",stroke:"#FFFFFF","stroke-width":1.5,"stroke-dasharray":"0","opacity":0.7,id:"arcFit"},chart);
+  }
+  // world curves (the ghost set), truncated at the playhead like measured
+  for(const w of seenW){
+    const full=worldFull[w]||[];
+    let pts=[];
+    for(const q of full){if(upto!=null&&q.t>upto)continue;pts.push(X(q.t)+","+Y(q.y));}
+    if(pts.length>1)el("polyline",{points:pts.join(" "),fill:"none",stroke:wcol[w]||"#FFF","stroke-width":2,"stroke-dasharray":w==="Moon"?"7,4":"0",id:"arc-"+w},chart);
+  }
+  /* (48.2) each confirmation jump's measured points and fit share the
+     first-check jump's colours at 60 % opacity, on the same
+     time-since-takeoff axis, labelled at its last point. The world
+     curves above are drawn once, from the first-check jump. Nothing
+     from the future is ever drawn: a jump starts at its own takeoff. */
+  for(let si=1;si<segs.length;si++){
+    const go=segs[si],gts=go.times_s||{},gF=go.frames||{};
+    if(S.frame<(gF.start==null?0:gF.start))continue;
+    const conv=yOfPxFor(go);
+    const tCut=Math.min(tOf(S.frame)-(gts.start||0),((gts.end==null?0:gts.end)-(gts.start||0)));
+    let last=null;
+    for(const p of (go.track||[])){const t=(p.t_s??0)-(gts.start||0);if(t<0||t>tCut+1e-9)continue;last={t:t,y:p.y_m};el("circle",{cx:X(t),cy:Y(p.y_m),r:2.4,fill:"#4FE3F0",opacity:0.6,"data-jump":si+1},chart);}
+    if(go.fit_curve_px&&go.fit_curve_px.length&&mpp>0&&lvlOf(go)!=null){
+      const pts2=[];
+      for(const p of (go.fit_curve_px||[])){const t=(p.t_s??0)-(gts.start||0);if(t<0||t>tCut+1e-9)continue;pts2.push(X(t)+","+Y(conv(p.y_px)));}
+      if(pts2.length>1)el("polyline",{points:pts2.join(" "),fill:"none",stroke:"#FFFFFF","stroke-width":1.5,"stroke-dasharray":"0",opacity:0.6,"data-jump":si+1},chart);
+    }
+    if(last){
+      /* the label never leaves the chart: near the right edge it sits
+         left of the point, end-anchored, instead of running past it */
+      const nm="Jump "+(si+1);
+      const over=X(last.t)+6+nm.length*6.5>W-P.r-2;
+      const jt=el("text",{x:over?X(last.t)-6:Math.max(P.l+2,X(last.t)+6),y:Math.max(P.t+10,Y(last.y)-10),fill:"#FFF","font-size":10,"font-family":"sans-serif","font-weight":600,"text-anchor":over?"end":"start","data-jump":si+1},chart);
+      jt.textContent=nm;
+    }
+  }
+  /* end labels (38, replaces 37's zero-crossing): each world label reads
+     the time of its drawn curve's last point (its landing), measured
+     from the takeoff time; "in the clip" reads the measured airtime.
+     world_outcomes' landing_time_s convention is never used here. */
+  const air=tOf(((sg.frames||{}).end??NF))-((ts.start)||0);
+  const cmap={Moon:"#FFB54D",Earth:"#8A8FFF",Mars:"#FF7A4D"};
+  const clabs=[];
+  for(const w of seenW){
+    const full=worldFull[w]||[];
+    if(!full.length)continue;
+    const tShow=full[full.length-1].t;
+    if(upto!=null&&tShow>upto+1e-9)continue;
+    const off=tShow>t1+1e-9;
+    const cx0=X(Math.min(tShow,t1));
+    el("line",{x1:cx0,y1:H-P.b,x2:cx0,y2:H-P.b+4,stroke:cmap[w]||"#FFF","stroke-width":2},chart);
+    const edge=tShow>=t1-1e-9;
+    clabs.push({x:edge?W-2:cx0,anchor:edge?"end":"middle",text:`${w} ${tShow.toFixed(2)} s`+(off?" →":"")});
+  }
+  /* (40) the measured airtime is always shown next to the world labels;
+     a label is never dropped, however close the times are (rows split). */
+  clabs.push({x:W-2,anchor:"end",text:"in the clip "+air.toFixed(2)+" s"});
+  // end labels sit on their own rows below the x ticks, staggered on collision
+  const cplaced=[];
+  for(const lb of clabs){
+    const w=lb.text.length*5.6+6;let cx=lb.anchor==="end"?lb.x-w/2:lb.x;cx=Math.max(w/2,Math.min(W-w/2,cx));let yy=H-12;
+    for(const q of cplaced){if(Math.abs(q.x-cx)<(q.w+w)/2+3&&Math.abs(q.y-yy)<12){yy=q.y-14;}}
+    const tx=el("text",{x:lb.anchor==="end"?Math.min(W-2,lb.x):cx,y:yy,"text-anchor":lb.anchor,fill:"#FFF","font-size":10,"font-family":"sans-serif","font-weight":600},chart);tx.textContent=lb.text;
+    cplaced.push({x:cx,y:yy,w:w});
+  }
+}
+/* ---------- steps rail (built once; 28) ---------- */
+/* (42.5) a chip is one line with the value: longer prose is cut at
+   a word boundary with … (full text in the title), as the mask chip. */
+/* (47.2) a chip carries a number: a chip without a digit
+   ("measured gravity", "error budget") is not shown, except the verdict
+   step's world. Agent prose chips stay hidden until Full is on. */
+function valueChip(t,allowWordy){if(!t||!t.trim())return false;if(/\d/.test(t))return true;return !!allowWordy;}
+function chipHtml(ch,allowWordy){if(!ch||!ch.text)return"";if(!S.full&&!valueChip(ch.text,allowWordy))return"";let t=ch.text;if(t.length>72)t=t.slice(0,72).split(/\s+/).slice(0,-1).join(" ")+" …";return `<span class="chip ${ch.tone||"inter"}" title="${escapeHtml(ch.text)}">${escapeHtml(t)}</span>`;}
+function escapeHtml(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;",">":"&gt;","<":"&lt;",'"':"&quot;"}[c]));}
+function buildRail(){
+  const host=$("steps");host.innerHTML="";
+  const steps=(R.calculation_steps||[]).slice();
+  const rcs=R.range_checks||[];
+  const haveIds=new Set(steps.map(s=>s.id));
+  for(const rc of rcs){if(!haveIds.has("range_"+rc.id)){const q0=(rc.range&&rc.range.sources&&rc.range.sources[0])||{};steps.push({id:"range_"+rc.id,title:rc.label||"Range check",frame:rc.frame,short:[{type:"formula",latex:rc.formula||"",fallback:rc.formula||"",chip:{text:fmtVal(rc.value,rc.sigma)+(rc.unit==="ratio"?"":" "+rc.unit),tone:"final"}}],full:[{type:"text",text:`"${q0.quote||""}" — ${q0.domain||""}`}],caveats:[],_rc:rc});}}
+  /* (47.2) motions that were not measured are not steps in the
+     column; they show only with Full calculation on. */
+  const umLines=[];
+  if(S.full)for(const m of ((R.first_look||{}).motions||[])){if(!m.segment_id)umLines.push({id:"unmeas_"+m.frame_start,title:m.description||"not measured",frame:m.frame_start,_um:m});}
+  /* (48.2) several jumps: the column shows the "Jumps agree" step after
+     the jumps' fit steps (synthesised here when the result has none). */
+  if((R.segments||[]).length>1&&!steps.some(s=>/jumps[_-]?agree/i.test(s.id||"")||/jumps agree/i.test(s.title||""))){
+    const gs=(R.segments||[]).map((sgx,ix)=>({i:ix,g:(sgx.fit||{}).g_app,s:(sgx.fit||{}).sigma_g})).filter(o=>o.g!=null&&o.s!=null);
+    if(gs.length>1){
+      const line=gs.map(o=>`Jump ${o.i+1}: ${fmtVal(o.g,o.s)} ± ${fmtVal(o.s,o.s)} m/s²`).join(" · ");
+      let agree="";
+      if(gs.length===2){const dd=Math.abs(gs[0].g-gs[1].g),ss=Math.sqrt(gs[0].s*gs[0].s+gs[1].s*gs[1].s);const k=ss>0?dd/ss:0;agree=k<=2?` — agree within ${k.toFixed(1)}σ`:` — differ by ${k.toFixed(1)}σ`;}
+      const lastEnd=Math.max(...(R.segments||[]).map(sgx=>((sgx.frames||{}).end==null?-1:sgx.frames.end)));
+      steps.push({id:"jumps_agree",title:"Jumps agree",frame:lastEnd,short:[{type:"text",text:line+agree}],full:[],caveats:[]});
+    }
+  }
+  const items=steps.concat(umLines).sort((a,b)=>stepSortKey(a)-stepSortKey(b));
+  /* (47.2) a reference step is titled by its reference
+     ("Reference: <name>"): mask-check steps map to references in order,
+     so two references never give two steps with the same heading. */
+  let maskSeen=0;const refs=R.references||[];
+  for(const st of items){
+    const d=document.createElement("div");d.className="step";d.id="step-"+st.id;
+    // the rail's verdict frame is the stage's verdict frame (35)
+    const sfr=(st.id==="verdict")?verdictFrame():st.frame;
+    d.dataset.frame=sfr==null?"":sfr;
+    const ev=stepEvent(st);
+    d.dataset.event=ev;
+    const wordy=st.id==="verdict";
+    let title=st.title;
+    let refLine="";
+    if(st.id==="mask_check"&&refs[maskSeen]){
+      const rf=refs[maskSeen];
+      title="Reference: "+rf.name;
+      if(rf.size_m!=null&&(rf.extent_px||{}).length_px!=null)
+        refLine=`<div class="ln"><span>${escapeHtml(fmtVal(rf.size_m)+" m over "+fmtSig(rf.extent_px.length_px,3)+" px")}</span></div>`;
+    }
+    if(st.id==="mask_check")maskSeen++;
+    let body="";
+    if(st._um){body=`<div class="ln"><span>${escapeHtml(st._um.description)}: not measured — ${escapeHtml(st._um.skip_reason||"")}</span></div>`;}
+    else{
+      /* (47.2) each step shows its one-sentence explanation (the first
+         text block of short), its formula and its value chip. The rest
+         of short and full and the caveats show only with Full (42.5). */
+      const showProse=S.full;
+      let firstTextDone=false;
+      const blocks=(st.short||[]).concat(S.full?(st.full||[]):[]);
+      body=refLine+blocks.map((b,i)=>{
+        if(b.type==="text"&&!showProse){if(firstTextDone)return"";firstTextDone=true;}
+        /* (39) prose is not math: a formula with a run of three or more
+           letters outside a backslash command (length_px × m_per_px)
+           is shown as plain monospace text exactly as written. */
+        if(b.type==="formula"&&plainTex(b.latex||b.fallback)){return `<div class="ln" data-ln="${st.id}:${i}"><div class="fx plain"><span class="fb">${escapeHtml(b.latex||b.fallback||"")}</span></div>${chipHtml(b.chip,wordy)}</div>`;}
+        if(b.type==="formula"){return `<div class="ln" data-ln="${st.id}:${i}"><div class="fx" data-tex="${escapeHtml(b.latex||"")}" data-fb="${escapeHtml(b.fallback||"")}"><span class="fb">${escapeHtml(b.fallback||"")}</span></div>${chipHtml(b.chip,wordy)}</div>`;}
+        if(b.type==="bars"){return `<div class="ln" data-ln="${st.id}:${i}">${barsHtml()}</div>`;}
+        return `<div class="ln" data-ln="${st.id}:${i}"><span>${escapeHtml(b.text||"")}</span></div>`;}).join("");
+      if(st._rc){const rc=st._rc;body+=`<div class="ln"><span>Range ${fmtVal(rc.range.min)} … ${fmtVal(rc.range.max)} (${escapeHtml(rc.range.what||"")})</span><div class="fx"><span class="fb">${escapeHtml(rc.formula||"")}</span></div>${rangeBarHtml(rc,"rail-rangebar")}</div>`;}
+      if(st.id==="mask_check"){const mc=maskCheckInfo();if(mc.img){const cov=mc.covers||"";const cut=cov.length>70?cov.slice(0,70).split(/\s+/).slice(0,-1).join(" ")+" …":cov;const mchip=(S.full||valueChip("mask = "+cov,wordy))?`<span class="chip inter" id="mchkChip" title="${escapeHtml("mask = "+cov)}">${escapeHtml("mask = "+cut)}</span>`:"";body+=`<div class="ln"><img class="mchkimg" id="mchkImg" src="${mc.img}" alt="mask check"><div class="mchkcap">${escapeHtml(mc.cap||"")}</div>${mchip}${showProse?`<div><i>${escapeHtml(mc.reason||"")}</i></div>`:""}</div>`;}}
+      if(showProse)for(const c of (st.caveats||[]))body+=`<div class="ln warn"><span>${escapeHtml(c.text||"")}</span></div>`;
+    }
+    /* (47.2) no empty step: a step with no line to show is not listed. */
+    if(!body.replace(/<[^>]+>/g,"").trim()&&!body.includes("<img"))continue;
+    /* (43.5) no frame numbers beside the steps. */
+    d.dataset.ord=stepSortKey(st);
+    d.innerHTML=`<span class="sdot"></span><div class="shead"><span class="st">${escapeHtml(title)}</span></div><div class="sbody">${body}</div>`;
+    /* (47.1) a clicked heading shows that step with all its lines, as
+       well as seeking (42.3). */
+    d.querySelector(".shead").addEventListener("click",()=>{const willOpen=!d.classList.contains("open");d.classList.toggle("open");if(!willOpen)return;d.querySelectorAll(".ln").forEach(l=>l.classList.add("shown"));if(sfr!=null)seekTo(sfr,true);});
+    host.appendChild(d);
+  }
+  /* (43.5) no Summary block repeating the verdict card and no
+     "How this was made" block: with Full calculation off a step shows
+     its title, its formula line and its value chip. */
+  const hm=$("howmade");if(hm)hm.innerHTML="";
+  typesetAll();
+}
+function maskCheckInfo(){const refs=R.references||[];const i=refs.findIndex(r=>(r.mask_check||{}));if(i<0)return{};const mc=refs[i].mask_check||{};const f=(FLAGS.maskcheck_files||{})[String(i)];return{img:f||null,cap:"mask check",covers:mc.coverage_answer||mc.covers||"",reason:(mc.answer&&mc.answer.reason)||mc.reason||""};}
+/* (47.2) the error budget reads each component's sigma_contribution
+   (in the unit of the measured value), sorts the components largest
+   first, draws each bar in proportion to the largest, labels it
+   "± <value>", and ends with "σ = √Σσᵢ² = <sigma_total> <unit>". The
+   component's basis is the bar's tooltip. */
+function barsHtml(){const eb=R.error_budget||{};const comps=(eb.components||[]).slice();if(!comps.length)return"<div>no error budget</div>";comps.sort((a,b)=>(b.sigma_contribution||0)-(a.sigma_contribution||0));const mx=comps[0].sigma_contribution||0;const rows=comps.map(c=>{const v=c.sigma_contribution||0;const p=mx>0?v/mx*100:0;return `<div class="brow" title="${escapeHtml(c.basis||"")}"><span class="bl">${escapeHtml(humanErr(c.name||c.key||""))}</span><span class="bt"><span class="bf" style="display:block;width:${p.toFixed(1)}%"></span></span><span class="bp">± ${escapeHtml(fmtSig(v,3))}</span></div>`;}).join("");const tot=eb.sigma_total;return `<div class="bars">${rows}<div class="fx"><span class="fb">σ = √Σσᵢ² = ${tot!=null?fmtSig(tot,3):"?"} m/s²</span></div></div>`;}
+function humanErr(k){const m={reference_size:"reference size",reference_reading:"reference reading",reading_spread:"reference reading",pixel_scale:"pixel reading",pixel_reading:"pixel reading",pixel_measurement:"pixel reading",parabola_fit:"parabola fit",fit:"parabola fit",point_vs_com:"tracked point ≠ centre of mass",com:"tracked point ≠ centre of mass",com_offset:"tracked point ≠ centre of mass",first_vs_second_half:"first vs second half",repetition_spread:"first vs second half",spread:"first vs second half",jump_spread:"jump-to-jump spread",clock:"independent clock"};if(m[k])return m[k];return String(k).replace(/_/g," ");}
+function plainTex(t){
+  if(!t)return false;
+  let u=String(t).replace(/\\[a-zA-Z]+(\{[^{}]*\})?/g,"");
+  u=u.replace(/[_^]\{[^{}]*\}/g,"").replace(/[_^][A-Za-z0-9]/g,"");
+  return /[A-Za-z]{3,}/.test(u);
+}
+function typesetAll(){if(!(window.katex))return;document.querySelectorAll(".fx[data-tex]").forEach(f=>{const tex=f.dataset.tex;if(!tex)return;try{window.katex.render(tex,f,{throwOnError:false});const fb=f.querySelector(".fb");if(fb)fb.style.display="none";}catch(e){}});}
+function rangeBarHtml(rc,testid){
+  const r=rc.range||{};const min=r.min,max=r.max;if(min==null||max==null||max<=min)return"";
+  const v=rc.value,sg=rc.sigma||0;const lo2=v-2*sg,hi2=v+2*sg;
+  const X=x=>Math.max(0,Math.min(100,(x-min)/(max-min)*100));
+  const inside=rc.outcome==="inside";
+  const col=inside?(WORLD_C[R.verdict&&R.verdict.world]||"#4FE3F0"):"#FF4D4D";
+  let side="";
+  if(!inside){const d=rc.delta_sigma||0;const w=rc.side==="below"?"below min":"above max";side=`<div class="side" style="color:#FF5A5A">${fmtSigmaMult(d)} ${w}</div>`;}
+  const dom=(r.sources&&r.sources[0]&&r.sources[0].domain)||"";
+  const unit=rc.uses_scale?" m":(rc.unit&&rc.unit!=="ratio"?" "+rc.unit:"");
+  return `<div class="rbar" data-testid="${testid||"rangebar"}"><div class="track"><div class="typ" style="left:${X(r.typical==null?(min+max)/2:r.typical)}%"></div><div class="band2" style="left:${X(lo2)}%;width:${Math.max(0.5,X(hi2)-X(lo2))}%;background:${col}"></div><div class="mark" style="left:${X(v)}%;background:${col}"></div></div><div class="dom">${escapeHtml(dom)} · range ${fmtVal(min)} … ${fmtVal(max)}${unit}</div>${side}</div>`;
+}
+/* ---------- rail follow (26,28,47.1): classes only, no rebuild ----
+   The column is a log: a reached step opens and stays open to the
+   verdict. revealUpTo only opens; backward seeks close via closeAfter
+   from seekFrame. No frame callback rewrites text or rebuilds nodes. */
+function revealUpTo(frame){
+  let opened=false;
+  document.querySelectorAll("#steps .step").forEach(d=>{
+    const f=d.dataset.frame===""?null:parseInt(d.dataset.frame,10);
+    const ord=parseInt(d.dataset.ord||"0",10);
+    const open=f==null?frame>=ord:f<=frame||frame>=ord;
+    if(open&&!d.classList.contains("open")){d.classList.add("open");opened=true;}
+  });
+  document.querySelectorAll("#steps .step.cur").forEach(d=>d.classList.remove("cur"));
+  const open=[...document.querySelectorAll("#steps .step.open")];
+  if(open.length)open[open.length-1].classList.add("cur");
+  if(opened)scrollNewestToBottom();
+}
+/* (47.1) a backward seek closes the steps after the new frame and hides
+   their lines; the steps before it stay open with all lines. */
+function closeAfter(frame){
+  document.querySelectorAll("#steps .step.open").forEach(d=>{
+    const f=d.dataset.frame===""?null:parseInt(d.dataset.frame,10);
+    const ord=parseInt(d.dataset.ord||"0",10);
+    const key=f==null?ord:f;
+    if(key>frame){d.classList.remove("open");d.querySelectorAll(".ln.shown").forEach(l=>l.classList.remove("shown"));}
+  });
+  document.querySelectorAll("#steps .step.cur").forEach(d=>d.classList.remove("cur"));
+  const open=[...document.querySelectorAll("#steps .step.open")];
+  if(open.length)open[open.length-1].classList.add("cur");
+}
+/* (47.1) the column follows the newest line: each time a line or a step
+   appears, the column scrolls smoothly so the newest line sits at the
+   bottom of the column (16 px above its lower edge). Older steps move
+   up. The chart above the column does not move, and the column does not
+   scroll by itself at any other time. */
+function scrollNewestToBottom(){
+  const rail=$("sideInner");if(!rail)return;
+  const shown=[...document.querySelectorAll("#steps .step.open .ln.shown")];
+  const last=shown[shown.length-1];
+  if(!last){rail.scrollTo({top:rail.scrollHeight,behavior:"smooth"});return;}
+  const rr=rail.getBoundingClientRect(),lr=last.getBoundingClientRect();
+  rail.scrollTo({top:Math.max(0,rail.scrollTop+(lr.bottom-rr.bottom)+16),behavior:"smooth"});
+}
+function scrollRailToCurrent(){scrollNewestToBottom();}
+function showNewestLine(){scrollNewestToBottom();}
+/* ---------- intro (9,33,43.7) ---------- */
+/* (43.7) the first screen asks one question: the question large, one
+   line of what we check, the by-eye card, and the watch button. The
+   scene paragraph, the Claim line and the What-we-see card go to
+   Full calculation. */
+function buildIntro(){
+  const fl=R.first_look||{};const host=$("intro");
+  const q=fl.question||"Does the physics add up to the Moon?";
+  const sc=fl.scene_card||{};const be=fl.by_eye;
+  let check="";
+  if(fl.wonder){const c0=(fl.wonder.checks||[])[0];
+    if(c0)check=`<p class="sub">What we check: ${escapeHtml(c0.what||"")} — compared with ${escapeHtml(c0.compare_with||"")}</p>`;}
+  let eye="";
+  if(be&&(be.jump_m!=null||be.airborne_s!=null)){
+    if(be.jump_m!=null)eye+=`<div class="big">~${fmtSig(be.jump_m,2)} m</div><div class="u">jump</div>`;
+    if(be.airborne_s!=null)eye+=`<div class="big">~${fmtSig(be.airborne_s,2)} s</div><div class="u">airborne</div>`;
+    eye+=`<div class="sub">${escapeHtml(be.reasoning||"")}</div><div class="sub">Spark scene card, before any search</div>`;
+  }else eye=`<div class="sub">no pre-measurement estimate</div>`;
+  let extra="";
+  if(S.full){
+    const objs=(sc.objects||[]).map(o=>`<span class="pill">${escapeHtml(o)}</span>`).join("");
+    const claim=fl.wonder&&fl.wonder.claim?`<p class="claim">Claim: <b>${escapeHtml(fl.wonder.claim)}</b></p>`:"";
+    extra=`<p class="sub">${escapeHtml(fl.summary||"")}</p>${claim}
+    <div id="introCards"><div class="icard"><div class="eb">What we see</div><div style="font-weight:700">${escapeHtml(sc.scene||"")}</div><div class="sub">${escapeHtml(sc.place_date||sc.confidence||"")}</div><div>${objs}</div></div></div>`;
+  }
+  host.innerHTML=`<h2>${escapeHtml(q)}</h2>${check}${extra}
+  <div id="introCards"><div class="icard"><div class="eb">By eye, before measuring</div>${eye}</div></div>
+  <div><button id="watchBtn">▶ Watch the analysis</button><span id="watchNote">plays the measurement on the footage</span></div>`;
+  $("watchBtn").addEventListener("click",()=>{playFromStart();});
+  document.title=q;
+  /* (43.7) the page header shows "Physics Proof" and the clip's
+     source credit, never the question a second time. */
+  const credit=(FLAGS&&FLAGS.slug)||"clip";
+  const headHtml=`Physics Proof <span style="font-weight:400;color:var(--mut2);font-size:13px">${escapeHtml(credit)}</span>`;
+  $("ttl").innerHTML=headHtml;
+  const pt=$("ptitle");if(pt){pt.innerHTML=headHtml;}
+}
+/* ---------- stage render ---------- */
+function fmtT(f){return tOf(f).toFixed(2)+" / "+tOf(NF).toFixed(2)+" s";}
+function trackAt(seg,fr){const t=(seg.track||[]).find(p=>p.frame===fr);return t||null;}
+function ghostPoint(g,fr){const p=(g.points||[]).find(q=>q.frame===fr);return p||null;}
+function renderStage(){
+  clearOv();
+  ov.setAttribute("viewBox",`0 0 ${DW.toFixed(1)} ${DH}`);
+  const ev=S.hold,fr=S.frame;
+  $("hudTx").textContent=`frame ${fr}/${NF}  t = ${tOf(fr).toFixed(3)} s  ${FPS.toFixed(2)} fps`;
+  $("hud").classList.toggle("frozen",!!ev);
+  $("hudFrz").style.display=ev?"inline":"none";
+  $("timeRead").textContent=fmtT(fr);
+  $("tlPlay").style.width=(100*fr/Math.max(1,NF))+"%";
+  const cap=$("caption"),refc=$("refcard"),ver=$("verdict");
+  cap.style.display="none";refc.style.display="none";ver.style.display="none";
+  const chd=$("chronoHead");if(chd)chd.remove();
+  $("intro").style.display=S.started?"none":"flex";
+  const ct=chartT();drawChart(ct);
+  if(!S.started){roundAll();return;}
+  const seg=activeSeg(fr);
+  const dim=$("dim");dim.style.background="rgba(2,4,8,0)";
+  if(seg&&(ev?ev.kind!=="landing"&&ev.kind!=="verdict"&&ev.kind!=="range":true))drawLive(seg,fr,ev);
+  if(ev){
+    dim.style.background=`rgba(2,4,8,${ev.kind==="verdict"?0.80:ev.kind==="landing"?0.74:ev.kind==="apex"?0.58:ev.kind==="scale"?0.55:0.42})`;
+    if(ev.kind==="scale")drawScale(ev);
+    else if(ev.kind==="takeoff")drawCaption("Takeoff",takeoffCaption(ev));
+    else if(ev.kind==="apex")drawApex(ev);
+    else if(ev.kind==="landing")drawChrono(ev);
+    else if(ev.kind==="verdict")drawVerdict();
+    else if(ev.kind==="range")drawRange(ev);
+  }
+  // fresh camera before measuring: declutter converts through it (35)
+  applyCam();
+  declutter();
+  roundAll();
+}
+function activeSeg(fr){for(const sg of (R.segments||[])){const F=sg.frames||{};if(fr>=F.start-3&&fr<=F.end+75)return sg;}return (R.segments||[])[0]||null;}
+function segStarted(fr){const sg=activeSeg(fr);if(!sg)return false;const F=sg.frames||{};return fr>=(F.start||0);}
+function chartT(){const sg=activeSeg(S.frame);if(!sg||!segStarted(S.frame))return null;const ts=sg.times_s||{};const span=((ts.end==null?0:ts.end)-(ts.start||0));return Math.max(0,Math.min(tOf(S.frame)-(ts.start||0),span||0));}
+function drawLive(seg,fr,holdEv){
+  const F=seg.frames||{};const upto=Math.min(fr,F.end);
+  const tl=seg.takeoff_level_y_px;
+  /* (42.6) after a jump, its layers fade out over 0.5 s starting
+     1.0 s after the landing frame; the fit curve and the trail stay
+     until the next segment starts. */
+  const fadeEnd=F.end+Math.round(FPS*1.0),fadeOut=F.end+Math.round(FPS*1.5);
+  let fade=1;
+  if(fr>fadeEnd)fade=Math.max(0,1-(fr-fadeEnd)/Math.max(1,fadeOut-fadeEnd));
+  // on a narrow stage the scale story is the reference, not the level:
+  // the takeoff line and its label stay off the crowded scale hold (35)
+  const narrowTl=(vbox.clientWidth||999)<500
+    &&holdEv&&(holdEv.kind==="scale"||holdEv.kind==="range");
+  if(tl!=null&&fr>=F.start&&!narrowTl&&fade>0){const _bb=segBBox(seg,fr);let x0=_bb[0],x1=_bb[0]+_bb[2];const showGhosts=!(holdEv&&(holdEv.kind==="scale"||holdEv.kind==="range"));if(showGhosts)for(const g of (seg.ghosts||[])){const gp=ghostPointAtOrBefore(g,Math.min(fr,F.end));const tp0=trackAt(seg,Math.min(fr,F.end));if(gp&&tp0){const gm=ghostGeom(seg,Math.min(fr,F.end),tp0,bbSafe(seg,Math.min(fr,F.end)),gp,g);x0=Math.min(x0,gm.fx);x1=Math.max(x1,gm.fx+gm.w);}}
+    if(x1<x0||x1-x0<_bb[2]){x0=_bb[0]-_bb[2];x1=_bb[0]+2*_bb[2];}
+    // the line never runs past the picture (22.1): the camera shows
+    // nothing outside the frame, so the label sits at the visible end
+    x0=Math.max(0,Math.min(DW,x0));x1=Math.max(0,Math.min(DW,x1));
+    el("line",{x1:x0,y1:tl,x2:x1,y2:tl,stroke:"rgba(228,234,241,.5)","stroke-width":SW(1),"stroke-dasharray":DS(5,4),id:"takeoffLine",opacity:fade},ov);
+    S._tlX1=x1;
+  }
+  if(fade>0&&!(holdEv&&(holdEv.kind==="scale"||holdEv.kind==="range")))for(const g of (seg.ghosts||[]))drawGhost(seg,g,fr,fade);
+  const pts=(seg.track||[]).filter(p=>p.frame>=F.start&&p.frame<=upto);
+  if(pts.length>1){el("polyline",{points:pts.map(p=>p.x_px.toFixed(1)+","+p.y_px.toFixed(1)).join(" "),fill:"none",stroke:"#4FE3F0","stroke-width":SW(1.8),opacity:holdEv?1:0.85},ov).style.filter="drop-shadow(0 0 10px #4FE3F0)";}
+  const step=Math.max(1,Math.round(FPS*0.234));
+  for(let f=F.start;f<=upto;f+=step){const p=(seg.track||[]).find(q=>q.frame===f);if(p)el("circle",{cx:p.x_px,cy:p.y_px,r:SW(3.2),fill:"none",stroke:"#4FE3F0","stroke-width":SW(1.6)},ov);}
+  /* (48.1) outlines only around a flight, never flickering: every
+     segment whose flight window holds this frame draws its outline;
+     the Scale hold still draws the reference outlines at its own
+     frame (drawScale, below). */
+  const allowHold=S.playing&&!holdEv;
+  for(const sg2 of (R.segments||[])){
+    const l2=outlineLoop(sg2,fr,allowHold);
+    if(l2)pathOf(ov,l2,"#4FE3F0",1.5,holdEv?1:0.85,true,"figure-outline");
+  }
+  if(!outlineLoop(seg,fr,false)){const p=trackAt(seg,fr);if(p)el("circle",{cx:p.x_px,cy:p.y_px,r:SW(4.5),fill:"#4FE3F0"},ov);}
+  const tp=trackAt(seg,fr);
+  if(tp&&S.showMarker!==false){el("circle",{cx:tp.x_px,cy:tp.y_px,r:SW(3),fill:"#4FE3F0",stroke:"#000","stroke-width":SW(1),"data-testid":"track-marker"},ov);}
+  // one height chip, not two (35): the Apex hold draws its own ruler,
+  // so the live one stays off while it is on
+  if(fade>0&&fr>=F.apex&&!(holdEv&&(holdEv.kind==="scale"||holdEv.kind==="range"||holdEv.kind==="apex")))drawApexRuler(seg,false,fade);
+  if(fade>0&&tl!=null&&fr>=F.start&&S._tlX1!=null){
+    // the label sits above the line's right end on a solid backing,
+    // painted after the outline so no stroke takes its letters (35.1)
+    const t=labelAt(S._tlX1,tl-SW(7),"takeoff level",10,"end");t.id="takeoffLabel";
+    S._tlX1=null;
+  }
+}
+function bbSafe(seg,fr){return segBBox(seg,fr);}
+function segBBox(seg,fr){const o=(seg.overlay||[]).find(q=>q.frame===fr);const ob=o&&o.bbox?o.bbox:null;if(ob&&ob[2]>=16&&ob[3]>=16)return ob;const mb=((FLAGS.maskboxes||{})[seg.id]||{})[String(fr)];if(mb)return mb;return ob||[DW/2-30,DH/2-60,60,120];}
+/* (48.1) the figure's outline shows during free playback only inside
+   each measured flight's window: from 1 s before its takeoff to 1 s
+   after its landing. */
+function inFlightWindow(sg,fr){const F=sg.frames||{};if(F.start==null||F.end==null)return false;const w=Math.max(1,Math.round(FPS));return fr>=F.start-w&&fr<=F.end+w;}
+function loopArea(loop){let a=0;for(let i=0;i<loop.length;i++){const p=loop[i],q=loop[(i+1)%loop.length];a+=p[0]*q[1]-q[0]*p[1];}return Math.abs(a/2);}
+/* (48.1) a frame whose figure mask is an outlier is not drawn: its loop
+   area differs by more than 25 % from the median of its ±3 neighbouring
+   frames' loop areas. Fewer than two neighbours with loops: not one. */
+function isOutlier(sg,fr){
+  const self=smoothLoop(sg.id,fr);if(!self)return false;
+  const nb=[];
+  for(let f=fr-3;f<=fr+3;f++){if(f===fr)continue;const l=smoothLoop(sg.id,f);if(l)nb.push(loopArea(l));}
+  if(nb.length<2)return false;
+  nb.sort((a,b)=>a-b);
+  const med=nb.length%2?nb[nb.length>>1]:(nb[nb.length/2-1]+nb[nb.length/2])/2;
+  if(!(med>0))return false;
+  return Math.abs(loopArea(self)-med)/med>0.25;
+}
+/* (48.1) the outline loop for a frame: null outside the flight window
+   or on an outlier mask (never drawn, no holdover). A missing mask
+   reuses the last good outline for at most 2 frames mid-ride; seeks
+   show the exact frame. After that nothing is drawn until a good
+   frame comes. */
+function outlineLoop(sg,fr,allowHoldover){
+  if(!inFlightWindow(sg,fr))return null;
+  const l0=smoothLoop(sg.id,fr);
+  if(l0&&!isOutlier(sg,fr))return l0;
+  if(l0||!allowHoldover)return null;
+  for(let f=fr-1;f>=fr-2;f--){const l=smoothLoop(sg.id,f);if(l&&!isOutlier(sg,f))return l;}
+  return null;
+}
+function ghostGeom(seg,fr,tp,bb,gp,ghost){
+  // 17.2: a translation, never an anchor. Earth one box width left, a
+  // fitting world one width right; both go to the side that fits.
+  // Same-side ghosts stagger outward so two silhouettes never stack.
+  const gs=seg.ghosts||[];
+  // (42.7) a side fits only when the ghost stays fully inside the
+  // picture: at the end of a hold every ghost must lie inside the
+  // visible stage, and no camera can show a pixel outside the frame.
+  // If a side would leave the frame, both go on the side that fits.
+  const fitsL=tp.x_px-bb[2]-bb[2]/2>=0&&tp.x_px-bb[2]+bb[2]/2<=DW;
+  const fitsR=tp.x_px+bb[2]-bb[2]/2>=0&&tp.x_px+bb[2]+bb[2]/2<=DW;
+  let dx;
+  if(!fitsL&&fitsR){
+    const idx=Math.max(0,gs.indexOf(ghost));
+    dx=bb[2]*(idx+1);
+  }else if(!fitsR&&fitsL){
+    const idx=Math.max(0,gs.indexOf(ghost));
+    dx=-bb[2]*(idx+1);
+  }else{
+    const side=ghost&&ghost.role==="earth_counterfactual"?-1:1;
+    dx=side*bb[2];
+    const same=gs.slice(0,Math.max(0,gs.indexOf(ghost))).filter(
+      o=>(o.role==="earth_counterfactual"?-1:1)===side).length;
+    if(same)dx=side*bb[2]*(same+1);
+    if(tp.x_px+dx-bb[2]/2<0||tp.x_px+dx+bb[2]/2>DW)dx=-dx;
+    if(tp.x_px+dx-bb[2]/2<0||tp.x_px+dx+bb[2]/2>DW)dx=0;
+  }
+  const dy=gp.y_px-tp.y_px;
+  return{fx:bb[0]+dx,fy:bb[1]+dy,w:bb[2],h:bb[3],cx:tp.x_px+dx,cy:gp.y_px,dx:dx,dy:dy};
+}
+function ghostPointAtOrBefore(g,fr){
+  // a landed ghost stays at its landing position (18.4.5): exact frame
+  // first, else the nearest earlier model point
+  const pts=(g.points||[]).filter(p=>p.frame<=fr);
+  if(!pts.length)return null;
+  let best=pts[0];for(const p of pts)if(p.frame>=best.frame)best=p;
+  return best;
+}
+function drawGhost(seg,g,fr,fade){
+  fade=fade==null?1:fade;
+  const F=seg.frames||{};const frc=Math.min(fr,F.end);
+  const tp=trackAt(seg,frc);if(!tp)return;
+  const gp=ghostPointAtOrBefore(g,frc);if(!gp)return;
+  const bb=segBBox(seg,frc);
+  const col=WORLD_C[g.world]||"#FFF";
+  const gm=ghostGeom(seg,frc,tp,bb,gp,g);
+  const landed=fr>=Math.round((g.landing&&g.landing.t_s!=null?g.landing.t_s:tOf(F.end))*FPS);
+  const cf=cutFor(seg,frc);
+  const tint=cf?CUTURL.get(seg.id+":"+cf.frame+":"+g.world):null;
+  // the cut-out is drawn at its draw rect (mask bbox plus the feather
+  // pad, 25.2), shifted by the ghost translation
+  const dr=(cf&&cf.draw)||[gm.fx,gm.fy,gm.w,gm.h];
+  if(tint)el("image",{x:dr[0]+gm.dx,y:dr[1]+gm.dy,width:dr[2],height:dr[3],opacity:0.4*fade,class:"ghost-fig","data-testid":"ghost","data-world":g.world,href:tint,preserveAspectRatio:"none"},ov);
+  const loop=smoothLoop(seg.id,frc);
+  if(loop){const sh=loop.map(p=>[p[0]+gm.dx,p[1]+gm.dy]);pathOf(ov,sh,col,1.5,0.6*fade,true);}
+  const past=(g.points||[]).filter(p=>p.frame<=frc&&p.frame>=F.start);
+  if(past.length>1)el("polyline",{points:past.map(p=>(p.x_px+gm.dx).toFixed(1)+","+p.y_px.toFixed(1)).join(" "),fill:"none",stroke:col,"stroke-width":SW(1.2),"stroke-dasharray":DS(1.5,3.5),opacity:0.9*fade},ov);
+  const hudClear=(($("hud").clientHeight||24)/K())+10;
+  const gname=g.world;
+  // clear of the ghost's own trajectory, which ends at the figure's
+  // tracked point just below the label (35)
+  const t=labelAt(gm.fx+gm.w/2,Math.max(hudClear,gm.fy-FS(18+12)),gname,11,"middle");
+  t.setAttribute("class","ov glabel");t.dataset.testid="glabel-"+g.world;
+  if(landed){const lstr="landed at "+(g.landing.t_s-tOf(F.start)).toFixed(2)+" s";
+    const l2=labelAt(gm.fx+gm.w/2,gm.fy+gm.h+FS(10),lstr,10,"middle");
+    l2.dataset.testid="glanded-"+g.world;
+    // the ring is a motion transient: it expands while playing and
+    // never sits frozen across the landing label in a hold (35)
+    const age=S.frame/FPS-(g.landing.t_s||0);if(!S.hold&&age>=0&&age<=1.2){el("circle",{cx:gm.fx+gm.w/2,cy:gm.fy+gm.h,r:SW(6)+SW(40)*age,fill:"none",stroke:col,"stroke-width":SW(2),opacity:1-age/1.2,"data-testid":"impact-ring"},ov);}}
+}
+/* (48.2) each measured segment plays as "Jump 1", "Jump 2" with its
+   own holds: the caption names the segment's index. */
+function segJumpNo(sg){const segs=R.segments||[];if(segs.length<2)return 1;const i=segs.findIndex(s=>s.id===(sg&&sg.id));return i<0?1:i+1;}
+function takeoffCaption(ev){const segs=R.segments||[];const sg=segs.find(s=>s.id===ev.seg)||segs[0];if(!sg)return"";const F=sg.frames||{};return `Jump ${segJumpNo(sg)} · №${F.start} · t = ${tOf(F.start).toFixed(3)} s`;}
+function drawCaption(title,numline){const cap=$("caption");cap.style.display="block";$("capT").textContent=title;$("capN").innerHTML=numline;}
+/* chip unit: a result chip; end-anchored chips sit left of the ruler */
+function chipAt(x,y,s,cls,anchor){
+  // CSS px first, then one /K into svg units — the backing always
+  // covers the text (35)
+  const F=13;
+  const w=(10+s.length*F*0.62)/K(),h=(F+9)/K();
+  const bx=anchor==="end"?x-w:x;
+  const r=el("rect",{x:bx,y:y,width:w,height:h,rx:SW(2),fill:cls==="amber"?"#FFB54D":"#000"},ov);
+  const t=txt(ov,anchor==="end"?x-SW(5):bx+SW(5),y+h-SW(4),s);
+  if(anchor==="end")t.setAttribute("text-anchor","end");
+  t.setAttribute("font-size",FS(13));t.setAttribute("fill",cls==="amber"?"#0A0A0A":"#FFFFFF");
+  t.setAttribute("font-weight",700);t.setAttribute("font-family","monospace");
+  r.dataset.chipFor=t;t._bg=r;
+  return{t:t,bg:r,w:w,h:h};
+}
+function drawScale(ev){
+  const sc=R.scale||{};const ref=(R.references||[])[sc.reference_index||0]||{};
+  const ep=sc.extent_px||{};
+  const rl=refLoop(sc.reference_index||0);
+  if(rl)pathOf(ov,rl,"#FFB54D",1.5,1,true);
+  const seg=(R.segments||[])[0];
+  const bb=seg?segBBox(seg,ev.frame):[ep.x1,ep.y1,20,Math.abs((ep.y2||0)-(ep.y1||0))];
+  const rx=Math.max(SW(2),bb[0]-12);
+  const y1=Math.min(ep.y1,ep.y2),y2=Math.max(ep.y1,ep.y2);
+  el("line",{x1:rx,y1,x2:rx,y2:y2,stroke:"#FFB54D","stroke-width":SW(2),id:"ruler"},ov);
+  for(let i=0;i<=5;i++){const y=y1+(y2-y1)*i/5;el("line",{x1:rx-SW(5),y1:y,x2:rx+SW(5),y2:y,stroke:"#FFB54D","stroke-width":SW(2)},ov);}
+  const mpp=sc.m_per_px,lenPx=ep.length_px||(y2-y1);
+  const sA=`${fmtVal(ref.size_m,ref.size_tolerance_m)} m = ${fmtInt(lenPx)} px`;
+  // chips sit left of the ruler when there is room; otherwise they
+  // flip to its right, stacked, clear of the ticks either way (35)
+  const sB=`1 px = ${(mpp*100).toFixed(2)} cm`;
+  const wNeed=(10+Math.max(sA.length,sB.length)*13*0.62)/K();
+  let anch="end",cxx=rx-SW(7);
+  if(cxx-wNeed<SW(2)){anch="start";cxx=rx+SW(10);}
+  chipAt(cxx,y1-SW(10)-((13+9)/K()),sA,"amber",anch).t.id="scaleChipA";
+  const cB=chipAt(cxx,y1+SW(9),sB,"dark",anch);cB.t.id="scaleChipB";
+  el("rect",{x:+cB.bg.getAttribute("x")-SW(3),y:y1+SW(9),width:SW(3),height:(12+9)/K(),fill:"#FFB54D",id:"scaleChipBar"},ov);
+  const rc=$("refcard");rc.style.display="block";rc.dataset.testid="refcard";
+  const src0=((ref.sources||[])[0]||{});
+  /* (42.5) the second reference is one short "check:" line — the
+     short blind-check verdict (6), never the full prose paragraph. */
+  const chkMc=(R.references||[]).length>1?(((R.references||[])[1].mask_check||{})):{};
+  const chkCov=chkMc.coverage_answer||"";
+  const chkCut=chkCov.length>72?chkCov.slice(0,72).split(/\s+/).slice(0,-1).join(" ")+" …":chkCov;
+  const chkLine=(R.references||[]).length>1
+    ?`mask check (Spark, blind): ${chkCut}${chkMc.confidence!=null?`, confidence ${chkMc.confidence}`:""}`
+    :(sc.second_reference_absent_reason||"no second reference");
+  rc.innerHTML=`<div class="eb">Size reference</div><h3>${escapeHtml(ref.name||"reference")}</h3><div class="huge">${fmtVal(ref.size_m,ref.size_tolerance_m)} <small>± ${fmtVal(ref.size_tolerance_m,ref.size_tolerance_m)} m</small></div><div class="cap">${escapeHtml(ref.extent_description||"")}</div><div class="src"><b>${escapeHtml(fmtVal(src0.value_m,src0.value_m?src0.value_m*0.01:null))} m</b><i>“${escapeHtml(src0.quote||"")}” — ${escapeHtml(src0.domain||"")}</i></div><div class="cap" title="${escapeHtml(chkCov)}">${escapeHtml(chkLine)}</div>`;
+  clampCardText(rc);
+  drawCaption("Scale",`${escapeHtml(ref.name||"reference")}: <b>${fmtVal(ref.size_m,ref.size_tolerance_m)} m = ${fmtInt(lenPx)} px</b>, so <b>1 px = ${(mpp*100).toFixed(2)} cm</b>`);
+}
+/* reference card (17.6, 25.4): text that does not fit ends in … at a
+   word boundary; the full text stays in the card's title */
+function clampCardText(card){
+  card.title=card.textContent;
+  if(card.scrollHeight<=card.clientHeight+1)return;
+  const parts=[...card.querySelectorAll("div")];
+  for(let i=parts.length-1;i>=0&&card.scrollHeight>card.clientHeight+1;i--){
+    const p=parts[i];let words=p.textContent.split(/\s+/);
+    while(words.length>3&&card.scrollHeight>card.clientHeight+1){
+      words=words.slice(0,-1);
+      p.textContent=words.join(" ")+" …";
+    }
+  }
+}
+function drawApex(ev){
+  const sg=(R.segments||[]).find(s=>s.id===ev.seg)||(R.segments||[])[0];if(!sg)return;
+  drawApexRuler(sg,true);
+  const ai=sg.apex_info||{};
+  drawCaption("Apex",`Centre of mass <b>${fmtM(ai.rise_m,ai.sigma_m)} ± ${fmtVal(ai.sigma_m,ai.sigma_m)} m</b> above takeoff`);
+}
+function drawApexRuler(sg,inHold,fade){
+  fade=fade==null?1:fade;
+  const F=sg.frames||{};const tl=sg.takeoff_level_y_px;if(tl==null)return;
+  const tp=trackAt(sg,F.apex);const bb=segBBox(sg,F.apex);
+  const rx=Math.max(SW(2),bb[0]-9);const ay=tp?tp.y_px:tl-10;
+  el("line",{x1:rx,y1:tl,x2:rx,y2:ay,stroke:"#FFB54D","stroke-width":SW(2.2),id:"apexRuler",opacity:fade},ov);
+  const sw35=SW(3.5);
+  el("line",{x1:rx-sw35,y1:tl,x2:rx+sw35,y2:tl,stroke:"#FFB54D","stroke-width":SW(2.2),opacity:fade},ov);
+  el("line",{x1:rx-sw35,y1:ay,x2:rx+sw35,y2:ay,stroke:"#FFB54D","stroke-width":SW(2.2),opacity:fade},ov);
+  const as_=fmtVal((sg.apex_info||{}).rise_m,(sg.apex_info||{}).sigma_m)+" m";
+  // CSS px first, then one /K; the chip ends clear of the end ticks (35)
+  const cw=(10+as_.length*17*0.62)/K(),ch=(17+9)/K();
+  const cx=Math.max(SW(1),rx-SW(6)-cw);
+  const ar=el("rect",{x:cx,y:(tl+ay)/2-ch+SW(4),width:cw,height:ch,rx:SW(2),fill:"#FFB54D",opacity:fade},ov);
+  const t=txt(ov,cx+SW(5),(tl+ay)/2,as_);t.id="apexChip";t.setAttribute("font-size",FS(17));t.setAttribute("fill","#0A0A0A");t.setAttribute("font-weight",700);t.setAttribute("opacity",fade);t.dataset.testid="apex-chip";t._bg=ar;
+}
+/* ---------- declutter (17.4, 23.4): no text overlaps text, nothing
+   leaves the stage. Screen-space nudge of SVG labels + chips; HTML
+   cards are sized by CSS and clamped here. Runs after every render. */
+function stageBoxPx(){
+  const sr=stage.getBoundingClientRect();
+  return{x:sr.left,y:sr.top,w:sr.width,h:sr.height};
+}
+function svgToPx(x,y){
+  // svg user units == source px; map through the vbox layout + camera
+  const b=camBox();const z=S.cam.z;
+  const k=b.W/DW;
+  const tx=S.camTX==null?0:S.camTX, ty=S.camTY==null?0:S.camTY;
+  const sr=stage.getBoundingClientRect();
+  return{x:sr.left+b.L+z*(x/DW*b.W)+tx, y:sr.top+b.T+z*(y/DH*b.H)+ty, k:k*z};
+}
+/* label with its dark backing (0.8): text and chip move as one unit */
+function labelAt(x,y,s,fs,anchor,fill){
+  const wCss=10+s.length*fs*0.62,hCss=fs+8;
+  const w=wCss/K(),h=hCss/K();
+  let bx=anchor==="middle"?x-w/2:anchor==="end"?x-w:x;
+  // solid backing, painted with the text above every line (35.1)
+  const r=el("rect",{x:bx,y:y-h+SW(4),width:w,height:h,rx:SW(2),fill:"#000"},ov);
+  const t=txt(ov,anchor==="middle"||anchor==="end"?x:bx+SW(5),y,s);
+  t.setAttribute("font-size",FS(fs));t.setAttribute("text-anchor",anchor||"start");
+  if(fill)t.setAttribute("fill",fill);
+  t._bg=r;
+  return t;
+}
+function declutter(){
+  const sb=stageBoxPx();
+  const fixedIds=["hud","badge","caption","refcard","verdict","chronoHead"];
+  const fixed=fixedIds.map(id=>$(id)).filter(e=>e&&e.getBoundingClientRect().width>=1&&e.style.display!=="none").map(e=>e.getBoundingClientRect());
+  const items=[];
+  for(const t of ov.querySelectorAll("text")){
+    const r=t.getBoundingClientRect();
+    if(r.width<1&&r.height<1)continue;
+    items.push({t:t,x:r.left-sb.x,y:r.top-sb.y,w:r.width,h:r.height,ox:+t.getAttribute("x"),oy:+t.getAttribute("y"),anchor:t.getAttribute("text-anchor")});
+  }
+  // short strokes (ticks, serifs, dots, axis marks) are obstacles too:
+  // labels move, strokes never do.
+  const strokes=[];
+  for(const e of ov.querySelectorAll("line,circle")){
+    const r=e.getBoundingClientRect();
+    if(r.width<1&&r.height<1)continue;
+    if(Math.max(r.width,r.height)>30)continue;
+    strokes.push({x:r.left-sb.x-1,y:r.top-sb.y-1,w:r.width+2,h:r.height+2});
+  }
+  // every stage line/tick as screen-space segments in stage-px coords.
+  // Labels avoid them geometrically (35.1); segments never move.
+  const segs=[];
+  {
+    const svg=$("ov");
+    const scr=(el,x,y)=>{
+      const p=svg.createSVGPoint();p.x=x;p.y=y;
+      const q=p.matrixTransform(el.getScreenCTM());
+      return[q.x-sb.x,q.y-sb.y];
+    };
+    for(const e of ov.querySelectorAll("line,polyline")){
+      if(e.tagName==="line"){
+        segs.push(scr(e,+e.getAttribute("x1"),+e.getAttribute("y1"))
+          .concat(scr(e,+e.getAttribute("x2"),+e.getAttribute("y2"))));
+      }else{
+        const pts=(e.getAttribute("points")||"").trim().split(/\s+/)
+          .map(s=>s.split(",").map(Number));
+        for(let i=0;i+1<pts.length;i++)
+          segs.push(scr(e,pts[i][0],pts[i][1])
+            .concat(scr(e,pts[i+1][0],pts[i+1][1])));
+      }
+    }
+  }
+  const hitsSeg=(nx,ny,it)=>{
+    const r={x:nx,y:ny,w:it.w,h:it.h};
+    for(const s of segs){
+      if(segHitsRect(s[0],s[1],s[2],s[3],r))return s;
+    }
+    return null;
+  };
+  const hitsTaken=(nx,ny,it,taken)=>{
+    for(const q of taken){
+      if(nx<q.x+q.w+2&&q.x<nx+it.w+2&&ny<q.y+q.h+2&&q.y<ny+it.h+2)return q;
+    }
+    return null;
+  };
+  const moveIt=(it,nx,ny)=>{
+    // move in svg units (screen px / effective scale); the solid
+    // backing stored on the text moves by the same delta
+    const p0=svgToPx(it.ox,it.oy);
+    const dx=(nx-it.x)/p0.k, dy=(ny-it.y)/p0.k;
+    t_setXY(it.t,it.ox+dx,it.oy+dy);
+    if(it.t._bg){const b=it.t._bg;
+      b.setAttribute("x",+b.getAttribute("x")+dx);
+      b.setAttribute("y",+b.getAttribute("y")+dy);}
+    const r2=it.t.getBoundingClientRect();
+    it.x=r2.left-sb.x;it.y=r2.top-sb.y;it.w=r2.width;it.h=r2.height;
+    it.ox=+it.t.getAttribute("x");it.oy=+it.t.getAttribute("y");
+  };
+  for(let round=0;round<8;round++){
+    let moved=false;
+    // obstacles reset every round: fixed chrome plus short strokes
+    // plus the settled labels of this round; never stale boxes
+    const taken=fixed.map(r=>({x:r.left-sb.x,y:r.top-sb.y,w:r.width,h:r.height})).concat(strokes);
+    for(const it of items){
+      // clamp inside stage (23.4: collision moves never leave it)
+      const nx=Math.max(1,Math.min(sb.w-1-it.w,it.x));
+      const ny0=Math.max(1,Math.min(sb.h-1-it.h,it.y));
+      // every candidate row: the current one, below/above each taken
+      // box, and below/above the segments sharing this x band (35.1)
+      const candY=new Set([ny0]);
+      for(const q of taken){candY.add(q.y+q.h+3);candY.add(q.y-it.h-3);}
+      let sy0=1e9,sy1=-1e9;
+      for(const s of segs){
+        if(s[0]>nx+it.w+1&&s[2]>nx+it.w+1)continue;
+        if(s[0]<nx-1&&s[2]<nx-1)continue;
+        sy0=Math.min(sy0,s[1],s[3]);sy1=Math.max(sy1,s[1],s[3]);
+      }
+      if(sy1>=sy0){candY.add(sy0-it.h-3);candY.add(sy1+3);}
+      const sorted=[...candY].sort((a,b)=>Math.abs(a-ny0)-Math.abs(b-ny0));
+      let ny=ny0;
+      for(const cy of sorted){
+        if(cy<1||cy+it.h>sb.h-1)continue;
+        if(hitsTaken(nx,cy,it,taken))continue;
+        if(hitsSeg(nx,cy,it))continue;
+        ny=cy;break;
+      }
+      if(Math.abs(nx-it.x)>0.5||Math.abs(ny-it.y)>0.5){
+        moveIt(it,nx,ny);moved=true;
+      }
+      taken.push({x:nx,y:ny,w:it.w,h:it.h});
+    }
+    if(!moved)break;
+  }
+}
+function segHitsRect(x1,y1,x2,y2,r){
+  const inR=(x,y)=>x>r.x-1&&x<r.x+r.w+1&&y>r.y-1&&y<r.y+r.h+1;
+  if(inR(x1,y1)||inR(x2,y2))return true;
+  const o=(ax,ay,bx,by,cx,cy)=>(bx-ax)*(cy-ay)-(by-ay)*(cx-ax);
+  const xx=(p1x,p1y,p2x,p2y,p3x,p3y,p4x,p4y)=>{
+    const d1=o(p3x,p3y,p4x,p4y,p1x,p1y),d2=o(p3x,p3y,p4x,p4y,p2x,p2y);
+    const d3=o(p1x,p1y,p2x,p2y,p3x,p3y),d4=o(p1x,p1y,p2x,p2y,p4x,p4y);
+    return((d1>0&&d2<0)||(d1<0&&d2>0))&&((d3>0&&d4<0)||(d3<0&&d4>0));
+  };
+  const E=[[r.x-1,r.y-1,r.x+r.w+1,r.y-1],
+    [r.x+r.w+1,r.y-1,r.x+r.w+1,r.y+r.h+1],
+    [r.x+r.w+1,r.y+r.h+1,r.x-1,r.y+r.h+1],
+    [r.x-1,r.y+r.h+1,r.x-1,r.y-1]];
+  return E.some(e=>xx(x1,y1,x2,y2,e[0],e[1],e[2],e[3]));
+}
+function t_setY(t,y){t.setAttribute("y",y);}
+function t_setXY(t,x,y){t.setAttribute("x",x);t.setAttribute("y",y);}
+/* chronophotograph (18.6, 19): copies at video scale, arcs through copies */
+function drawChrono(ev){
+  const sg=(R.segments||[]).find(s=>s.id===ev.seg)||(R.segments||[])[0];if(!sg)return;
+  const F=sg.frames||{};const t0=tOf(F.start);
+  const cut=(FLAGS.cutouts||{})[sg.id]||[];
+  const n=Math.max(1,cut.length);
+  const x0=DW*0.08,x1=DW*0.68;
+  const spanT=Math.max(0.5,(tOf(F.end)-t0));
+  const X=t=>x0+(t-t0)/spanT*(x1-x0);
+  let feetY=0;for(const c of cut){feetY=Math.max(feetY,c.bbox[1]+c.bbox[3]);}
+  const rowH=FS(11)+6, rows=[rowH,rowH*2+4];
+  // time axis below the feet with room for two label rows inside the stage
+  const axY=Math.min(DH-14-rows[1]-8,feetY+9,DH-14);
+  el("line",{x1:x0,y1:axY,x2:x1,y2:axY,stroke:"#8A99AB","stroke-width":SW(1),id:"chronoAxis"},ov);
+  // ticks stay short and their labels sit below them, never crossed (35)
+  for(let s=0;s<=Math.ceil((tOf(F.end)-t0)*2);s++){const t=s*0.5;const x=X(t0+t);el("line",{x1:x,y1:axY,x2:x,y2:axY+SW(4),stroke:"#8A99AB","stroke-width":SW(1)},ov);if(s%1===0){labelAt(x,axY+SW(20),(t).toFixed(1)+" s",10,"middle");}}
+  cut.forEach((c,i)=>{
+    // figure centre lands on the spread x; height stays real (19.3).
+    // The draw rect carries the feather pad (25.2).
+    const dr=c.draw||[c.bbox[0],c.bbox[1],c.bbox[2],c.bbox[3]];
+    const figCx=c.bbox[0]+c.bbox[2]/2;
+    const x=Math.max(0,Math.min(DW-dr[2],X(tOf(c.frame))-(figCx-dr[0])));
+    const url=CUTURL.get(sg.id+":"+c.frame+":neutral");
+    if(!url)return;
+    el("image",{x:x,y:dr[1],width:dr[2],height:dr[3],href:url,class:"chrono-copy","data-testid":"chrono-copy","data-frame":c.frame,"data-cx":figCx,"data-cy":c.bbox[1],preserveAspectRatio:"none"},ov);
+    /* (43.2, 43.4) each figure keeps its own thin silhouette outline
+       at video scale, drawn with the copy (never a rectangle). */
+    const cl=smoothLoop(sg.id,c.frame);
+    if(cl){const dx=x-dr[0];pathOf(ov,cl.map(p=>[p[0]+dx,p[1]]),"#4FE3F0",1.5,0.35,true,"chrono-rim");}
+  });
+  // trajectories share the copies' time-to-x mapping (19.3): the measured
+  // arc passes through the tracked point of every copy. Clipped below the
+  // HUD row (25.3).
+  const hudB=(($("hud").clientHeight||24)/K())+6;
+  const cy2=y=>Math.max(y==null?axY:y,hudB);
+  /* (48.3) the chronophotograph stays inside the stage: world curves
+     are clipped to the stage. A world whose landing lies beyond the
+     time axis draws an arrow at the axis end with its landing time
+     ("Moon 2.53 s →") instead of a label off the axis. */
+  const CX=t=>Math.max(x0,Math.min(x1,X(t)));
+  const pts=(sg.track||[]).filter(p=>p.frame>=F.start&&p.frame<=F.end);
+  if(pts.length>1)el("polyline",{points:pts.map(p=>CX(p.t_s??t0)+","+cy2(p.y_px)).join(" "),fill:"none",stroke:"#4FE3F0","stroke-width":SW(2.2),id:"arcMeasured"},ov);
+  for(const p of pts)el("circle",{cx:CX(p.t_s??t0),cy:cy2(p.y_px),r:SW(2),fill:"#4FE3F0",class:"cdot"},ov);
+  for(const g of (sg.ghosts||[])){const col=WORLD_C[g.world]||"#FFF";const gp=(g.points||[]).filter(p=>p.frame>=F.start);if(gp.length>1)el("polyline",{points:gp.map(p=>CX(p.t_s??t0)+","+cy2(p.y_px)).join(" "),fill:"none",stroke:col,"stroke-width":SW(2),"stroke-dasharray":g.world==="Moon"?DS(7,4):"0",id:"arc-"+g.world},ov);for(const p of gp)el("circle",{cx:CX(p.t_s??t0),cy:cy2(p.y_px),r:SW(2),fill:col,class:"cdot"},ov);}
+  /* (37/38) the stage chips read the drawn ghosts, never
+     world_outcomes[].landing_time_s minus a start time: each world's
+     chip is its drawn curve's last point (its landing) minus the
+     takeoff time — the same number the curve is drawn with. */
+  const ends={clip:[X(tOf(F.end)),cy2(((sg.track||[]).filter(p=>p.frame<=F.end).slice(-1)[0]||{}).y_px)]};
+  const marks=[{t:tOf(F.end),label:"in the clip "+(tOf(F.end)-t0).toFixed(2)+" s",c:"#4FE3F0",id:"lb-chlanding-clip"}];
+  for(const g of (sg.ghosts||[])){const gp2=(g.points||[]).filter(p=>p.frame>=F.start);if(!gp2.length)continue;const last=gp2[gp2.length-1];const lt=last.t_s==null?t0:last.t_s;ends[g.world]=[X(lt),cy2(last.y_px)];marks.push({t:lt,label:g.world+" "+(lt-t0).toFixed(2)+" s",c:WORLD_C[g.world]||"#FFF",id:"lb-chlanding-"+g.world});}
+  let ri=0;
+  for(const m of marks){
+    /* (48.3) a world whose landing lies beyond the time axis draws an
+       arrow at the axis end with its landing time ("Moon 2.53 s →"):
+       its dot sits on the axis at the end and there is no drop line
+       from off the axis. */
+    const beyond=(m.t-t0)>spanT+1e-9;
+    const x=beyond?x1:Math.max(50,Math.min(DW-50,X(m.t)));
+    const wkey=m.id==="lb-chlanding-clip"?"clip":m.id.slice("lb-chlanding-".length);
+    const e0=ends[wkey]||[x,axY-30];
+    if(!beyond)el("line",{x1:x,y1:e0[1],x2:x,y2:axY,stroke:m.c,"stroke-width":SW(1),"stroke-dasharray":DS(1,3)},ov);
+    el("circle",{cx:x,cy:axY,r:SW(2.5),fill:m.c},ov);
+    let yy=axY+rows[ri%2];
+    if(yy>DH-4)yy=axY-10-(ri%2)*12;
+    const tx=labelAt(x,yy,beyond?m.label+" →":m.label,11,"middle");tx.id=m.id;ri++;
+  }
+  const old=$("chronoHead");if(old)old.remove();
+  const hd=document.createElement("div");hd.id="chronoHead";hd.dataset.testid="chrono-head";
+  hd.innerHTML=`<div style="border-left:3px solid var(--cyan);background:rgba(0,0,0,.72);padding:6px 12px"><div style="font-size:16px;font-weight:700">Chronophotograph</div><div style="font-size:12px;color:#C7D2DE">The jumper every 0.23 s. Time runs left to right, height goes up</div></div>`;
+  hd.style.cssText="position:absolute;z-index:5;left:18px;top:44px";
+  stage.appendChild(hd);
+  placeChronoHead(hd);
+}
+function placeChronoHead(hd){
+  const sr=stage.getBoundingClientRect();
+  const hudR=$("hud").getBoundingClientRect(),bdgR=$("badge").getBoundingClientRect();
+  const dots=[...ov.querySelectorAll(".cdot")].map(e=>{const r=e.getBoundingClientRect();return{x:r.left-sr.left,y:r.top-sr.top,w:r.width,h:r.height};});
+  const labels=[...ov.querySelectorAll("text")].map(t=>{const r=t.getBoundingClientRect();return{x:r.left-sr.left,y:r.top-sr.top,w:r.width,h:r.height};});
+  /* (35) the heading never leaves the stage: clamp its width first so
+     a long sub-line wraps instead of overflowing on a phone. */
+  hd.style.maxWidth=Math.max(40,sr.width-8)+"px";
+  const hw=Math.min(hd.offsetWidth||300,Math.max(40,sr.width-8)),hh=hd.offsetHeight||70;
+  /* (42.5) the HUD is gone: the heading takes the first free place of
+     top-left, top-right, bottom-left above the axis labels. */
+  const cands=[{x:18,y:6},{x:sr.width-hw-18,y:6},{x:18,y:sr.height-hh-40}];
+  const hit=(r)=>dots.some(d=>r.x<d.x+d.w+4&&d.x<r.x+r.w+4&&r.y<d.y+d.h+4&&d.y<r.y+r.h+4)
+    ||labels.some(l=>l.w>1&&r.x<l.x+l.w&&l.x<r.x+r.w&&r.y<l.y+l.h&&l.y<r.y+r.h);
+  const fits=(r)=>r.x>=4&&r.x+r.w<=sr.width-4&&r.y>=1&&r.y+r.h<=sr.height-1;
+  for(const c of cands){const r={x:Math.max(4,Math.min(sr.width-hw-4,c.x)),y:Math.max(4,c.y),w:hw,h:hh};if(fits(r)&&!hit(r)){hd.style.left=r.x+"px";hd.style.top=r.y+"px";return;}}
+  hd.style.left="18px";hd.style.top="6px";
+}
+function drawRange(ev){
+  const rc=ev.rc;if(!rc)return;
+  for(const e of (rc.extents||[])){
+    el("line",{x1:e.x1,y1:e.y1,x2:e.x2,y2:e.y2,stroke:"#FFB54D","stroke-width":SW(2),id:"rangeRuler"},ov);
+    const mx=(e.x1+e.x2)/2,my=(e.y1+e.y2)/2;
+    const len=rc.uses_scale?fmtVal(e.length_px*(R.scale?R.scale.m_per_px:0))+" m":fmtInt(e.length_px)+" px";
+    // the chip sits beside the extent, never on its line (35.1)
+    const horiz=Math.abs(e.x2-e.x1)>=Math.abs(e.y2-e.y1);
+    const t=horiz
+      ?labelAt(mx,Math.max(FS(14),Math.min(e.y1,e.y2)-SW(6)),(e.name||"extent")+" "+len,13,"middle")
+      :labelAt(Math.max(e.x1,e.x2)+SW(8),my,(e.name||"extent")+" "+len,13,"start");
+    t.dataset.testid="range-chip";
+  }
+  drawCaption(rc.label||"Range check",`<b>${escapeHtml(rc.label||"")}</b> ${rangeBarHtml(rc)}`);
+}
+/* ---------- verdict card (7,31,32) ---------- */
+function outsideDecider(){
+  const v=R.verdict||{};
+  const rc=(R.range_checks||[]).find(r=>r.id===(v.decided_by||""));
+  return (v.kind==="impossible"||(rc&&rc.outcome==="outside"))?rc||true:null;
+}
+/* (41) the retime a non-fitting world would need, from retime_factor. */
+function retimeText(c){
+  if(c.delta_sigma!=null&&c.delta_sigma<=2)return"";
+  const f=c.retime_factor;
+  if(f==null||!isFinite(f)||f===1)return"";
+  if(f>1)return` · only if slowed ×${Number(f).toFixed(2)}`;
+  return` · only if sped up ×${Number(1/f).toFixed(2)}`;
+}
+/* (40) the stamp names the world as §31 writes it: ON EARTH, ON MARS,
+   ON THE MOON — never "THE EARTH". */
+function onWorldName(w){return w==="Moon"?"ON THE MOON":("ON "+String(w||"Earth").toUpperCase());}
+function stampFor(){
+  const v=R.verdict||{};const kind=v.kind;
+  /* (39, 40) a verdict decided by a range check reads like one: the
+     stamp and its gloss come from that check's own result, never from
+     a playback speed and never with "g within 2σ" (there is no g). */
+  const rc=(R.range_checks||[]).find(r=>r.id===(v.decided_by||""));
+  if(rc){
+    const w=(v.world&&WORLD_C[v.world])?v.world:"Earth";
+    const what=(rc.range&&rc.range.what)||"range";
+    if(rc.outcome==="outside"){
+      const sub=`${fmtSigmaMult(rc.delta_sigma||0)} ${(rc.side==="below")?"below":"above"} ${what}`;
+      return{text:`NOT REALISTIC ON ${w.toUpperCase()}`,col:"#FF4D4D",sub:sub};
+    }
+    const lbl=rc.label||what;
+    return{text:`REALISTIC ${onWorldName(w)} ✓`,col:WORLD_C[w]||"#4FE3F0",sub:`${lbl} inside its range`};
+  }
+  if(kind==="world"){const w=v.world||"Moon";return{text:`REALISTIC ${onWorldName(w)} ✓`,col:WORLD_C[w]||"#4FE3F0",sub:`g within 2σ`};}
+  /* (47.4) the retimed stamp reads the direction: verdict.factor is
+     k > 1 and verdict.direction is "sped" or "slowed". Only a result
+     without direction falls back to the old rule (factor below 1 =
+     sped up, k = 1/factor). */
+  if(kind==="retimed"){const k=Math.abs(v.factor||1);const dir=v.direction||((v.factor||1)<1?"sped":"slowed");const w=dir==="sped"?"SPED UP":"SLOWED";return{text:`NOT REAL SPEED · ${w} ×${k.toFixed(1)}`,col:"#FF4D4D",sub:`at real speed it fits the ${v.world||"Moon"}`};}
+
+  const od=outsideDecider();
+  if(od){const w=((R.verdict||{}).world&&WORLD_C[(R.verdict||{}).world])?(R.verdict||{}).world:"Earth";return{text:`NOT REALISTIC ON ${w.toUpperCase()}`,col:"#FF4D4D",sub:`no playback speed makes this motion fit ${w.toLowerCase()}`};}
+  {const r=String(v.reason||"no verdict");const s=r.length>42?r.slice(0,39).replace(/\s+\S*$/,"")+" …":r;return{text:"UNDETERMINED",col:"#8A99AB",sub:s};}
+}
+function drawVerdict(){
+  const v=R.verdict||{};const host=$("verdict");host.style.display="block";host.dataset.testid="verdict-card";
+  const hasG=v.g_measured!=null;
+  /* (40) a verdict decided by a range check headlines like its kind:
+     "Realistic on Earth" / "Not realistic on Earth" / "Undetermined",
+     never the raw kind ("World") and never with g wording (no g here). */
+  const rcHead=(R.range_checks||[]).find(r=>r.id===(v.decided_by||""));
+  const headWorld=(v.world&&WORLD_C[v.world])?v.world:"Earth";
+  /* (47.4) the headline of a retimed verdict names the factor with its
+     direction: "sped up ×<k> from <world>" or "slowed ×<k> …" (k to one
+     decimal, k > 1). With a measured g the g number stays (§31) and the
+     factor rides under it, so the label always comes with its number. */
+  const rfac=v.kind==="retimed"?(()=>{const k=Math.abs(v.factor||1);const dir=v.direction||((v.factor||1)<1?"sped":"slowed");return `${dir==="sped"?"sped up":"slowed"} ×${k.toFixed(1)} from ${(v.world||"Moon")}`;})():"";
+  let head;
+  if(hasG)head=`<div class="g" data-testid="verdict-headline">g = ${fmtVal(v.g_measured,v.sigma_g)} <small>± ${fmtVal(v.sigma_g,v.sigma_g)} m/s²</small>${rfac?` <small>${escapeHtml(rfac)}</small>`:""}</div>`;
+  else if(v.kind==="retimed")head=`<div class="g" data-testid="verdict-headline">${escapeHtml(rfac)}</div>`;
+  else if(rcHead)head=`<div class="g" data-testid="verdict-headline">${rcHead.outcome==="outside"?`Not realistic on ${headWorld}`:`Realistic on ${headWorld}`}</div>`;
+  else if(outsideDecider())head=`<div class="g" data-testid="verdict-headline">Not realistic on ${headWorld}</div>`;
+  else head=`<div class="g" data-testid="verdict-headline">${escapeHtml((v.kind||"undetermined")[0].toUpperCase()+(v.kind||"undetermined").slice(1))}</div>`;
+  let gauge="";
+  const cands=((R.worlds||{}).candidates||[]);
+  if(hasG){
+    const lo=Math.log10(0.4),hi=Math.log10(14);
+    const X=g=>(Math.log10(g)-lo)/(hi-lo)*100;
+    let ticks="";for(const g of [0.5,1,2,5,10]){ticks+=`<div class="gtick" style="left:${X(g)}%"><span>${g}</span></div>`;}
+    let marks="";for(const c of cands){const col=WORLD_C[c.world]||"#FFF";marks+=`<div class="gmark" data-testid="gauge-mark" style="left:${X(c.g_m_s2)}%;background:${col}"><span style="color:${col}">${escapeHtml(c.world)} ${fmtSig(c.g_m_s2,3)}</span></div>`;}
+    const s=v.sigma_g||0;const b0=X(Math.max(0.4,v.g_measured-2*s)),b1=X(Math.min(14,v.g_measured+2*s));
+    gauge=`<div id="gauge" data-testid="gauge"><div class="gunit">g, m/s²</div><div id="gaxis"></div>${ticks}<div class="gband" style="left:${b0}%;width:${Math.max(1,b1-b0)}%"></div><div class="gmark" style="left:${X(v.g_measured)}%;background:#4FE3F0;height:22px"><span style="color:#FFF;bottom:-20px">▼</span></div>${marks}</div>`;
+  }
+  let rbars="";for(const rc of (R.range_checks||[]))rbars+=rangeBarHtml(rc);
+  /* (39) a world chip with σ appears only when verdict.g_measured is
+     not null: with no gravity part there is no per-world σ to show. */
+  /* (41) a world chip that does not fit at native speed adds the
+     retime it would need, taken from retime_factor: slowed above 1,
+     sped up (reciprocal, two decimals) below 1. */
+  /* (48.2) several jumps: under the combined g, one line with each
+     jump's g ("Jump 1: 1.59 ± 0.25 · Jump 2: 1.62 ± 0.30"). */
+  let perJump="";
+  if((R.segments||[]).length>1){
+    const parts=[];
+    (R.segments||[]).forEach((sgx,ix)=>{const fx=sgx.fit||{};if(fx.g_app!=null&&fx.sigma_g!=null)parts.push(`Jump ${ix+1}: ${fmtVal(fx.g_app,fx.sigma_g)} ± ${fmtVal(fx.sigma_g,fx.sigma_g)}`);});
+    if(parts.length>1)perJump=`<div data-testid="per-jump-g" style="font-family:var(--mono);font-size:13px;color:#C7D2DE;margin-top:4px">${escapeHtml(parts.join(" · "))}</div>`;
+  }
+  const chips=hasG?cands.map(c=>{const ok=c.delta_sigma<=2;const col=ok?(WORLD_C[c.world]||"#4FE3F0"):"#FF5A5A";return `<span class="sig" data-testid="sig-chip" style="border-color:${col};color:${col}">${escapeHtml(c.world)} ${fmtSigmaMult(c.delta_sigma)} ${ok?"✓":"✗"}${retimeText(c)}</span>`;}).join(""):"";
+  const excl=((R.worlds||{}).excluded||[]).map(e=>`<div>why not ${escapeHtml(e.world||"")}: ${escapeHtml(e.reason||e.cue||"")}</div>`).join("");
+  const st=stampFor();
+  host.innerHTML=`<div class="eb">Verdict</div>${head}${perJump}${gauge}${rbars}<div class="sent">${escapeHtml(R.sentence||"")}</div><div class="sigrow">${chips}</div><div style="font-size:12px;color:#C7D2DE">${excl}</div><div id="stamp" data-testid="stamp" style="border-color:${st.col};color:${st.col}"><div class="w">${escapeHtml(st.text)}</div><div class="s">${escapeHtml(st.sub)}</div></div>${FLAGS.sidecar?'<button id="revealBtn">Reveal the ground truth</button><div id="gtBlock" style="display:none"></div>':""}`;
+  if(FLAGS.sidecar){$("revealBtn").addEventListener("click",()=>{const g=$("gtBlock");g.style.display="block";g.innerHTML=`<div class="eb">Ground truth</div><div>${escapeHtml(JSON.stringify(FLAGS.sidecar))}</div>`;});}
+  fitStamp();
+  // the stamp never covers the gauge (22.5): nudge it below any collision
+  const cardR=host.getBoundingClientRect(),stamp=$("stamp");
+  if(stamp){
+    const sr2=stamp.getBoundingClientRect();
+    const labels=[...host.querySelectorAll("#gauge .gmark span,.gtick span,.gunit")];
+    for(const lb of labels){
+      const r=lb.getBoundingClientRect();
+      if(!(sr2.right<r.left||r.right<sr2.left||sr2.bottom<r.top||r.bottom<sr2.top)){
+        stamp.style.top=(r.bottom-cardR.top+6)+"px";
+        break;
+      }
+    }
+    fitStamp();
+  }
+}
+function fitStamp(){const s=$("stamp");if(!s)return;const w=s.querySelector(".w");let fs=32;w.style.fontSize=fs+"px";while((s.scrollWidth>s.clientWidth||s.scrollHeight>s.clientHeight)&&fs>10){fs-=2;w.style.fontSize=fs+"px";}}
+/* ---------- holds state machine (18.1, 26, 34) ---------- */
+let rafId=0,lastT=0;
+function frameAtTime(){return Math.floor(vid.currentTime*FPS);}
+function queueCrossed(prev,cur){
+  const q=[];
+  for(const e of EVENTS){if(e.frame>prev&&e.frame<=cur)q.push(e);}
+  return q;
+}
+function enterHold(ev,sticky){
+  S.hold=ev;S.holdT=0;
+  const ct=camTargetFor(ev);S.camT={x:ct.x,y:ct.y,z:ct.z};S.camFit=ct.z;
+  // 44.1: a hold seeks only when it must. Seeks are exact: never
+  // fastSeek (Firefox/Safari land on keyframes and the ride loops).
+  // When the playhead already sits on the event frame, stay put.
+  S.frame=ev.frame;S.prevFrame=ev.frame;S.prevFrame2=ev.frame;S.clock=ev.frame;
+  if(FLAGS.has_video){
+    const _t=ev.frame/FPS;
+    if(Math.abs(vid.currentTime-_t)>0.5/FPS){try{vid.currentTime=_t;}catch(e){}}
+  }
+  // 44.2: an event fires at most once per ride.
+  if(!S.fired.includes(ev.id))S.fired.push(ev.id);
+  try{vid.pause();}catch(e){}
+  S.seen.push(ev.kind+":"+ev.frame);
+  revealUpTo(ev.frame);
+  if(sticky){
+    document.querySelectorAll("#steps .step.open .ln").forEach(ln=>ln.classList.add("shown"));
+    S.lineQueue=[];
+    S.cam={x:S.camT.x,y:S.camT.y,z:S.camT.z};
+    scrollRailToCurrent();
+  }else revealLines(ev);
+  if(ev.kind==="verdict")showVerdictAll();
+  drawFreeze();
+  applyCam();
+  const fl=$("flash");fl.style.transition="none";fl.style.opacity=0.16;requestAnimationFrame(()=>{fl.style.transition="opacity .45s";fl.style.opacity=0;});
+}
+function exitHold(){
+  // 44.2: the playhead does not move back by itself. After a hold the
+  // video may report a time before the held frame; seek to the held
+  // frame again (it is already fired, so nothing re-fires).
+  const _h=S.hold;
+  S.hold=null;S.holdT=0;S.camT={x:DW/2,y:DH/2,z:1.03};
+  $("holdbar").style.width="0";
+  const hd=$("chronoHead");if(hd)hd.remove();
+  if(S.playing){
+    // 34.1: queued crossings fire in order; resume from the exited hold
+    if(S.holdQueue&&S.holdQueue.length){const nx=S.holdQueue.shift();enterHold(nx);renderStage();applyCam();return;}
+    if(_h&&FLAGS.has_video){
+      const _t=_h.frame/FPS;
+      if(Math.abs(vid.currentTime-_t)>0.5/FPS){try{vid.currentTime=_t;}catch(e){}}
+      S.frame=_h.frame;S.prevFrame=_h.frame;S.prevFrame2=_h.frame;
+    }
+    try{const p=vid.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+  }
+}
+function tick(t){
+  rafId=requestAnimationFrame(tick);
+  const dt=Math.min(1,(t-lastT)/1000||0.016);lastT=t;
+  // the timeline re-lanes itself when its width changes (35)
+  const _tw=$("timeline").clientWidth;
+  if(_tw&&Math.abs(_tw-(S._tlW||0))>2){S._tlW=_tw;layoutTimelineLabels();}
+  if(!S.playing||!S.started)return;
+  if(S.hold){
+    S.holdT+=dt;
+    const h=S.hold;$("holdbar").style.width=(100*Math.min(1,S.holdT/h.dur))+"%";
+    revealTick(h,dt);
+    S.camT.z=Math.min(S.camFit||h.zoom,(h.zoom||1.03)+0.012*Math.min(6,S.holdT),resCap());
+    moveCam(dt,3.2);
+    if(S.holdT>=h.dur&&h.dur>0){exitHold();}
+    maybeRender(h.kind+Math.floor(S.holdT*5));applyCam();return;
+  }
+  if(!FLAGS.has_video){
+    // range-only pages (32): poster mode, the clock is simulated
+    S.clock+=dt*FPS;const cur=Math.min(NF-1,Math.floor(S.clock));
+    if(cur!==S.frame){S.frame=cur;S.prevFrame=cur;advanceCrossed(cur);revealUpTo(cur);renderStage();}
+    applyCam();return;
+  }
+  const prev=S.prevFrame;
+  const cur=frameAtTime();
+  // (42.3) the verdict hold starts only when the video reaches its
+  // last frame (ended, or the last frame), never earlier. (44.2) it
+  // fires at most once per ride, even if the end falls between ticks.
+  if(vid.ended||cur>=NF-1){const ve=EVENTS[EVENTS.length-1];if(!S.fired.includes(ve.id)&&(!S.hold||S.hold.kind!=="verdict"))enterHold(ve);S.playing=false;updatePlayBtn();renderStage();applyCam();return;}
+  if(cur!==prev){
+    if(cur<prev&&(prev-cur)>1){
+      // 44.2: the playhead does not move back by itself. A backward
+      // report from the element is corrected to the last held frame,
+      // never re-fired.
+      try{vid.currentTime=prev/FPS;}catch(e){}
+      moveCam(dt,4.5);applyCam();return;
+    }
+    S.frame=cur;
+    if($("ckPause").classList.contains("on")){
+      // (42.3) every crossed event fires in frame order, except the
+      // verdict, which waits for the last frame; the check resumes
+      // from the held frame, and the player never rewinds (26.1).
+      // (44.2) already-fired events never fire again in this ride.
+      const crossed=queueCrossed(prev,cur).filter(e=>e.kind!=="verdict"&&!(e.id==="scale"&&S.scaleDone)&&!S.fired.includes(e.id));
+      if(crossed.length){
+        // 34.1: every crossed event fires in frame order; the check
+        // resumes from the held frame, and the player never rewinds (26.1)
+        S.holdQueue=crossed.slice(1);
+        const first=crossed[0];
+        if(first.id==="scale")S.scaleDone=true;
+        enterHold(first);
+        renderStage();applyCam();return;
+      }
+    }
+    S.prevFrame=cur;
+    revealUpTo(cur);
+    renderStage();
+  }
+  moveCam(dt,4.5);applyCam();
+}
+function advanceCrossed(cur){
+  const prev=S.prevFrame2==null?cur-1:S.prevFrame2;
+  S.prevFrame2=cur;
+  if(cur>=NF-1){const ve=EVENTS[EVENTS.length-1];if(!S.fired.includes(ve.id)&&(!S.hold||S.hold.kind!=="verdict"))enterHold(ve);S.playing=false;updatePlayBtn();renderStage();applyCam();return;}
+  if($("ckPause").classList.contains("on")){
+    const crossed=queueCrossed(prev,cur).filter(e=>e.kind!=="verdict"&&!(e.id==="scale"&&S.scaleDone)&&!S.fired.includes(e.id));
+    if(crossed.length){
+      S.holdQueue=crossed.slice(1);
+      const first=crossed[0];
+      if(first.id==="scale")S.scaleDone=true;
+      enterHold(first);
+      renderStage();applyCam();
+    }
+  }
+}
+function maybeRender(key){if(S.renderKey!==key){S.renderKey=key;renderStage();}}
+function revealLines(ev){
+  const steps=[...document.querySelectorAll("#steps .step")].filter(d=>d.dataset.event===ev.kind||(ev.kind==="scale"&&d.dataset.event==="scale"));
+  S.lineQueue=[];
+  for(const d of steps)for(const ln of d.querySelectorAll(".ln:not(.shown)"))S.lineQueue.push(ln);
+  S.lineT=0;
+}
+function revealTick(h,dt){
+  S.lineT=(S.lineT||0)+dt;
+  if(S.lineQueue&&S.lineQueue.length&&S.lineT>=0.35){S.lineT=0;const ln=S.lineQueue.shift();ln.classList.add("shown");showNewestLine();}
+}
+/* (47.1) no fold at the verdict: every step is open with all its
+   lines, and the column ends with the Verdict step at the bottom.
+   Scrolling up shows every step, each with its calculation. Each
+   heading still expands on click. */
+function showVerdictAll(){
+  document.querySelectorAll("#steps .step").forEach(d=>d.classList.add("open"));
+  document.querySelectorAll("#steps .ln").forEach(ln=>ln.classList.add("shown"));
+  document.querySelectorAll("#steps .step.cur").forEach(d=>d.classList.remove("cur"));
+  const open=[...document.querySelectorAll("#steps .step.open")];
+  if(open.length)open[open.length-1].classList.add("cur");
+  const rail=$("sideInner");
+  if(rail)rail.scrollTo({top:rail.scrollHeight,behavior:"smooth"});
+}
+/* ---------- transport ---------- */
+function seekFrame(f){
+  S.frame=Math.max(0,Math.min(NF-1,f));
+  S.prevFrame=S.frame;S.prevFrame2=S.frame;
+  S.clock=S.frame;
+  // 44.1: every seek sets currentTime to the frame's time — never
+  // fastSeek (Firefox/Safari land on the nearest keyframe, not the
+  // asked time, and the ride loops). The stage draws only after
+  // seeked (§16); drawFreeze here is refreshed on seeked too.
+  if(FLAGS.has_video){try{vid.currentTime=S.frame/FPS;}catch(e){}}
+  // 44.2: an event leaves the fired set when the viewer seeks to a
+  // frame before it (timeline, step click, prev/next, arrows).
+  S.fired=S.fired.filter(id=>{const e=EVENTS.find(x=>x.id===id);return !!e&&e.frame<=S.frame;});
+  // 47.1: a backward seek closes the steps after the new frame.
+  closeAfter(S.frame);
+  drawFreeze();
+}
+function seekTo(f,sticky){seekFrame(f);const ev=EVENTS.find(e=>e.frame===f);if(sticky&&ev){S.holdQueue=[];enterHold(ev,true);}revealUpTo(S.frame);if(sticky)scrollRailToCurrent();renderStage();applyCam();}
+function updatePlayBtn(){$("playBtn").textContent=S.playing?"❚❚":"▶";}
+function playFromStart(){
+  // 26.1: the ride is chronological. Play from 0; holds fire in frame
+  // order and the player never seeks backwards. Same-frame Scale and
+  // Takeoff chain Scale first via the event order (18.1).
+  // 44.2: both start buttons (the first-screen button and the round
+  // play button) run this same ride from 0, clearing the fired set.
+  /* (47.3) the ride starts only when the video can play through. A
+     start pressed earlier shows "Loading video…" on the button and
+     starts the ride by itself when the video is ready. */
+  if(FLAGS.has_video&&!S.videoReady){
+    S.pendingStart=true;
+    const wb=$("watchBtn");if(wb)wb.textContent="Loading video…";
+    return;
+  }
+  S.pendingStart=false;
+  const wb0=$("watchBtn");if(wb0&&wb0.textContent==="Loading video…")wb0.textContent="▶ Watch the analysis";
+  S.started=true;S.playing=true;updatePlayBtn();
+  try{vid.pause();}catch(e){}
+  /* (47.3) no seek at the start when the video already stands at frame
+     0 (within half a frame): a seek followed at once by play() stalls
+     Firefox for about a second. */
+  S.frame=0;S.prevFrame=0;S.prevFrame2=0;S.clock=0;
+  if(FLAGS.has_video){try{if(Math.abs(vid.currentTime)>0.5/FPS)vid.currentTime=0;}catch(e){}}
+  S.scaleDone=false;S.seen=[];S.fired=[];
+  document.querySelectorAll("#steps .step").forEach(d=>d.classList.remove("open"));
+  document.querySelectorAll("#steps .ln.shown").forEach(l=>l.classList.remove("shown"));
+  drawFreeze();
+  try{const p=vid.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+  renderStage();applyCam();
+}
+function togglePlay(){
+  if(!S.started){playFromStart();return;}
+  if(S.hold&&S.hold.kind==="verdict"){
+    // space after the verdict: ground truth on acceptance pages, else restart
+    const rb=$("revealBtn");if(rb&&$("gtBlock")&&$("gtBlock").style.display==="none"){rb.click();return;}
+    playFromStart();return;
+  }
+  /* (42.3) pause pauses: while the video plays it stops and the
+     overlays stay; during a timed hold its timer, camera drift, line
+     reveal and animations stop where they are, and the next press
+     continues the hold from that point. Skipping a hold is only the
+     next-event button and ↓. */
+  if(S.playing){S.playing=false;try{vid.pause();}catch(e){}}
+  else{S.playing=true;if(!S.hold){try{const p=vid.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}}
+  updatePlayBtn();
+}
+/* (42.3) the timeline is a seek bar: click or drag anywhere on it,
+   touch included, and the video seeks to that frame and pauses.
+   Within 2 frames of an event frame the stage shows that event's
+   sticky hold. Later events hold as usual when play continues. */
+function tlSeekTo(clientX){
+  const r=$("timeline").getBoundingClientRect();
+  const frac=Math.max(0,Math.min(1,(clientX-r.left)/Math.max(1,r.width)));
+  const f=Math.max(0,Math.min(NF-1,Math.round(frac*(NF-1))));
+  S.started=true;S.playing=false;S.holdQueue=[];S.hold=null;
+  try{vid.pause();}catch(e){}updatePlayBtn();
+  seekFrame(f);
+  const ev=EVENTS.find(e=>Math.abs(e.frame-f)<=2);
+  if(ev)enterHold(ev,true);
+  revealUpTo(S.frame);scrollRailToCurrent();renderStage();applyCam();
+}
+let tlDrag=false;
+function bindTimeline(){
+  const tl=$("timeline");
+  tl.addEventListener("pointerdown",e=>{tlDrag=true;try{tl.setPointerCapture(e.pointerId);}catch(_){}tlSeekTo(e.clientX);});
+  tl.addEventListener("pointermove",e=>{if(tlDrag)tlSeekTo(e.clientX);});
+  tl.addEventListener("pointerup",()=>{tlDrag=false;});
+  tl.addEventListener("pointercancel",()=>{tlDrag=false;});
+}
+$("playBtn").addEventListener("click",togglePlay);
+document.addEventListener("keydown",e=>{
+  /* (42.3) space toggles playback from every state, focus anywhere:
+     default-prevented so a focused button does not re-trigger. */
+  if(e.key===" "){e.preventDefault();togglePlay();}
+  else if(e.key==="ArrowRight"){seekTo(Math.min(NF-1,S.frame+1));}
+  else if(e.key==="ArrowLeft"){seekTo(Math.max(0,S.frame-1));}
+  else if(e.key==="ArrowUp"){e.preventDefault();stepEventBtn(-1);}
+  else if(e.key==="ArrowDown"){e.preventDefault();stepEventBtn(1);}
+});
+function stepEventBtn(d){const fs=EVENTS.map(e=>e.frame);let t=d>0?fs.find(f=>f>S.frame):[...fs].reverse().find(f=>f<S.frame);if(t==null)t=d>0?fs[fs.length-1]:fs[0];const ev=EVENTS.find(e=>e.frame===t);seekFrame(t);if(ev)enterHold(ev,true);renderStage();applyCam();}
+$("prevEv").addEventListener("click",()=>stepEventBtn(-1));
+$("nextEv").addEventListener("click",()=>stepEventBtn(1));
+$("speed").addEventListener("change",e=>{vid.playbackRate=parseFloat(e.target.value);});
+$("ckPause").addEventListener("click",()=>$("ckPause").classList.toggle("on"));
+$("ckFull").addEventListener("click",()=>{S.full=!S.full;$("ckFull").classList.toggle("on",S.full);buildRail();buildIntro();revealUpTo(S.frame);if(S.hold){if(S.hold.kind==="verdict")showVerdictAll();else document.querySelectorAll("#steps .step.open .ln").forEach(l=>l.classList.add("shown"));}});
+/* timeline (4,27): labelled ranges per motion + point events in lanes */
+function buildTimeline(){
+  const segs=$("tlSegs"),tk=$("tlTicks"),tl=$("timeline");segs.innerHTML="";tk.innerHTML="";
+  const mots=((R.first_look||{}).motions||[]);
+  const items=mots.length?mots:(R.segments||[]).map(s=>({frame_start:(s.frames||{}).start,frame_end:(s.frames||{}).end,description:(s.label||"segment"),segment_id:s.id}));
+  /* (39, 40) a timeline bar names its motion: an unmeasured motion
+     shows its description, never only "not measured". The clock's rate
+     goes on one bar only: the motion bar whose frames overlap the
+     clock calculation step's frames. With no such step, no bar shows
+     a rate. */
+  const clkStep=(R.calculation_steps||[]).find(s=>s.id==="clock");
+  const clkRange=(clkStep&&clkStep.frame!=null)
+    ?{a:clkStep.frame,b:(clkStep.frame_end==null?clkStep.frame:clkStep.frame_end)}:null;
+  const clk=(R.clock&&R.clock.measured_rate_hz&&clkRange)?`${R.clock.interpretation==="stride"?"stride":"step"} rate ${Number(R.clock.measured_rate_hz).toFixed(1)} Hz`:"";
+  /* (43.6) a measured segment is labelled "Jump 1", "Jump 2"
+     (the motion kind and its index); an unmeasured segment has no
+     label. No label is longer than 12 characters. The clock's rate
+     (39, 40) rides in the overlapping bar's tooltip: a 16-character
+     rate string can never satisfy the 12-character label rule. */
+  const measured=items.filter(m=>m.segment_id);
+  let clkBar=-1;
+  if(clk)for(let i=0;i<items.length;i++){const m=items[i];
+    if(m.frame_start<=clkRange.b&&m.frame_end>=clkRange.a){clkBar=i;break;}}
+  const shortLb=s=>{s=String(s||"");return s.length>12?s.slice(0,12):s;};
+  for(let i=0;i<items.length;i++){
+    const m=items[i];
+    const d=document.createElement("div");d.className="tlseg"+(m.segment_id?"":" grey");
+    d.style.left=(100*m.frame_start/NF)+"%";d.style.width=(100*Math.max(1,m.frame_end-m.frame_start)/NF)+"%";
+    let lb="";
+    if(m.segment_id)lb="Jump "+(measured.indexOf(m)+1);
+    if(lb.length>12)lb=lb.slice(0,12);
+    d.innerHTML=lb?`<span>${escapeHtml(lb)}</span>`:"";
+    /* (43.6) a labelled bar is at least as wide as its label, so
+       "Jump 1" reads whole on a short jump; the bar's left edge
+       (its start frame) never moves. */
+    if(lb)d.style.minWidth="36px";
+    let tip=m.segment_id?(m.description||lb):((m.description||"")+" — "+(m.skip_reason||""));
+    if(i===clkBar)tip+=(tip?" · ":"")+clk;
+    d.title=tip;
+    segs.appendChild(d);
+  }
+  const pts=EVENTS.filter(e=>e.kind!=="takeoff"&&e.kind!=="apex"&&e.kind!=="landing");
+  for(const e of pts){
+    const x=100*e.frame/Math.max(1,NF);
+    const d=document.createElement("div");d.className="tltick";d.style.left=x+"%";
+    /* (47.4) a range event's timeline tick reads "Size check", never
+       the reference name cut at 12 characters. */
+    const tickLb=e.kind==="range"?"Size check":shortLb(e.t);
+    d.innerHTML=`<span class="tlbl">${escapeHtml(tickLb)}</span>`;d.title=e.kind==="range"?"Size check":e.t;tk.appendChild(d);
+  }
+  layoutTimelineLabels();
+}
+/* timeline labels (4, 35): lanes measured after layout, above for
+   ranges and below for point events, so labels never crowd, overlap
+   or clip at any width. Re-run after layout changes. */
+function layoutTimelineLabels(){
+  const tl=$("timeline");if(!tl)return;
+  tl.classList.remove("tall","pt2");
+  const W=tl.clientWidth||300;
+  const lanesOf=(els,centreX)=>{
+    const lanes=[];
+    for(const e of els){
+      const w=e.offsetWidth||60;
+      const cx=Math.max(0,Math.min(W-w,centreX(e)-w/2));
+      let lane=0;
+      for(;lane<lanes.length;lane++){
+        if(!lanes[lane].some(b=>!(cx+w+3<b.x||b.x+b.w+3<cx)))break;
+      }
+      if(lane===lanes.length)lanes.push([]);
+      lanes[lane].push({x:cx,w:w});
+      e._lane=lane;e._cx=cx;
+    }
+    return lanes;
+  };
+  /* (40) each motion label is clipped to its own bar (CSS ellipsis,
+     full name in the tooltip), so rows are assigned by bar overlap:
+     two labels share a row only when their bars are disjoint.
+     (43.6) only labelled bars take a lane; unlabelled bars need no
+     room. Extra lanes shift the bar row down inside the timeline so
+     every label stays inside the control bar. */
+  const bars=[...tl.querySelectorAll(".tlseg")].filter(d=>d.firstChild);
+  const above=[];
+  for(const d of bars){
+    const L=parseFloat(d.style.left)/100*W;
+    const rendered=d.getBoundingClientRect();
+    const Wd=rendered.width>1?rendered.width:parseFloat(d.style.width)/100*W;
+    let lane=0;
+    for(;lane<above.length;lane++){
+      if(!above[lane].some(b=>!(L+Wd+3<b.x||b.x+b.w+3<L)))break;
+    }
+    if(lane===above.length)above.push([]);
+    above[lane].push({x:L,w:Wd});
+    const s=d.firstChild;
+    if(s){s.classList.remove("lane1","lane2");s.style.left="";s.style.bottom=(8+lane*18)+"px";}
+  }
+  const shift=(Math.max(1,above.length)-1)*18;
+  for(const d of tl.querySelectorAll(".tlseg"))d.style.top=(22+shift)+"px";
+  for(const id of ["tlTrack","tlPlay"]) {const e=$(id);if(e)e.style.top=(30+shift)+"px";}
+  for(const d of tl.querySelectorAll(".tltick"))d.style.top=(30+shift)+"px";
+  /* (40) point-event labels are measured at their real text width and
+     laned so Scale/Verdict-style neighbours sit on separate rows. */
+  const lbs=[...tl.querySelectorAll(".tltick .tlbl")];
+  lbs.forEach(lb=>{lb.classList.remove("lane1","lane2");lb.style.left="";lb.style.transform="";});
+  const below=lanesOf(lbs,lb=>parseFloat(lb.parentElement.style.left)/100*W);
+  lbs.forEach(lb=>{
+    const x=parseFloat(lb.parentElement.style.left)/100*W;
+    lb.style.transform="none";
+    lb.style.left=(lb._cx-x)+"px";
+    lb.style.top=(10+lb._lane*17)+"px";
+  });
+  tl.classList.remove("tall","pt2");tl.style.paddingTop="";
+  tl.style.height=(56+shift+(Math.max(1,below.length)-1)*17)+"px";
+}
+/* phone cards below the video, never over it (35.2): the verdict
+   card and the scale reference card move into the slot; the stage
+   keeps only HUD, badge, rulers, ghosts, caption and trajectories */
+function placeVerdict(){
+  const slot=$("phoneSlot"),st=$("stage");
+  if(!slot||!st)return;
+  const phone=window.matchMedia&&window.matchMedia("(max-width: 700px)").matches;
+  for(const id of ["verdict","refcard"]){
+    const v=$(id);if(!v)continue;
+    if(phone){v.classList.add("below");if(v.parentElement!==slot)slot.appendChild(v);}
+    else{v.classList.remove("below");if(v.parentElement!==st)st.appendChild(v);}
+  }
+}
+/* ---------- boot ---------- */
+function boot(){
+  buildIntro();buildRail();buildTimeline();placeVerdict();bindTimeline();
+  if(!(R.segments||[]).length){$("chartBlock").style.display="none";}
+  /* (47.3) over HTTP(S) (GitHub Pages) the player fetches the whole
+     clip once, as a blob, and plays it from an object URL. On file://
+     it uses the file directly. */
+  if(FLAGS.has_video){
+    if(location.protocol.indexOf("http")===0){
+      fetch("clip.mp4").then(r=>{if(!r.ok)throw new Error("clip "+r.status);return r.blob();}).then(b=>{vid.src=URL.createObjectURL(b);}).catch(()=>{vid.src="clip.mp4";});
+    }else vid.src="clip.mp4";
+  }
+  else{vid.style.display="none";freeze.style.display="none";if(FLAGS.poster){const pi=$("posterImg");pi.src=FLAGS.poster;pi.style.display="block";}}
+  /* (47.3) the ride starts only when the video can play through. */
+  S.videoReady=false;
+  vid.addEventListener("canplaythrough",()=>{S.videoReady=true;if(S.pendingStart){playFromStart();}});
+  vid.addEventListener("loadedmetadata",()=>{fitStage();drawFreeze();applyCam();});
+  // 46.1: while the video plays the freeze canvas is hidden and the
+  // viewer sees the live video; when it pauses the canvas is drawn and
+  // shown. seeked redraws it as before (16).
+  vid.addEventListener("playing",()=>{syncFreezeVis();});
+  vid.addEventListener("pause",()=>{drawFreeze();});
+  vid.addEventListener("seeked",()=>{drawFreeze();});
+  fitStage();
+  const q=new URLSearchParams(location.search);
+  if(q.has("frame")){S.started=true;seekTo(parseInt(q.get("frame"),10)||0,true);}
+  else if(q.has("event")){const ev=EVENTS.find(e=>e.id===q.get("event")||e.kind===q.get("event"));S.started=true;if(ev){seekFrame(ev.frame);enterHold(ev,true);}renderStage();applyCam();}
+  else{renderStage();applyCam();}
+  if(q.get("autoplay")==="1")togglePlay();
+  preloadCutouts().then(()=>{renderStage();applyCam();});
+  lastT=performance.now();rafId=requestAnimationFrame(tick);
+}
+document.addEventListener("DOMContentLoaded",boot);
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

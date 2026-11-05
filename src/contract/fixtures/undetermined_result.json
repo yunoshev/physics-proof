@@ -1,0 +1,28 @@
+{
+  "contract_version": 3,
+  "video": {"coded_width": 352, "coded_height": 240, "sample_aspect": {"num": 1, "den": 1}, "measured_fps": 30.0, "frame_count": 300, "duration_s": 10.0},
+  "first_look": {
+    "question": "Does the physics add up to the Moon?",
+    "summary": "No measurement could be completed.",
+    "scene_card": {"scene": "No frames were examined before the run stopped.", "place_date": null, "confidence": "low", "objects": []},
+    "by_eye": null,
+    "views": [],
+    "motions": [{"frame_start": 0, "frame_end": 299, "description": "motion interval seen before the run stopped", "segment_id": null, "skip_reason": "no segment measured before the run stopped"}]
+  },
+  "references": [],
+  "scale": null,
+  "segments": [],
+  "calculation_steps": [
+    {"id": "verdict", "title": "Verdict", "frame": null, "frame_end": null, "segment_id": null, "short": [{"type": "text", "text": "No measurement could be completed."}], "full": [], "caveats": []}
+  ],
+  "clock": null,
+  "clock_absent_reason": "No clock was measured before the run stopped.",
+  "worlds": {"candidates": [], "excluded": []},
+  "range_checks": [],
+  "error_budget": {"components": [], "sigma_total": null, "sigma_relative": null},
+  "verdict": {"kind": "undetermined", "world": null, "direction": null, "factor": null, "g_measured": null, "sigma_g": null, "reason": "undetermined: budget exhausted", "clock_note": null, "decided_by": null},
+  "sentence": "Undetermined: undetermined: budget exhausted",
+  "page_texts": {},
+  "self_built_tools": [],
+  "provenance": {"model": "synthetic", "run_id": "synthetic-undetermined", "artifacts": []}
+}

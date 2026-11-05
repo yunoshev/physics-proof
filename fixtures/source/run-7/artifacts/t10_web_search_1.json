@@ -1,0 +1,25 @@
+{
+  "query": "spacesuit backpack height size",
+  "facts": [
+    {
+      "text": "The EMU PLSS backpack measures about 26 by 20.5 by 10.5 inches.",
+      "url": "https://alpha.ecency.com/@toushik/space-suit-spacesuit-structure-and-functions-of-different-parts",
+      "quote": "EMU's PLSS Backpack is 26 \"\u00d7 20.5\" \u00d7 10.5 \"in size."
+    },
+    {
+      "text": "The primary PLSS unit measures 80 x 58.4 x 17 cm.",
+      "url": "https://www.americaspace.com/2014/09/17/nasa-hedges-on-critical-suit-battery-resupply/",
+      "quote": "secondary units. The primary unit measures 80 x 58.4 x 17 cm5."
+    },
+    {
+      "text": "The EMU overall storage envelope is 26 x 28 x 40 inches (66 x 71 x 102 cm).",
+      "url": "https://www.americaspace.com/2014/09/17/nasa-hedges-on-critical-suit-battery-resupply/",
+      "quote": "The EMU weighs approximately 225 lbs (102 kg) and has a overall storage envelope of 26 x 28 x 40 inches (66 x 71 x 102 cm)."
+    },
+    {
+      "text": "Shuttle EMU PLSS height is listed as 32.0 inches.",
+      "url": "https://spacecraft.ssl.umd.edu/publications/ICES02-2364.pdf",
+      "quote": "E - PLSS height  32.0 in 32.0 in"
+    }
+  ]
+}

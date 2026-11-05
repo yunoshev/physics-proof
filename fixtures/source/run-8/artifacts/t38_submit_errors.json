@@ -1,0 +1,7 @@
+[
+  {
+    "code": "MISSING_FIELD",
+    "field": "references",
+    "detail": "neither reference mask covers the other's frame, so the pair cannot be compared on a common frame"
+  }
+]

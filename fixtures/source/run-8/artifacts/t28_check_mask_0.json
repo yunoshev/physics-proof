@@ -1,0 +1,18 @@
+{
+  "overlay_artifact": "artifacts/t6_segment_preview_2.jpg",
+  "mask_extents_px": {
+    "x0": 67,
+    "x1": 139,
+    "y0": 30,
+    "y1": 176
+  },
+  "question": "An overlay image shows a translucent coloured mask drawn on one video frame, with one bounding box per masked region. Describe, in plain words, WHAT THE MASK COVERS: which part of the visible object or surface the tinted region covers, and which edges it includes or excludes (for example, whether it covers only part of an object or extends past it onto the background). Do NOT name or guess what the object is, where the footage comes from, or what experiment this is. Where the covering is ambiguous, list each alternative reading. As alternatives, name any separable or stacked parts inside the tinted region (for example a unit mounted on top of another) and any part of the same object left outside the tinted region.",
+  "coverage_answer": "The tinted region on the left covers the entire large upright light-toned figure in the left foreground. It includes the full height from the top of the upper mass down to the bottoms of the lower masses where they meet the ground, and the full width from its left side to its right side. The box edges sit just outside the figure with only a narrow margin of surrounding dark background and gray ground visible; it does not extend far onto the background and does not cut off any part of that left figure.",
+  "alternatives": [
+    "the brighter whitish upper section of the left figure inside the tint",
+    "the darker brownish lower section with two leg-like parts inside the tint, stacked below the upper section",
+    "no part of that same left foreground figure is left outside the tinted box - the small bright figure on the right is a separate shape"
+  ],
+  "confidence": null,
+  "turn": 28
+}

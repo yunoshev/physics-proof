@@ -1,0 +1,128 @@
+{
+  "contract_version": 3,
+  "video": {"coded_width": 352, "coded_height": 240, "sample_aspect": {"num": 1, "den": 1}, "measured_fps": 30.0, "frame_count": 300, "duration_s": 10.0},
+  "first_look": {
+    "question": "Does the physics add up to the Moon?",
+    "summary": "A suited figure hops across grey ground.",
+    "scene_card": {"scene": "Grey ground with a suited figure.", "place_date": null, "confidence": "medium", "objects": ["suited figure", "backpack"]},
+    "by_eye": {"jump_m": null, "airborne_s": 1.0, "reasoning": "the hop hangs in the air"},
+    "views": [{"frame_start": 90, "frame_end": 140, "artifact": "artifacts/view.jpg"}],
+    "motions": [{"frame_start": 100, "frame_end": 130, "description": "foreground hop, measured as Jump one", "segment_id": "hop_a", "skip_reason": null}]
+  },
+  "references": [
+    {
+      "name": "backpack height",
+      "extent_description": "height of the backpack",
+      "extent_type": "face_on",
+      "extent_px": {"x1": 100.0, "y1": 50.0, "x2": 100.0, "y2": 150.0, "length_px": 100.0, "frame": 100},
+      "size_m": 1.0,
+      "size_tolerance_m": 0.04,
+      "size_derivation": {"mode": "single", "note": "quoted height", "state_match": {"shown_and_covered": "backpack body shown in the mask and covered by the quoted height", "shown_not_covered": "helmet and boots shown but outside the backpack extent"}},
+      "sources": [{"url": "https://example.com/pack", "domain": "example.com", "quote": "pack height one metre", "quote_highlight": "one metre", "value_m": 1.0, "source_type": "museum catalogue"}],
+      "mask": {"artifact": "artifacts/masks.npz", "object_id": "0", "frame": 100, "outline": [[90.0, 50.0], [110.0, 50.0], [110.0, 150.0], [90.0, 150.0]]},
+      "mask_check": {"artifact": "artifacts/check.json", "coverage_answer": "covers the whole backpack", "confidence": null, "alternative_readings": []}
+    }
+  ],
+  "scale": {
+    "frame": 100,
+    "m_per_px": 0.01,
+    "sigma_m_per_px": 0.00045,
+    "reference_index": 0,
+    "extent_px": {"x1": 100.0, "y1": 50.0, "x2": 100.0, "y2": 150.0, "length_px": 100.0, "frame": 100},
+    "second_reference_index": null,
+    "second_reference_absent_reason": "no second independent object at the same depth",
+    "check_scale": null
+  },
+  "segments": [
+    {
+      "id": "hop_a",
+      "label": "Jump one",
+      "kind": "free_flight",
+      "subject": {"kind": "person", "description": "foreground suited figure"},
+      "mask": {"artifact": "artifacts/masks.npz", "object_id": "0"},
+      "frames": {"start": 100, "apex": 115, "end": 130},
+      "times_s": {"start": 3.333333, "apex": 3.833333, "end": 4.333333},
+      "key_moments": [
+        {"type": "takeoff", "frame": 100, "t_s": 3.333333, "caption": "leaving the ground"},
+        {"type": "apex", "frame": 115, "t_s": 3.833333, "caption": "hanging at the top"},
+        {"type": "landing", "frame": 130, "t_s": 4.333333, "caption": "touching down softly"}
+      ],
+      "overlay": [
+        {"frame": 100, "outline": [[98.0, 88.0], [102.0, 88.0], [102.0, 112.0], [98.0, 112.0]], "point": [100.0, 100.0], "bbox": [98.0, 88.0, 4.0, 24.0]},
+        {"frame": 115, "outline": [[98.0, 68.0], [102.0, 68.0], [102.0, 92.0], [98.0, 92.0]], "point": [100.0, 80.0], "bbox": [98.0, 68.0, 4.0, 24.0]},
+        {"frame": 130, "outline": [[98.0, 88.0], [102.0, 88.0], [102.0, 112.0], [98.0, 112.0]], "point": [100.0, 100.0], "bbox": [98.0, 88.0, 4.0, 24.0]}
+      ],
+      "track": [
+        {"frame": 100, "t_s": 3.333333, "x_px": 100.0, "y_px": 100.0, "x_m": 0.0, "y_m": 0.0},
+        {"frame": 115, "t_s": 3.833333, "x_px": 100.0, "y_px": 80.0, "x_m": 0.0, "y_m": 0.2},
+        {"frame": 130, "t_s": 4.333333, "x_px": 100.0, "y_px": 100.0, "x_m": 0.0, "y_m": 0.0}
+      ],
+      "fit": {"g_app": 1.6, "sigma_g": 0.2, "a_px_s2": -160.0, "sigma_a_px_s2": 20.0, "v0": 0.8, "y0": 0.0, "residual_trend": 0.01, "n_points": 31},
+      "fit_curve_px": [
+        {"t_s": 3.333333, "x_px": 100.0, "y_px": 100.0},
+        {"t_s": 3.833333, "x_px": 100.0, "y_px": 80.0},
+        {"t_s": 4.333333, "x_px": 100.0, "y_px": 100.0}
+      ],
+      "takeoff_level_y_px": 100.0,
+      "apex_info": {"rise_m": 0.2, "sigma_m": 0.025, "feet_clearance_m": null},
+      "landing_info": {"airborne_s": 1.0, "sigma_s": 0.0136},
+      "world_outcomes": [
+        {"world": "Moon", "landing_time_s": 4.32, "landing_x_px": 100.0},
+        {"world": "Earth", "landing_time_s": 3.5, "landing_x_px": 100.0}
+      ],
+      "ghosts": [
+        {
+          "role": "earth_counterfactual",
+          "world": "Earth",
+          "gravity_m_s2": 9.81,
+          "points": [{"t_s": 3.333333, "frame": 100, "x_px": 100.0, "y_px": 100.0}, {"t_s": 3.366667, "frame": 101, "x_px": 100.0, "y_px": 99.5}, {"t_s": 3.4, "frame": 102, "x_px": 100.0, "y_px": 99.0}, {"t_s": 3.433333, "frame": 103, "x_px": 100.0, "y_px": 99.4}, {"t_s": 3.466667, "frame": 104, "x_px": 100.0, "y_px": 100.0}],
+          "landing": {"t_s": 3.5, "x_px": 100.0, "y_px": 100.0}
+        },
+        {
+          "role": "fitting_world",
+          "world": "Moon",
+          "gravity_m_s2": 1.62,
+          "points": [{"t_s": 3.333333, "frame": 100, "x_px": 100.0, "y_px": 100.0}, {"t_s": 3.833333, "frame": 115, "x_px": 100.0, "y_px": 80.0}, {"t_s": 4.333333, "frame": 130, "x_px": 100.0, "y_px": 100.0}],
+          "landing": {"t_s": 4.32, "x_px": 100.0, "y_px": 100.0}
+        }
+      ],
+      "repetitions": []
+    }
+  ],
+  "calculation_steps": [
+    {"id": "time_from_frames", "title": "Time from frames", "frame": null, "frame_end": null, "segment_id": null, "short": [{"type": "text", "text": "Frame times come from measured timestamps."}], "full": [], "caveats": []},
+    {"id": "mask_check", "title": "Blind mask check", "frame": 100, "frame_end": null, "segment_id": null, "short": [{"type": "text", "text": "A blind check read the reference mask."}], "full": [], "caveats": []},
+    {"id": "scale", "title": "Pixel scale", "frame": 100, "frame_end": null, "segment_id": null, "short": [{"type": "formula", "latex": "s = 0.01", "fallback": "s = 0.01 m/px", "chip": {"text": "0.01 m/px", "tone": "final"}}], "full": [], "caveats": []},
+    {"id": "segment", "title": "Segment Jump one", "frame": 100, "frame_end": 130, "segment_id": "hop_a", "short": [{"type": "text", "text": "Tracked point over the free-flight window."}], "full": [], "caveats": []},
+    {"id": "fit", "title": "Fit Jump one", "frame": 100, "frame_end": 130, "segment_id": "hop_a", "short": [{"type": "formula", "latex": "a = 160", "fallback": "a = 160 px/s2", "chip": null}], "full": [], "caveats": []},
+    {"id": "measured_g", "title": "Measured gravity", "frame": null, "frame_end": null, "segment_id": null, "short": [{"type": "formula", "latex": "g = 1.6", "fallback": "g = 1.6 m/s2", "chip": {"text": "measured gravity", "tone": "final"}}], "full": [], "caveats": []},
+    {"id": "clock", "title": "Independent clock", "frame": null, "frame_end": null, "segment_id": null, "short": [{"type": "text", "text": "No independent clock was measured."}], "full": [], "caveats": []},
+    {"id": "uncertainty", "title": "Uncertainty", "frame": null, "frame_end": null, "segment_id": null, "short": [{"type": "formula", "latex": "\\sigma = 0.2", "fallback": "sigma = 0.2 m/s2", "chip": null}, {"type": "bars", "source": "error_budget"}], "full": [], "caveats": []},
+    {"id": "verdict", "title": "Verdict", "frame": 131, "frame_end": null, "segment_id": null, "short": [{"type": "formula", "latex": "g = 1.6", "fallback": "g = 1.6 m/s2", "chip": {"text": "Moon", "tone": "final"}}], "full": [], "caveats": []}
+  ],
+  "clock": null,
+  "clock_absent_reason": "No independent clock was measured.",
+  "worlds": {
+    "candidates": [
+      {"world": "Moon", "g_m_s2": 1.62, "fits_native": true, "delta_sigma": 0.1, "retime_factor": null},
+      {"world": "Earth", "g_m_s2": 9.81, "fits_native": false, "delta_sigma": 41.0, "retime_factor": null}
+    ],
+    "excluded": []
+  },
+  "range_checks": [],
+  "error_budget": {
+    "components": [
+      {"name": "reference_size", "sigma_contribution": 0.05, "basis": "quoted size spread"},
+      {"name": "pixel_scale", "sigma_contribution": 0.03, "basis": "endpoint placement"},
+      {"name": "fit", "sigma_contribution": 0.04, "basis": "parabola residuals"},
+      {"name": "point_vs_com", "sigma_contribution": 0.05, "basis": "point versus centre"}
+    ],
+    "sigma_total": 0.2,
+    "sigma_relative": 0.125
+  },
+  "verdict": {"kind": "world", "world": "Moon", "direction": null, "factor": null, "g_measured": 1.6, "sigma_g": 0.2, "reason": null, "clock_note": null, "decided_by": "gravity"},
+  "sentence": "The measured g of 1.60 +/- 0.20 m/s2 fits Moon (1.62 m/s2) within 2 sigma.",
+  "page_texts": {},
+  "self_built_tools": [],
+  "provenance": {"model": "synthetic", "run_id": "synthetic-moon", "artifacts": [{"name": "view", "produced_by": "view_frames", "path": "artifacts/view.jpg"}, {"name": "segment masks", "produced_by": "segment", "path": "artifacts/masks.npz"}, {"name": "mask check", "produced_by": "check_mask", "path": "artifacts/check.json"}]}
+}

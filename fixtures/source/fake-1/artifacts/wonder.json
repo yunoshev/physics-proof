@@ -1,0 +1,24 @@
+{
+  "checks": [
+    {
+      "compare_with": "the Moon's surface gravity",
+      "how": "track a fixed point on the foreground figure from feet-off around 4.1s through apex to touchdown around 6.3s and fit vertical position versus time, converting pixels to metres against the large backpack unit height measured face-on in a nearby standing frame",
+      "kind": "gravity",
+      "what": "downward acceleration of the foreground figure during the airborne phase of the hop",
+      "why": "a body with nothing holding it up must accelerate downward at the local g, so the fitted acceleration directly tests the claimed world and playback speed"
+    },
+    {
+      "compare_with": "adult human stature norms and published spacesuit backpack dimensions",
+      "how": "measure the standing suited figure's full height and backpack-unit height in pixels in a standing frame around 0.0-2.1s or 6.3s and compare absolute sizes and their ratio",
+      "how ": null,
+      "kind": "range",
+      "what": "standing height of the suited figure and backpack-unit size and ratio",
+      "why": "checks the pixel scale against independent body and hardware norms so a miniature set or costume cannot bias the gravity result"
+    }
+  ],
+  "claim": "Two figures in bulky white suits with backpacks move on a grey plain under a black sky presented as the lunar surface, with the foreground figure making a low two-footed hop",
+  "not_realistic_if": "Not realistic if the fitted acceleration clearly misses lunar gravity or the measured sizes and hop duration clearly contradict human and equipment norms.",
+  "question": "Does the foreground figure's hop fall as it would in lunar gravity?",
+  "realistic_if": "Realistic if the hop's fitted downward acceleration matches lunar gravity within uncertainty and body and hardware sizes match human and equipment norms.",
+  "world": "Moon"
+}

@@ -1,0 +1,111 @@
+{
+  "first_look": {
+    "question": "Is this hop realistic on the Moon?",
+    "summary": "A suited figure hops across grey ground.",
+    "scene_card": {
+      "scene": "Grey ground with a suited figure.",
+      "place_date": null,
+      "confidence": "medium",
+      "objects": ["suited figure", "backpack"]
+    },
+    "by_eye": {
+      "jump_m": null,
+      "airborne_s": 1.0,
+      "reasoning": "the hop hangs in the air"
+    },
+    "views": [
+      {"frame_start": 0, "frame_end": 60, "artifact": "artifacts/t0_view.jpg"}
+    ],
+    "motions": [
+      {"frame_start": 10, "frame_end": 30, "description": "foreground hop", "segment_id": "hop_a", "skip_reason": null}
+    ],
+    "overview": {
+      "artifact": "artifacts/t0_masks.npz",
+      "object_id": "0",
+      "tool_result": "artifacts/t0_overview.json",
+      "candidates": [
+        {"id": "cand_1", "frame_start": 10, "frame_end": 30, "airtime_s": 0.667, "peak_rise_px": 20.0, "decision": "measured", "segment_id": "hop_a", "reason": null}
+      ],
+      "first_check": {"segment_id": "hop_a", "why": "most frames with the whole body in frame"}
+    }
+  },
+  "references": [
+    {
+      "name": "backpack height",
+      "extent_description": "height of the backpack",
+      "extent_type": "face_on",
+      "extent_px": {"x1": 100.0, "y1": 50.0, "x2": 100.0, "y2": 150.0, "length_px": 100.0, "frame": 10},
+      "size_m": 1.0,
+      "size_tolerance_m": 0.04,
+      "size_derivation": {"mode": "single", "note": "quoted height", "state_match": {"shown_and_covered": "backpack body shown in the mask and covered by the quoted height", "shown_not_covered": "helmet and boots shown but outside the backpack extent"}},
+      "sources": [
+        {"url": "https://example.com/pack", "domain": "example.com", "quote": "pack height one metre", "quote_highlight": "one metre", "value_m": 1.0, "source_type": "museum catalogue"}
+      ],
+      "mask": {"artifact": "artifacts/t0_masks.npz", "object_id": "0", "frame": 10, "outline": [[5.0, 5.0], [25.0, 5.0], [25.0, 35.0], [5.0, 35.0]]},
+      "mask_check": {"artifact": "artifacts/t1_check_mask_0.json", "coverage_answer": "covers the whole backpack", "confidence": null, "alternative_readings": []}
+    }
+  ],
+  "scale": {
+    "frame": 10,
+    "m_per_px": 0.01,
+    "sigma_m_per_px": 0.00045,
+    "reference_index": 0,
+    "extent_px": {"x1": 100.0, "y1": 50.0, "x2": 100.0, "y2": 150.0, "length_px": 100.0, "frame": 10},
+    "second_reference_index": null,
+    "second_reference_absent_reason": "no second independent object visible at the same depth",
+    "check_scale": null
+  },
+  "segments": [
+    {
+      "id": "hop_a",
+      "label": "Jump one",
+      "kind": "free_flight",
+      "subject": {"kind": "person", "description": "foreground suited figure"},
+      "mask": {"artifact": "artifacts/t0_masks.npz", "object_id": "0"},
+      "frames": {"start": 10, "apex": 20, "end": 30},
+      "key_moments": [
+        {"type": "takeoff", "frame": 10, "caption": "leaving the ground"},
+        {"type": "apex", "frame": 20, "caption": "hanging at the top"},
+        {"type": "landing", "frame": 30, "caption": "touching down softly"}
+      ],
+      "track_artifact": "workspace/track_hop_a.json",
+      "tracked_point": "top of the helmet",
+      "fit_curve_px": [
+        {"t_s": 0.333, "x_px": 100.0, "y_px": 90.0},
+        {"t_s": 0.667, "x_px": 100.0, "y_px": 70.0},
+        {"t_s": 1.0, "x_px": 100.0, "y_px": 90.0}
+      ],
+      "repetitions": []
+    }
+  ],
+  "clock": null,
+  "clock_absent_reason": "no visible independent rhythm",
+  "worlds": {
+    "candidates": [{"world": "Moon"}],
+    "excluded": []
+  },
+  "error_budget": {
+    "components": [
+      {"name": "reference_size", "sigma_contribution": 0.05, "basis": "quoted size spread"},
+      {"name": "pixel_scale", "sigma_contribution": 0.03, "basis": "endpoint placement"},
+      {"name": "fit", "sigma_contribution": 0.04, "basis": "parabola residuals"},
+      {"name": "point_vs_com", "sigma_contribution": 0.05, "basis": "point versus centre"}
+    ],
+    "sigma_relative": 0.08
+  },
+  "camera": {
+    "still": {"reference_phrase": "distant rock", "reference_track_artifact": "workspace/ref_rock_track.json"}
+  },
+  "provenance": {
+    "artifacts": [
+      {"name": "view", "path": "artifacts/t0_view.jpg"},
+      {"name": "segment masks", "path": "artifacts/t0_masks.npz"},
+      {"name": "mask check", "path": "artifacts/t1_check_mask_0.json"},
+      {"name": "track", "path": "workspace/track_hop_a.json"},
+      {"name": "reference track", "path": "workspace/ref_rock_track.json"},
+      {"name": "motion overview", "path": "artifacts/t0_overview.json"}
+    ]
+  },
+  "range_checks": [],
+  "page_texts": {}
+}

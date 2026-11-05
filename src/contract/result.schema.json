@@ -1,0 +1,870 @@
+{
+  "$id": "https://physics-proof/result.schema.json",
+  "title": "result.json — analysis result (contract v3, source pixels)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "video", "first_look", "references", "scale", "segments", "range_checks", "calculation_steps", "clock", "worlds", "error_budget", "verdict", "sentence", "self_built_tools", "provenance"],
+  "properties": {
+    "contract_version": {"type": "integer", "const": 3},
+    "video": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coded_width", "coded_height", "sample_aspect", "measured_fps", "frame_count", "duration_s"],
+      "properties": {
+        "coded_width": {"type": "integer", "minimum": 0},
+        "coded_height": {"type": "integer", "minimum": 0},
+        "sample_aspect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["num", "den"],
+          "properties": {
+            "num": {"type": "integer", "minimum": 1},
+            "den": {"type": "integer", "minimum": 1}
+          }
+        },
+        "measured_fps": {"type": "number", "minimum": 0},
+        "frame_count": {"type": "integer", "minimum": 0},
+        "duration_s": {"type": "number", "minimum": 0}
+      }
+    },
+    "first_look": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "summary", "scene_card", "by_eye", "views"],
+      "properties": {
+        "question": {"description": "The viewer's question about what the clip shows or claims, in plain words; the result answers it (part 01, 2026-10-29).", "type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "scene_card": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scene", "place_date", "confidence", "objects"],
+          "properties": {
+            "scene": {"type": "string", "minLength": 1},
+            "place_date": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+            "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+            "objects": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "by_eye": {
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["jump_m", "airborne_s", "reasoning"],
+              "properties": {
+                "jump_m": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+                "airborne_s": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+                "reasoning": {"type": "string", "minLength": 1}
+              }
+            }
+          ]
+        },
+        "views": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["frame_start", "frame_end", "artifact"],
+            "properties": {
+              "frame_start": {"type": "integer", "minimum": 0},
+              "frame_end": {"type": "integer", "minimum": 0},
+              "artifact": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "motions": {
+          "description": "Every interval of the motion under test found while viewing the whole clip (R-M4): at least one entry when present; each entry names its measured segment via segment_id or explains why it was not measured via skip_reason, and at least one of the two must be set. Required on new evidence; tolerated absent on assembled results that predate it. The player shows one mark per segment and a grey tick with the skip reason for listed-but-unmeasured motions.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["frame_start", "frame_end", "description", "segment_id", "skip_reason"],
+                "properties": {
+                  "frame_start": {"type": "integer", "minimum": 0},
+                  "frame_end": {"type": "integer", "minimum": 0},
+                  "description": {"type": "string", "minLength": 1},
+                  "segment_id": {"type": "string", "minLength": 1},
+                  "skip_reason": {"anyOf": [{"type": "string"}, {"type": "null"}]}
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["frame_start", "frame_end", "description", "segment_id", "skip_reason"],
+                "properties": {
+                  "frame_start": {"type": "integer", "minimum": 0},
+                  "frame_end": {"type": "integer", "minimum": 0},
+                  "description": {"type": "string", "minLength": 1},
+                  "segment_id": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                  "skip_reason": {"type": "string", "minLength": 1}
+                }
+              }
+            ]
+          }
+        },
+        "wonder": {
+          "description": "The Wonder plan copied by part 11 from artifacts/wonder.json (part 06 addendum of 2026-10-29): the claim the run set out to test, the checks it planned, and what would count as realistic or not. Null when the run had no plan. Never carried in the evidence; the agent never retypes it.",
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["claim", "checks", "realistic_if", "not_realistic_if"],
+              "properties": {
+                "claim": {"type": "string", "minLength": 1},
+                "checks": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["what", "why", "compare_with"],
+                    "properties": {
+                      "what": {"type": "string", "minLength": 1},
+                      "why": {"type": "string", "minLength": 1},
+                      "compare_with": {"type": "string", "minLength": 1}
+                    }
+                  }
+                },
+                "realistic_if": {"type": "string", "minLength": 1},
+                "not_realistic_if": {"type": "string", "minLength": 1}
+              }
+            }
+          ]
+        }
+      }
+    },
+    "references": {
+      "description": "Scale evidence: at least two references of different things visible in the footage, each with quotes, mask and blind check. Every pair of references must agree within 2 sigma; a scale resting on one reference gives an undetermined verdict.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "extent_description", "extent_type", "extent_px", "size_m", "size_tolerance_m", "size_derivation", "sources", "mask", "mask_check"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "extent_description": {"type": "string", "minLength": 1},
+          "extent_type": {"type": "string", "enum": ["face_on", "rotation_invariant", "projected"]},
+          "extent_px": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["x1", "y1", "x2", "y2", "length_px", "frame"],
+            "properties": {
+              "x1": {"type": "number"},
+              "y1": {"type": "number"},
+              "x2": {"type": "number"},
+              "y2": {"type": "number"},
+              "length_px": {"type": "number", "exclusiveMinimum": 0},
+              "frame": {"type": "integer", "minimum": 0}
+            }
+          },
+          "size_m": {"type": "number", "exclusiveMinimum": 0},
+          "size_tolerance_m": {"type": "number", "minimum": 0},
+          "size_derivation": {
+            "description": "How multiple sources combine into one size; R-S7 requires stating what the mask shows that the size source covers and what it shows that the source does not, and R-S8 requires a third reference when a derived size disagrees by 5 percent or more. Required on new evidence; tolerated absent on assembled results that predate it (real-run fixtures).",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["mode", "note"],
+            "properties": {
+              "mode": {"type": "string", "enum": ["single", "sum", "mean"]},
+              "note": {"type": "string"},
+              "state_match": {
+                "description": "R-S7 size-to-state match: what the mask shows that the size source also covers, and what it shows that the source does not; R-S8 uses a mismatch here to call for a third reference.",
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["shown_and_covered", "shown_not_covered"],
+                "properties": {
+                  "shown_and_covered": {"type": "string", "minLength": 1},
+                  "shown_not_covered": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["url", "domain", "quote", "quote_highlight", "value_m", "source_type"],
+              "properties": {
+                "url": {"type": "string", "minLength": 1},
+                "domain": {"type": "string", "minLength": 1},
+                "quote": {"type": "string", "minLength": 1},
+                "quote_highlight": {"type": "string", "minLength": 1},
+                "value_m": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+                "source_type": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "mask": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["artifact", "object_id", "frame", "outline"],
+            "properties": {
+              "artifact": {"type": "string", "minLength": 1},
+              "object_id": {"type": "string", "minLength": 1},
+              "frame": {"type": "integer", "minimum": 0},
+              "outline": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 80,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {"type": "number"}
+                }
+              }
+            }
+          },
+          "mask_check": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["artifact", "coverage_answer", "confidence", "alternative_readings"],
+            "properties": {
+              "artifact": {"type": "string", "minLength": 1},
+              "coverage_answer": {"type": "string", "minLength": 1},
+              "confidence": {"anyOf": [{"type": "string"}, {"type": "number"}, {"type": "null"}]},
+              "alternative_readings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["description", "size_m"],
+                  "properties": {
+                    "description": {"type": "string", "minLength": 1},
+                    "size_m": {"type": "number", "exclusiveMinimum": 0}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scale": {
+      "description": "Pixel scale from the references above, always cross-checked by two or three references of different things: every pair must agree within 2 sigma, and one reference gives an undetermined verdict. m_per_px and sigma_m_per_px are computed by code from all references; reference_index stays the headline reference the player draws the ruler on, reference_indices lists every reference used, and second_reference_index equals reference_indices[1], or null.",
+      "anyOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["frame", "m_per_px", "sigma_m_per_px", "reference_index", "extent_px", "second_reference_index", "second_reference_absent_reason", "check_scale"],
+          "properties": {
+            "frame": {"type": "integer", "minimum": 0},
+            "m_per_px": {"type": "number", "exclusiveMinimum": 0},
+            "sigma_m_per_px": {"type": "number", "minimum": 0},
+            "reference_index": {"type": "integer", "minimum": 0},
+            "reference_indices": {"description": "Every reference used, computed by code; reference_index is reference_indices[0].", "type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 1, "maxItems": 5},
+            "extent_px": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x1", "y1", "x2", "y2", "length_px", "frame"],
+              "properties": {
+                "x1": {"type": "number"},
+                "y1": {"type": "number"},
+                "x2": {"type": "number"},
+                "y2": {"type": "number"},
+                "length_px": {"type": "number", "exclusiveMinimum": 0},
+                "frame": {"type": "integer", "minimum": 0}
+              }
+            },
+            "second_reference_index": {"anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+            "second_reference_absent_reason": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+            "check_scale": {
+              "anyOf": [
+                {"type": "null"},
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["m_per_px", "sigma"],
+                  "properties": {
+                    "m_per_px": {"type": "number", "exclusiveMinimum": 0},
+                    "sigma": {"type": "number", "minimum": 0}
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "kind", "mask", "frames", "times_s", "key_moments", "overlay", "track", "fit", "fit_curve_px", "takeoff_level_y_px", "apex_info", "landing_info", "world_outcomes", "ghosts", "repetitions"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "enum": ["free_flight", "wall"]},
+          "subject": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "description"],
+            "properties": {
+              "kind": {"type": "string", "enum": ["person", "animal", "object"]},
+              "description": {"type": "string", "minLength": 1}
+            }
+          },
+          "mask": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["artifact", "object_id"],
+            "properties": {
+              "artifact": {"type": "string", "minLength": 1},
+              "object_id": {"type": "string", "minLength": 1}
+            }
+          },
+          "frames": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "apex", "end"],
+            "properties": {
+              "start": {"type": "integer", "minimum": 0},
+              "apex": {"type": "integer", "minimum": 0},
+              "end": {"type": "integer", "minimum": 0}
+            }
+          },
+          "times_s": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "apex", "end"],
+            "properties": {
+              "start": {"type": "number", "minimum": 0},
+              "apex": {"type": "number", "minimum": 0},
+              "end": {"type": "number", "minimum": 0}
+            }
+          },
+          "key_moments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type", "frame", "t_s", "caption"],
+              "properties": {
+                "type": {"type": "string", "enum": ["takeoff", "apex", "landing", "wall_start", "wall_end"]},
+                "frame": {"type": "integer", "minimum": 0},
+                "t_s": {"type": "number", "minimum": 0},
+                "caption": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "overlay": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["frame", "outline", "point", "bbox"],
+              "properties": {
+                "frame": {"type": "integer", "minimum": 0},
+                "outline": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 80,
+                  "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}}
+                },
+                "point": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
+                "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}}
+              }
+            }
+          },
+          "track": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["frame", "t_s", "x_px", "y_px", "x_m", "y_m"],
+              "properties": {
+                "frame": {"type": "integer", "minimum": 0},
+                "t_s": {"type": "number", "minimum": 0},
+                "x_px": {"type": "number"},
+                "y_px": {"type": "number"},
+                "x_m": {"type": "number"},
+                "y_m": {"type": "number"}
+              }
+            }
+          },
+          "fit": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["g_app", "sigma_g", "a_px_s2", "sigma_a_px_s2", "v0", "y0", "residual_trend", "n_points"],
+            "properties": {
+              "g_app": {"type": "number", "exclusiveMinimum": 0},
+              "sigma_g": {"type": "number", "exclusiveMinimum": 0},
+              "a_px_s2": {"type": "number"},
+              "sigma_a_px_s2": {"type": "number", "minimum": 0},
+              "v0": {"type": "number"},
+              "y0": {"type": "number"},
+              "residual_trend": {"type": "number"},
+              "n_points": {"type": "integer", "minimum": 1}
+            }
+          },
+          "fit_curve_px": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["t_s", "x_px", "y_px"],
+              "properties": {
+                "t_s": {"type": "number", "minimum": 0},
+                "x_px": {"type": "number"},
+                "y_px": {"type": "number"}
+              }
+            }
+          },
+          "takeoff_level_y_px": {"type": "number"},
+          "apex_info": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rise_m", "sigma_m", "feet_clearance_m"],
+            "properties": {
+              "rise_m": {"type": "number", "minimum": 0},
+              "sigma_m": {"type": "number", "minimum": 0},
+              "feet_clearance_m": {"anyOf": [{"type": "number"}, {"type": "null"}]}
+            }
+          },
+          "landing_info": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["airborne_s", "sigma_s"],
+            "properties": {
+              "airborne_s": {"type": "number", "exclusiveMinimum": 0},
+              "sigma_s": {"type": "number", "minimum": 0}
+            }
+          },
+          "world_outcomes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["world", "landing_time_s", "landing_x_px"],
+              "properties": {
+                "world": {"type": "string", "minLength": 1},
+                "landing_time_s": {"type": "number", "minimum": 0},
+                "landing_x_px": {"type": "number"}
+              }
+            }
+          },
+          "ghosts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["role", "world", "gravity_m_s2", "points", "landing"],
+              "properties": {
+                "role": {"type": "string", "enum": ["earth_counterfactual", "fitting_world"]},
+                "world": {"type": "string", "minLength": 1},
+                "gravity_m_s2": {"type": "number", "exclusiveMinimum": 0},
+                "points": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["t_s", "frame", "x_px", "y_px"],
+                    "properties": {
+                      "t_s": {"type": "number", "minimum": 0},
+                      "frame": {"type": "integer", "minimum": 0},
+                      "x_px": {"type": "number"},
+                      "y_px": {"type": "number"}
+                    }
+                  }
+                },
+                "landing": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["t_s", "x_px", "y_px"],
+                  "properties": {
+                    "t_s": {"type": "number", "minimum": 0},
+                    "x_px": {"type": "number"},
+                    "y_px": {"type": "number"}
+                  }
+                }
+              }
+            }
+          },
+          "repetitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["frames", "g_app", "sigma_g"],
+              "properties": {
+                "frames": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["start", "end"],
+                  "properties": {
+                    "start": {"type": "integer", "minimum": 0},
+                    "end": {"type": "integer", "minimum": 0}
+                  }
+                },
+                "g_app": {"type": "number"},
+                "sigma_g": {"type": "number", "minimum": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    "range_checks": {
+      "description": "Range checks from parts 01 and 02 (2026-10-29): each entry settles part of the question against a quoted range. Always present, possibly empty. Each item is the evidence item plus the validator's outcome (inside, outside, not_counted), delta_sigma (distance of the measured value from the nearer bound in σ, 0 when inside; part 11 section 40) and side (below, above, or null).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "answers", "unit", "frame", "extents", "value", "sigma", "formula", "uses_scale", "measurement_artifact", "range", "outcome", "delta_sigma", "side"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "answers": {"type": "string", "minLength": 1},
+          "unit": {"type": "string", "enum": ["ratio", "m", "s", "m/s"]},
+          "frame": {"type": "integer", "minimum": 0},
+          "extents": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "x1", "y1", "x2", "y2", "length_px", "frame"],
+              "properties": {
+                "name": {"type": "string", "minLength": 1},
+                "x1": {"type": "number"},
+                "y1": {"type": "number"},
+                "x2": {"type": "number"},
+                "y2": {"type": "number"},
+                "length_px": {"type": "number", "exclusiveMinimum": 0},
+                "frame": {"type": "integer", "minimum": 0}
+              }
+            }
+          },
+          "value": {"type": "number"},
+          "sigma": {"type": "number", "minimum": 0},
+          "formula": {"type": "string", "minLength": 1},
+          "uses_scale": {"type": "boolean"},
+          "measurement_artifact": {"type": "string", "minLength": 1},
+          "range": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["min", "max", "typical", "what", "bounds_kind", "percentiles", "sources"],
+            "properties": {
+              "min": {"type": "number"},
+              "max": {"type": "number"},
+              "typical": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+              "what": {"type": "string", "minLength": 1},
+              "bounds_kind": {"type": "string", "enum": ["min-max", "percentile"]},
+              "percentiles": {"anyOf": [{"type": "null"}, {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}}]},
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["url", "domain", "quote", "quote_highlight", "value", "bound", "source_type"],
+                  "properties": {
+                    "url": {"type": "string", "minLength": 1},
+                    "domain": {"type": "string", "minLength": 1},
+                    "quote": {"type": "string", "minLength": 1},
+                    "quote_highlight": {"type": "string", "minLength": 1},
+                    "value": {"type": "number"},
+                    "bound": {"type": "string", "enum": ["min", "max", "typical"]},
+                    "source_type": {"type": "string", "minLength": 1}
+                  }
+                }
+              }
+            }
+          },
+          "outcome": {"type": "string", "enum": ["inside", "outside", "not_counted"]},
+          "delta_sigma": {"type": "number", "minimum": 0},
+          "side": {"anyOf": [{"type": "string", "enum": ["below", "above"]}, {"type": "null"}]}
+        }
+      }
+    },
+    "calculation_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "frame", "frame_end", "segment_id", "short", "full", "caveats"],
+        "properties": {
+          "id": {"type": "string", "enum": ["time_from_frames", "mask_check", "scale", "segment", "fit", "measured_g", "clock", "uncertainty", "verdict"]},
+          "title": {"type": "string", "minLength": 1},
+          "frame": {"anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+          "frame_end": {"anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+          "segment_id": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+          "short": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "latex", "fallback", "chip"],
+                  "properties": {
+                    "type": {"const": "formula"},
+                    "latex": {"type": "string", "minLength": 1},
+                    "fallback": {"type": "string", "minLength": 1},
+                    "chip": {
+                      "anyOf": [
+                        {"type": "null"},
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": ["text", "tone"],
+                          "properties": {
+                            "text": {"type": "string", "minLength": 1},
+                            "tone": {"type": "string", "enum": ["final", "intermediate"]}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "text"],
+                  "properties": {
+                    "type": {"const": "text"},
+                    "text": {"type": "string", "minLength": 1}
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "source"],
+                  "properties": {
+                    "type": {"const": "bars"},
+                    "source": {"const": "error_budget"}
+                  }
+                }
+              ]
+            }
+          },
+          "full": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "latex", "fallback", "chip"],
+                  "properties": {
+                    "type": {"const": "formula"},
+                    "latex": {"type": "string", "minLength": 1},
+                    "fallback": {"type": "string", "minLength": 1},
+                    "chip": {
+                      "anyOf": [
+                        {"type": "null"},
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": ["text", "tone"],
+                          "properties": {
+                            "text": {"type": "string", "minLength": 1},
+                            "tone": {"type": "string", "enum": ["final", "intermediate"]}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "text"],
+                  "properties": {
+                    "type": {"const": "text"},
+                    "text": {"type": "string", "minLength": 1}
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "source"],
+                  "properties": {
+                    "type": {"const": "bars"},
+                    "source": {"const": "error_budget"}
+                  }
+                }
+              ]
+            }
+          },
+          "caveats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["text", "artifact"],
+              "properties": {
+                "text": {"type": "string", "minLength": 1},
+                "artifact": {"anyOf": [{"type": "string"}, {"type": "null"}]}
+              }
+            }
+          }
+        }
+      }
+    },
+    "clock": {
+      "anyOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["signal_description", "measured_rate_hz", "measured_rate_sigma_hz", "interpretation", "band_hz", "natural_range_hz", "natural_range_source", "implied_stretch", "implied_stretch_sigma", "reads_normal"],
+          "properties": {
+            "signal_description": {"type": "string", "minLength": 1},
+            "measured_rate_hz": {"type": "number", "exclusiveMinimum": 0},
+            "measured_rate_sigma_hz": {"type": "number", "minimum": 0},
+            "interpretation": {"type": "string", "enum": ["step", "stride"]},
+            "band_hz": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
+            "natural_range_hz": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
+            "natural_range_source": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["url", "quote"],
+              "properties": {
+                "url": {"type": "string", "minLength": 1},
+                "quote": {"type": "string", "minLength": 1}
+              }
+            },
+            "implied_stretch": {"type": "number"},
+            "implied_stretch_sigma": {"type": "number", "minimum": 0},
+            "reads_normal": {"type": "boolean"}
+          }
+        }
+      ]
+    },
+    "clock_absent_reason": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+    "worlds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidates", "excluded"],
+      "properties": {
+        "candidates": {
+          "description": "The scene's world only; a second one only when the question names it. Worlds actually tested; the verdict card shows exactly these.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["world", "g_m_s2", "fits_native", "delta_sigma", "retime_factor"],
+            "properties": {
+              "world": {"type": "string", "minLength": 1},
+              "g_m_s2": {"type": "number", "exclusiveMinimum": 0},
+              "fits_native": {"type": "boolean"},
+              "delta_sigma": {"type": "number", "minimum": 0},
+              "retime_factor": {"anyOf": [{"type": "number"}, {"type": "null"}]}
+            }
+          }
+        },
+        "excluded": {
+          "description": "Empty unless an earlier contract version listed exclusions. Scene-ruled-out worlds with their visual evidence.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["world", "evidence_text", "evidence_frames", "evidence_artifact"],
+            "properties": {
+              "world": {"type": "string", "minLength": 1},
+              "evidence_text": {"type": "string", "minLength": 1},
+              "evidence_frames": {"type": "array", "items": {"type": "integer", "minimum": 0}},
+              "evidence_artifact": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "error_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["components", "sigma_total", "sigma_relative"],
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "sigma_contribution", "basis"],
+            "properties": {
+              "name": {"type": "string", "enum": ["reference_size", "pixel_scale", "fit", "point_vs_com", "repetition_spread", "reading_spread", "projection"]},
+              "sigma_contribution": {"type": "number", "minimum": 0},
+              "basis": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "sigma_total": {"anyOf": [{"type": "number", "minimum": 0}, {"type": "null"}]},
+        "sigma_relative": {"anyOf": [{"type": "number", "minimum": 0}, {"type": "null"}]}
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "world", "direction", "factor", "g_measured", "sigma_g", "reason", "clock_note", "decided_by"],
+      "properties": {
+        "kind": {"type": "string", "enum": ["world", "retimed", "impossible", "undetermined"]},
+        "world": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+        "direction": {"anyOf": [{"type": "string", "enum": ["slowed", "sped"]}, {"type": "null"}]},
+        "factor": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+        "g_measured": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+        "sigma_g": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+        "reason": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+        "clock_note": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+        "decided_by": {"description": "What settled the verdict: gravity when the gravity part (including its clock logic) decided it, a range check id when a range check did, or null. g_measured and sigma_g are null when there is no gravity part.", "anyOf": [{"type": "string", "minLength": 1}, {"type": "null"}]}
+      }
+    },
+    "sentence": {"type": "string", "minLength": 1},
+    "page_texts": {
+      "type": "object",
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "self_built_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "purpose", "attempts", "status"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "purpose": {"type": "string"},
+          "attempts": {"type": "integer", "minimum": 1},
+          "status": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "run_id", "artifacts"],
+      "properties": {
+        "model": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "converted_from": {"type": "string"},
+        "source_files": {"type": "array", "items": {"type": "string"}},
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "produced_by", "path"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "produced_by": {"type": "string", "minLength": 1},
+              "path": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+['0', '1']
+=== 0
+200 empty
+201 empty
+202 empty
+203 empty
+204 empty
+205 empty
+206 empty
+207 empty
+208 empty
+209 empty
+210 empty
+211 empty
+212 empty
+213 empty
+214 {'top': 97, 'bottom': 106, 'left': 285, 'right': 298, 'height': 10, 'width': 14, 'area': 95, 'centroid': {'x': 291.3578947368421, 'y': 101.57894736842105}}
+215 {'top': 97, 'bottom': 105, 'left': 285, 'right': 298, 'height': 9, 'width': 14, 'area': 92, 'centroid': {'x': 291.3369565217391, 'y': 101.31521739130434}}
+216 {'top': 97, 'bottom': 105, 'left': 285, 'right': 298, 'height': 9, 'width': 14, 'area': 90, 'centroid': {'x': 291.3777777777778, 'y': 101.32222222222222}}
+217 {'top': 97, 'bottom': 105, 'left': 285, 'right': 298, 'height': 9, 'width': 14, 'area': 90, 'centroid': {'x': 291.3333333333333, 'y': 101.41111111111111}}
+218 {'top': 98, 'bottom': 106, 'left': 285, 'right': 298, 'height': 9, 'width': 14, 'area': 88, 'centroid': {'x': 291.40909090909093, 'y': 101.56818181818181}}
+219 {'top': 97, 'bottom': 106, 'left': 285, 'right': 298, 'height': 10, 'width': 14, 'area': 91, 'centroid': {'x': 291.42857142857144, 'y': 101.41758241758242}}
+220 {'top': 97, 'bottom': 106, 'left': 285, 'right': 298, 'height': 10, 'width': 14, 'area': 91, 'centroid': {'x': 291.31868131868134, 'y': 101.37362637362638}}
+=== 1
+200 empty
+201 empty
+202 empty
+203 empty
+204 empty
+205 empty
+206 empty
+207 empty
+208 empty
+209 empty
+210 empty
+211 empty
+212 empty
+213 empty
+214 empty
+215 empty
+216 empty
+217 empty
+218 empty
+219 empty
+220 {'top': 65, 'bottom': 94, 'left': 104, 'right': 123, 'height': 30, 'width': 20, 'area': 341, 'centroid': {'x': 114.41642228739003, 'y': 80.24926686217009}}

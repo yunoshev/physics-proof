@@ -1,0 +1,12 @@
+[
+  {
+    "code": "MASK_CHECK_MISSING",
+    "field": "references[0].mask_check.artifact",
+    "detail": "'artifacts/t99_check_pack.json' is not in the run ledger: the reference mask needs a recorded check_mask artifact"
+  },
+  {
+    "code": "MASK_CHECK_MISSING",
+    "field": "references[1].mask_check.artifact",
+    "detail": "'artifacts/t99_check_astro.json' is not in the run ledger: the reference mask needs a recorded check_mask artifact"
+  }
+]

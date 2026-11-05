@@ -1,0 +1,7 @@
+[
+  {
+    "code": "NUMBER_WITHOUT_PROVENANCE",
+    "field": "segments[0].fit_curve_px",
+    "detail": "fit-curve sample at t_s=0.0 lies 4296.52px off the track parabola (y_px=61.8875242873807, parabola y_px=4358.41; tolerance 2.00px = max(2px, 3\u00d7RMSE 0.53px); curve a=119.47 px/s\u00b2, track a=119.47 px/s\u00b2, m_per_px=0.009851, window frames 245..275, 29 samples)"
+  }
+]

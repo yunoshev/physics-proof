@@ -1,0 +1,72 @@
+{
+  "overlay_artifact": "artifacts/t12_segment_preview_2.jpg",
+  "mask_extents_px": {
+    "x0": 0,
+    "x1": 352,
+    "y0": 0,
+    "y1": 240
+  },
+  "question": "An overlay image shows a translucent coloured mask drawn on one video frame, with one bounding box per masked region. Describe, in plain words, WHAT THE MASK COVERS: which part of the visible object or surface it covers, and which edges it includes or excludes (for example, whether it covers only part of an object or extends past it onto the background). Do NOT name or guess what the object is, where the footage comes from, or what experiment this is. Where the covering is ambiguous, list each alternative reading.",
+  "coverage_answer": "A small rectangular overlay in the upper left of the frame. It covers the bright light-colored rectangular upper part of the left figure, including its top edge and its left and right sides with only a thin margin onto the surrounding dark background. Its bottom edge cuts across the middle of that bright area. It excludes the lower body and legs of that left figure, and excludes the rest of the scene including the light ground in the foreground, the vertical pole with cloth in the middle distance, and the smaller figure on the right.",
+  "alternatives": [
+    "The fill covers only the bright pixels of the upper-left rectangular area itself, and the rectangular outline is just a tight border around those bright pixels.",
+    "The fill and outline together cover the bright rectangular area plus a narrow margin of surrounding dark background at the top, left and right, with the bottom edge cutting across the middle of the bright area."
+  ],
+  "confidence": null,
+  "turn": 15
+}
+
+---
+{
+  "query": "life support backpack height dimensions metres",
+  "facts": [
+    {
+      "text": "A Portable Life Support System (PLSS) is generally worn like a backpack.",
+      "url": "https://alchetron.com/Primary-Life-Support-System",
+      "quote": "The PLSS is generally worn like a backpack."
+    },
+    {
+      "text": "The Apollo PLSS height was 26 inches (66 cm), i.e. 0.66 metres.",
+      "url": "https://alchetron.com/Primary-Life-Support-System",
+      "quote": "The PLSS was 26 inches (66 cm) high, 18 inches (46 cm) wide, and 10 inches (25 cm) deep."
+    },
+    {
+      "text": "The Apollo PLSS width was 18 inches (46 cm), i.e. 0.46 metres, and depth was 10 inches (25 cm), i.e. 0.25 metres.",
+      "url": "https://alchetron.com/Primary-Life-Support-System",
+      "quote": "The PLSS was 26 inches (66 cm) high, 18 inches (46 cm) wide, and 10 inches (25 cm) deep."
+    },
+    {
+      "text": "The EMU PLSS backpack size is 26 x 20.5 x 10.5 inches.",
+      "url": "https://alpha.ecency.com/@toushik/space-suit-spacesuit-structure-and-functions-of-different-parts",
+      "quote": "EMU's PLSS Backpack is 26 \"\u00d7 20.5\" \u00d7 10.5 \"in size."
+    }
+  ]
+}
+
+---search1---
+{
+  "query": "spacesuit backpack height size",
+  "facts": [
+    {
+      "text": "The EMU PLSS backpack measures about 26 by 20.5 by 10.5 inches.",
+      "url": "https://alpha.ecency.com/@toushik/space-suit-spacesuit-structure-and-functions-of-different-parts",
+      "quote": "EMU's PLSS Backpack is 26 \"\u00d7 20.5\" \u00d7 10.5 \"in size."
+    },
+    {
+      "text": "The primary PLSS unit measures 80 x 58.4 x 17 cm.",
+      "url": "https://www.americaspace.com/2014/09/17/nasa-hedges-on-critical-suit-battery-resupply/",
+      "quote": "secondary units. The primary unit measures 80 x 58.4 x 17 cm5."
+    },
+    {
+      "text": "The EMU overall storage envelope is 26 x 28 x 40 inches (66 x 71 x 102 cm).",
+      "url": "https://www.americaspace.com/2014/09/17/nasa-hedges-on-critical-suit-battery-resupply/",
+      "quote": "The EMU weighs approximately 225 lbs (102 kg) and has a overall storage envelope of 26 x 28 x 40 inches (66 x 71 x 102 cm)."
+    },
+    {
+      "text": "Shuttle EMU PLSS height is listed as 32.0 inches.",
+      "url": "https://spacecraft.ssl.umd.edu/publications/ICES02-2364.pdf",
+      "quote": "E - PLSS height  32.0 in 32.0 in"
+    }
+  ]
+}
+

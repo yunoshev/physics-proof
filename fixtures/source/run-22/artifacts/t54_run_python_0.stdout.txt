@@ -1,0 +1,45 @@
+244 271 a=123.68 sigma_a=2.39 rmse=0.388 z=0.24 n=28
+245 272 a=125.95 sigma_a=2.60 rmse=0.422 z=1.17 n=28
+244 270 a=122.40 sigma_a=2.60 rmse=0.383 z=0.37 n=27
+245 271 a=123.67 sigma_a=2.67 rmse=0.395 z=0.27 n=27
+244 273 a=122.58 sigma_a=2.54 rmse=0.491 z=0.47 n=30
+astro f240 bot=187 top=38
+astro f241 bot=186 top=36
+astro f242 bot=186 top=34
+astro f243 bot=186 top=34
+astro f244 bot=166 top=31
+astro f245 bot=165 top=30
+astro f246 bot=162 top=28
+astro f247 bot=161 top=27
+astro f248 bot=161 top=27
+astro f249 bot=160 top=26
+astro f250 bot=160 top=25
+astro f251 bot=159 top=23
+astro f252 bot=158 top=23
+astro f253 bot=158 top=23
+astro f254 bot=158 top=22
+astro f255 bot=158 top=23
+astro f256 bot=158 top=23
+astro f257 bot=158 top=24
+astro f258 bot=158 top=24
+astro f259 bot=159 top=25
+astro f260 bot=159 top=25
+astro f261 bot=161 top=26
+astro f262 bot=162 top=27
+astro f263 bot=162 top=27
+astro f264 bot=164 top=29
+astro f265 bot=165 top=31
+astro f266 bot=167 top=33
+astro f267 bot=169 top=35
+astro f268 bot=169 top=35
+astro f269 bot=173 top=37
+astro f270 bot=174 top=39
+astro f271 bot=179 top=42
+astro f272 bot=183 top=45
+astro f273 bot=183 top=45
+astro f274 bot=183 top=48
+astro f275 bot=186 top=51
+astro f276 bot=188 top=55
+astro f277 bot=189 top=57
+astro f278 bot=188 top=57
+astro f279 bot=189 top=61

@@ -1,0 +1,415 @@
+{
+  "first_look": {
+    "question": "Does the foreground figure's hop fall as it would in lunar gravity?",
+    "summary": "Two white-suited figures with backpacks move on a grey plain under a black sky with a flag on a pole. The foreground figure walks then makes a low two-footed hop around 4.5-5.1 s. Body height and backpack-unit size answer the pixel scale and the hop's fitted fall answers the gravity.",
+    "scene_card": {
+      "scene": "Grey plain under black sky with two white-suited figures with backpacks and a flag on a pole.",
+      "place_date": null,
+      "confidence": "medium",
+      "objects": [
+        "foreground suited figure",
+        "background suited figure",
+        "backpack unit",
+        "flag on pole",
+        "grey plain"
+      ]
+    },
+    "by_eye": {
+      "jump_m": null,
+      "airborne_s": 0.6,
+      "reasoning": "feet leave the ground after 4.5 s and return about 0.6 s later in a low hop"
+    },
+    "views": [
+      {
+        "frame_start": 0,
+        "frame_end": 184,
+        "artifact": "artifacts/t4_view_frames_0.jpg"
+      },
+      {
+        "frame_start": 0,
+        "frame_end": 189,
+        "artifact": "artifacts/t28_view_frames_0.jpg"
+      }
+    ],
+    "motions": [
+      {
+        "frame_start": 135,
+        "frame_end": 153,
+        "description": "foreground two-footed hop",
+        "segment_id": "hop_a",
+        "skip_reason": null
+      }
+    ]
+  },
+  "references": [
+    {
+      "name": "backpack unit height",
+      "extent_description": "height of the backpack unit on the foreground figure seen from behind",
+      "extent_type": "face_on",
+      "extent_px": {
+        "x1": 47.0,
+        "y1": 40.0,
+        "x2": 38.0,
+        "y2": 130.0,
+        "length_px": 90.44888059008801,
+        "frame": 10
+      },
+      "size_m": 0.914,
+      "size_tolerance_m": 0.03,
+      "size_derivation": {
+        "mode": "sum",
+        "note": "sum of PLSS height 0.66 m plus top OPS unit height 0.254 m stacked on top",
+        "state_match": {
+          "shown_and_covered": "backpack-unit mask covers the stacked light rectangular pack body plus the smaller top protrusion seen from behind, covered by the quoted PLSS plus OPS heights",
+          "shown_not_covered": "white suited legs below the pack, helmet, flag and ground shown outside the pack extent and not covered by the quoted heights"
+        }
+      },
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Primary_life_support_system",
+          "domain": "en.wikipedia.org",
+          "quote": "The PLSS was 26 inches (66 cm) high, 18 inches (46 cm) wide, and 10 inches (25 cm) deep.",
+          "quote_highlight": "66 cm",
+          "value_m": 0.66,
+          "source_type": "encyclopedia article"
+        },
+        {
+          "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+          "domain": "nasa.gov",
+          "quote": "inches long, 10 inches high, and 8 inches deep.",
+          "quote_highlight": "10 inches high",
+          "value_m": 0.254,
+          "source_type": "museum catalogue"
+        }
+      ],
+      "mask": {
+        "artifact": "artifacts/t12_segment_0.npz",
+        "object_id": "0",
+        "frame": 10,
+        "outline": [
+          [
+            6.0,
+            40.0
+          ],
+          [
+            69.0,
+            40.0
+          ],
+          [
+            69.0,
+            130.0
+          ],
+          [
+            6.0,
+            130.0
+          ]
+        ]
+      },
+      "mask_check": {
+        "artifact": "artifacts/t21_check_mask_0.json",
+        "coverage_answer": "On the left side of the frame the pale tint covers the large light rectangular pack on the back of the light-suited figure seen from behind. It includes the top of the pack against the dark background, the left side at the frame edge, and the right side with a narrow margin onto the background, while its bottom edge cuts straight across the figure at about waist to upper-leg level. It covers only the pack unit and excludes the white legs and lower suit below it and excludes the surrounding ground and background.",
+        "confidence": null,
+        "alternative_readings": [
+          {
+            "description": "lower main body only (PLSS without top OPS unit)",
+            "size_m": 0.66
+          }
+        ]
+      }
+    }
+  ],
+  "scale": {
+    "frame": 10,
+    "m_per_px": 0.010105155465021446,
+    "sigma_m_per_px": 0.0003673890829750777,
+    "reference_index": 0,
+    "extent_px": {
+      "x1": 47.0,
+      "y1": 40.0,
+      "x2": 38.0,
+      "y2": 130.0,
+      "length_px": 90.44888059008801,
+      "frame": 10
+    },
+    "second_reference_index": null,
+    "second_reference_absent_reason": "no second independent object of known size at the same depth yet measured; flag size not yet sourced and background figure depth differs",
+    "check_scale": null
+  },
+  "segments": [
+    {
+      "id": "hop_a",
+      "label": "Foreground hop",
+      "kind": "free_flight",
+      "subject": {
+        "kind": "person",
+        "description": "foreground suited figure"
+      },
+      "mask": {
+        "artifact": "artifacts/t12_segment_0.npz",
+        "object_id": "0"
+      },
+      "frames": {
+        "start": 135,
+        "apex": 143,
+        "end": 152
+      },
+      "key_moments": [
+        {
+          "type": "takeoff",
+          "frame": 135,
+          "caption": "leaving the ground"
+        },
+        {
+          "type": "apex",
+          "frame": 143,
+          "caption": "hanging at the top"
+        },
+        {
+          "type": "landing",
+          "frame": 152,
+          "caption": "touching down softly"
+        }
+      ],
+      "track_artifact": "workspace/track_hop_a.json",
+      "tracked_point": "centroid of the backpack unit, rigid with the body",
+      "fit_curve_px": [
+        {
+          "t_s": 4.504505,
+          "x_px": 91.63068580500288,
+          "y_px": 85.64510991297448
+        },
+        {
+          "t_s": 4.537871,
+          "x_px": 91.63068580500288,
+          "y_px": 79.5799906232869
+        },
+        {
+          "t_s": 4.571238,
+          "x_px": 91.63068580500288,
+          "y_px": 74.3182560797768
+        },
+        {
+          "t_s": 4.604605,
+          "x_px": 91.63068580500288,
+          "y_px": 69.86010009940219
+        },
+        {
+          "t_s": 4.637971,
+          "x_px": 91.63068580500288,
+          "y_px": 66.205620167706
+        },
+        {
+          "t_s": 4.671338,
+          "x_px": 91.63068580500288,
+          "y_px": 63.35459723056647
+        },
+        {
+          "t_s": 4.704705,
+          "x_px": 91.63068580500288,
+          "y_px": 61.307152856560606
+        },
+        {
+          "t_s": 4.738071,
+          "x_px": 91.63068580500288,
+          "y_px": 60.063312282854895
+        },
+        {
+          "t_s": 4.771438,
+          "x_px": 91.63068580500288,
+          "y_px": 59.62300095208229
+        },
+        {
+          "t_s": 4.804805,
+          "x_px": 91.63068580500288,
+          "y_px": 59.98626818444791
+        },
+        {
+          "t_s": 4.838172,
+          "x_px": 91.63068580500288,
+          "y_px": 61.153113979944465
+        },
+        {
+          "t_s": 4.871538,
+          "x_px": 91.63068580500288,
+          "y_px": 63.12346724433155
+        },
+        {
+          "t_s": 4.904905,
+          "x_px": 91.63068580500288,
+          "y_px": 65.897446083065
+        },
+        {
+          "t_s": 4.938272,
+          "x_px": 91.63068580500288,
+          "y_px": 69.47500348493122
+        },
+        {
+          "t_s": 4.971638,
+          "x_px": 91.63068580500288,
+          "y_px": 73.85599610731151
+        },
+        {
+          "t_s": 5.005005,
+          "x_px": 91.63068580500288,
+          "y_px": 79.04068655240917
+        },
+        {
+          "t_s": 5.038372,
+          "x_px": 91.63068580500288,
+          "y_px": 85.02895556064504
+        },
+        {
+          "t_s": 5.071738,
+          "x_px": 91.63068580500288,
+          "y_px": 91.82058754101672
+        },
+        {
+          "t_s": 5.105105,
+          "x_px": 91.63068580500288,
+          "y_px": 99.41598959248768
+        }
+      ],
+      "repetitions": []
+    }
+  ],
+  "clock": null,
+  "clock_absent_reason": "no visible independent rhythm; gait signal over walking produced no reliable clock",
+  "worlds": {
+    "candidates": [
+      {
+        "world": "Moon"
+      }
+    ],
+    "excluded": []
+  },
+  "error_budget": {
+    "components": [
+      {
+        "name": "reference_size",
+        "sigma_contribution": 0.239,
+        "basis": "quoted PLSS plus OPS size spread over fitted gravity"
+      },
+      {
+        "name": "pixel_scale",
+        "sigma_contribution": 0.114,
+        "basis": "endpoint placement"
+      },
+      {
+        "name": "fit",
+        "sigma_contribution": 0.182,
+        "basis": "parabola residuals"
+      },
+      {
+        "name": "point_vs_com",
+        "sigma_contribution": 0.35,
+        "basis": "centroid versus centre-of-mass allowance"
+      },
+      {
+        "name": "reading_spread",
+        "sigma_contribution": 1.013,
+        "basis": "half size difference between whole-pack and lower-body-only readings over fitted gravity"
+      }
+    ],
+    "sigma_relative": 0.153
+  },
+  "camera": {
+    "still": {
+      "reference_phrase": "flag on pole",
+      "reference_track_artifact": "workspace/ref_flag_track.json"
+    }
+  },
+  "provenance": {
+    "artifacts": [
+      {
+        "name": "view",
+        "path": "artifacts/t4_view_frames_0.jpg"
+      },
+      {
+        "name": "full scan view",
+        "path": "artifacts/t28_view_frames_0.jpg"
+      },
+      {
+        "name": "segment masks",
+        "path": "artifacts/t12_segment_0.npz"
+      },
+      {
+        "name": "figure masks",
+        "path": "artifacts/t9_segment_0.npz"
+      },
+      {
+        "name": "flag masks",
+        "path": "artifacts/t25_segment_0.npz"
+      },
+      {
+        "name": "mask check",
+        "path": "artifacts/t21_check_mask_0.json"
+      },
+      {
+        "name": "track",
+        "path": "workspace/track_hop_a.json"
+      },
+      {
+        "name": "reference track",
+        "path": "workspace/ref_flag_track.json"
+      },
+      {
+        "name": "figure height measurement",
+        "path": "artifacts/measure_figure_height.txt"
+      }
+    ]
+  },
+  "range_checks": [
+    {
+      "answers": "It settles whether the foreground figure's stature matches adult human norms.",
+      "extents": [
+        {
+          "frame": 10,
+          "length_px": 155.08062419270823,
+          "name": "suited figure height",
+          "x1": 66.0,
+          "x2": 61.0,
+          "y1": 58.0,
+          "y2": 213.0
+        }
+      ],
+      "formula": "length_px \u00d7 m_per_px",
+      "frame": 10,
+      "id": "suited_figure_height",
+      "label": "suited figure height",
+      "measurement_artifact": "artifacts/measure_figure_height.txt",
+      "range": {
+        "bounds_kind": "min-max",
+        "max": 1.85,
+        "min": 1.65,
+        "percentiles": null,
+        "sources": [
+          {
+            "bound": "min",
+            "domain": "myhsn.co.uk",
+            "quote": "The *average* range for **adult men** is approximately **1.65 to 1.85 metres** (about **5\u20195\u2033\u20136\u20191\u2033**)",
+            "quote_highlight": "1.65 to 1.85 metres",
+            "source_type": "survey report",
+            "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+            "value": 1.65
+          },
+          {
+            "bound": "max",
+            "domain": "myhsn.co.uk",
+            "quote": "The *average* range for **adult men** is approximately **1.65 to 1.85 metres** (about **5\u20195\u2033\u20136\u20191\u2033**)",
+            "quote_highlight": "1.65 to 1.85 metres",
+            "source_type": "survey report",
+            "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+            "value": 1.85
+          }
+        ],
+        "typical": 1.71,
+        "what": "adult men standing height"
+      },
+      "sigma": 0.0587398569099501,
+      "unit": "m",
+      "uses_scale": true,
+      "value": 1.5671138170798826
+    }
+  ],
+  "page_texts": {}
+}

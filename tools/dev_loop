@@ -1,0 +1,1922 @@
+#!/usr/bin/env python3
+# generated from brief/15 · spec-sha256:8d98d050310ec6839a4dd66a1444d766d38be78522bf0ab4dafc64e4c725f7c1 · plan-sha256:2d4a2718f3d74cac2e14a853ff4a8c3b7053edecd6fe6c4545e341ae5b11e35e
+"""Regeneration driver: rebuild one spec part through the coding agent.
+
+Implements brief part 15 section 2:
+
+1. Refuse to continue when a generated file was edited by hand (manifest
+   SHA-256 check only; the abort names the file. The generated-from
+   header is an optional reader-facing courtesy, never a violation).
+2. Delete only that part's owned files (per tools/parts.json, which mirrors
+   brief part 04 section 3, owned test files included) and regenerate them
+   by invoking Muse exactly as skills/muse-code-headless.md specifies,
+   capturing the run_usage event for cost.
+3. Run that part's tests. A red test stops the loop; the failure output goes
+   back to the coding agent with the spec part, and regeneration repeats.
+   After the part's tests pass, run `pytest --collect-only -q` over the
+   whole `tests/` tree: a collection error (e.g. two same-named test
+   modules in different directories, brief part 04 section 3) fails the
+   attempt exactly like a test failure, and its text goes back as
+   feedback. Then the full suite runs again and is compared against a
+   baseline taken before the first attempt: a test outside the part's
+   owned paths that passed in the baseline and fails now fails the
+   attempt (rerun alone first -- a lone pass means flaky, not blocking;
+   `Breaks on purpose:` spec lines excuse named tests; brief part 15
+   §9). Deletion happens once, before the first attempt; a retry
+   continues from the previous attempt's files with the failing output
+   as feedback -- it never restarts from an empty tree, so fixes and
+   tests written in one attempt survive into the next.
+   Every attempt leaves a record in .dev_loop/<part>/<timestamp>-<attempt>/:
+   the Muse JSONL event log, the agent's final message, the full test
+   output, and that attempt's own cost. When a part ends red, the tool
+   prints the last attempt's failing test names with their first error
+   lines and the path of that record.
+   The part's own tests do not shrink (brief part 15 §12): before the
+   first attempt the tool records the test functions in the part's own
+   test paths (node ids without parametrize suffixes, from
+   pytest --collect-only); after each attempt every recorded function
+   must still be collected under the same file and name unless a brief
+   line `Removes test:` names it. A missing function fails the attempt
+   like a failing test. The attempt prompt lists every recorded function.
+   The baseline and the guard always run with PHYSICS_PROOF_BROWSER=1
+   (brief part 15 §13), whatever the part's own flag; the baseline line
+   prints how many tests were skipped; a guard run that skips a test
+   which passed in the baseline fails the attempt like a failure.
+   A generation writes only its own paths (brief part 15 §16): after
+   each attempt the tool lists the files the attempt changed; a file
+   changed outside the part's owned_paths (other than ITERATIONS.md,
+   README.md and tools/manifest.json, which the tool itself writes) is
+   restored to its state before the attempt, and the attempt fails with
+   "wrote outside its paths: <files>".
+4. On request (--pages), rebuild the affected player pages (§5) and run
+   the screenshot review (§6); --acceptance runs the part-03 protocol via
+   the harness in tests/acceptance/ (§4). Both are live-only behind
+   PHYSICS_PROOF_LIVE=1 (brief part 15 §8): without it the tool prints
+   what it would run and the cost cap, then exits non-zero.
+5. Append one line to ITERATIONS.md (always appended, never edited). The
+   cost on the line is the whole run's cost: every attempt's run_usage is
+   priced on its own and added up, and the line gives the attempt count
+   plus each attempt's cost
+   (e.g. ``cost $3.27 over 2 attempts ($1.61 + $1.66)``).
+   After the append, re-run tools/make_readme so README.md follows
+   ITERATIONS.md (brief part 15 §15): the parts table and the
+   "all generations so far" total would otherwise go stale.
+"""
+from __future__ import annotations
+
+import argparse
+import datetime
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+# Reader-facing courtesy header format (brief part 15 section 2 item 1).
+# It is never part of the hand-edit check; only the manifest hash guards.
+HEADER_RE = re.compile(
+    r"generated from brief/(\d{1,2})\s*·\s*"
+    r"spec-sha256:([0-9a-f]{64})\s*·\s*plan-sha256:([0-9a-f]{64})"
+)
+
+# Per-1M-token prices from skills/meta-api.md. Only these models are priced;
+# any other model records tokens with cost unknown (never invent a price).
+# cached_tokens is the cached part of input_tokens (price the rest at the
+# input rate); reasoning_tokens is inside output_tokens (never price twice).
+PRICES = {
+    "muse-spark-1.3-contributor": {"input": 0.10, "cached": 0.002, "output": 0.20},
+    "muse-spark-1.3": {"input": 1.25, "cached": 0.15, "output": 4.25},
+}
+
+EXIT_FAIL = 1
+EXIT_UNAVAILABLE = 2
+
+TEST_OUTPUT_TAIL_CHARS = 4000
+
+# Owner notes (brief part 15 §8): real runs go behind one gate. Without it
+# the tool prints what it would run and the cost cap, then exits non-zero.
+LIVE_ENV = "PHYSICS_PROOF_LIVE"
+BROWSER_ENV = "PHYSICS_PROOF_BROWSER"
+WALLRUN_ENV = "WALLRUN_CLIP"
+
+# Worst-case paid cost of one full acceptance run, for the gate message:
+# 9 analysis runs (3 clips x 3) each capped at the $2 hard cap (part 03
+# §4.4), plus a small allowance for the vision review calls (§6).
+ACCEPTANCE_COST_CAP_USD = 9 * 2.0 + 2.0
+
+
+class DevLoopError(Exception):
+    """Fatal dev-loop problem (bad config, missing key, missing files)."""
+
+
+def repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def load_config(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise DevLoopError(f"config not found: {path}")
+    except json.JSONDecodeError as exc:
+        raise DevLoopError(f"config is not valid JSON: {path}: {exc}")
+
+
+def normalize_part(raw: str) -> str:
+    digits = re.sub(r"\D", "", raw)
+    if not digits:
+        raise DevLoopError(f"not a part number: {raw!r}")
+    return digits.zfill(2)
+
+
+def part_cfg(config: dict, part: str) -> dict:
+    try:
+        return config["parts"][part]
+    except KeyError:
+        raise DevLoopError(f"part {part} is not in the registry")
+
+
+IGNORED_NAMES = {"__pycache__", ".pytest_cache", ".DS_Store"}
+IGNORED_SUFFIXES = (".pyc", ".pyo")
+
+
+def is_ignored(root: Path, path: Path) -> bool:
+    """True for interpreter-cache byproducts under root (never generated files)."""
+    try:
+        rel_parts = path.relative_to(root).parts
+    except ValueError:
+        return True
+    return any(part in IGNORED_NAMES for part in rel_parts) or path.suffix in (
+        IGNORED_SUFFIXES
+    )
+
+
+def iter_owned_files(root: Path, owned: list[str]) -> list[Path]:
+    """Existing source files under the part's owned paths, sorted.
+
+    Interpreter caches (__pycache__, *.pyc) and similar byproducts are not
+    generated files in the part-15 sense, so they are skipped everywhere:
+    they neither trip the hand-edit check nor get recorded or deleted.
+    """
+    found: list[Path] = []
+    for rel in owned:
+        target = root / rel
+        if (
+            target.is_file()
+            and not target.is_symlink()
+            and not is_ignored(root, target)
+        ):
+            found.append(target)
+        elif target.is_dir() and not target.is_symlink():
+            for child in sorted(target.rglob("*")):
+                if (
+                    child.is_file()
+                    and not child.is_symlink()
+                    and not is_ignored(root, child)
+                ):
+                    found.append(child)
+    return sorted(found)
+
+
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def header_part(path: Path) -> str | None:
+    """Part number from the courtesy header, or None if absent.
+
+    Display helper only; the hand-edit guard never calls this.
+    """
+    try:
+        with path.open(encoding="utf-8", errors="replace") as handle:
+            for _ in range(5):
+                line = handle.readline()
+                if not line:
+                    break
+                match = HEADER_RE.search(line)
+                if match:
+                    return match.group(1).zfill(2)
+    except OSError:
+        return None
+    return None
+
+
+def load_manifest(path: Path) -> dict:
+    if not path.exists():
+        return {"version": 1, "files": {}}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise DevLoopError(f"manifest is not valid JSON: {path}: {exc}")
+    if not isinstance(data, dict) or not isinstance(data.get("files"), dict):
+        raise DevLoopError(f"manifest has the wrong shape: {path}")
+    return data
+
+
+def check_clean(
+    root: Path, part: str, owned: list[str], manifest: dict
+) -> list[str]:
+    """Files under owned paths that fail the hand-edit check.
+
+    The manifest hash is the whole check: a file is clean when it has a
+    manifest entry with a matching SHA-256. A hash mismatch, or a file
+    under owned paths that the manifest doesn't list (edited by hand,
+    added by hand, or generated before the manifest existed), is a
+    violation. The courtesy header is never a violation. Missing files
+    are fine: they are (re)generated below.
+    """
+    violations: list[str] = []
+    recorded = manifest.get("files", {})
+    for path in iter_owned_files(root, owned):
+        rel = path.relative_to(root).as_posix()
+        entry = recorded.get(rel)
+        if entry is None or entry.get("sha256") != file_sha256(path):
+            violations.append(rel)
+    return sorted(violations)
+
+
+def delete_owned(root: Path, owned: list[str], keep: set[Path]) -> list[str]:
+    """Delete exactly the part's owned paths (files or trees), nothing else."""
+    deleted: list[str] = []
+    for rel in owned:
+        target = root / rel
+        resolved = target.resolve() if target.exists() else None
+        if resolved is not None and resolved in keep:
+            continue
+        if target.is_file() or target.is_symlink():
+            target.unlink()
+            deleted.append(rel)
+        elif target.is_dir():
+            shutil.rmtree(target)
+            deleted.append(rel)
+    return sorted(deleted)
+
+
+BROWSER_PROMPT = (
+    "This part builds a screen (browser: true). You are running outside "
+    "the shell sandbox with PHYSICS_PROOF_BROWSER=1: you can and must run "
+    "the browser tests yourself, take screenshots of your pages and open "
+    "them to look before you finish. Every other part keeps the sandbox."
+)
+
+
+# Shared constraints (brief part 15 §8, owner note 2026-10-28): module
+# ownership, the test rules and the platform constraints bind every part,
+# so brief/04 goes into every part's prompt, not only part 04's.
+SHARED_CONSTRAINTS_REL = "brief/04-architecture-and-constraints.md"
+
+# What changed since this part was last generated (owner notes 2026-10-28
+# and self-review 2026-10-30, brief part 15 §§8/17): the prompt carries
+# the git diff of the part's spec file, brief/04 and the part's skills,
+# from the newest commit that adds a line for this part to ITERATIONS.md
+# (the commit holding the part's last generation) to HEAD. A revert, a
+# fixture fix or a README refresh by the owner does not move the base.
+# A restored tree that passes the old tests is not done -- the agent must
+# implement every change in this diff.
+CHANGES_TITLE = "SPEC CHANGES SINCE THE LAST GENERATION OF THIS PART"
+CHANGES_INSTRUCTION = (
+    "Implement every change in this diff, and back each one with a test "
+    "that would fail without it. Restored code that passes the old tests "
+    "is not done. In the final message, list each change with the file "
+    "and the test that implement it."
+)
+NO_CHANGES_LINE = "no changes."
+
+
+ITERATIONS_REL = "ITERATIONS.md"
+
+
+def part_from_spec_rel(spec_rel: str) -> str | None:
+    """Part number derived from the spec path (e.g. brief/11-... -> "11")."""
+    match = re.search(r"(\d{1,2})", Path(spec_rel).name)
+    if not match:
+        return None
+    return match.group(1).zfill(2)
+
+
+def iteration_line_names_part(line: str, part: str) -> bool:
+    """True when an ITERATIONS.md line records a generation of `part`.
+
+    Lines look like ``DATE | part NN | ...``. Compare numerically so
+    "05" and "5" match each other and nothing else matches.
+    """
+    try:
+        want = int(part)
+    except (TypeError, ValueError):
+        return False
+    for found in re.findall(r"\|\s*part\s+(\d+)\s*\|", f"| {line} |"):
+        try:
+            if int(found) == want:
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def last_generation_commit(
+    root: Path, part_or_owned: str | list[str] | None,
+    owned: list[str] | None = None,
+) -> str | None:
+    """Newest commit holding the part's last generation, if any.
+
+    Brief part 15 §17 (self-review 2026-10-30): the base is the newest
+    commit that adds a line for this part to ITERATIONS.md. It is not
+    the newest commit touching the part's owned paths -- a revert, a
+    fixture fix or a README refresh by the owner must not move it.
+
+    `part_or_owned` is the part number ("11"); the older owned-paths
+    call shape is still accepted and resolves the part from the spec
+    where possible, but the owned paths never set the base.
+    """
+    if isinstance(part_or_owned, list) or owned is not None:
+        # Legacy call shape last_generation_commit(root, owned): no part
+        # is known, so no ITERATIONS.md line can be matched.
+        return None
+    part = part_or_owned
+    if not part:
+        return None
+    try:
+        proc = subprocess.run(
+            ["git", "log", "--format=%H", "--", ITERATIONS_REL],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=root,
+        )
+    except (OSError, ValueError):
+        return None
+    if proc.returncode != 0:
+        return None
+    commits = proc.stdout.decode("utf-8", errors="replace").split()
+    for commit in commits:
+        try:
+            show = subprocess.run(
+                ["git", "show", commit, "--format=", "--unified=0",
+                 "--", ITERATIONS_REL],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=root,
+            )
+        except (OSError, ValueError):
+            return None
+        if show.returncode != 0:
+            continue
+        for line in show.stdout.decode("utf-8", errors="replace").splitlines():
+            if line.startswith("+") and not line.startswith("+++"):
+                if iteration_line_names_part(line[1:], str(part)):
+                    return commit
+    return None
+
+
+def spec_changes_diff(
+    root: Path, spec_rel: str, skill_rels: list[str], since: str,
+) -> str:
+    """Git diff of the prompt's spec inputs from `since` to HEAD (may be "")."""
+    watched = [spec_rel]
+    if spec_rel != SHARED_CONSTRAINTS_REL:
+        watched.append(SHARED_CONSTRAINTS_REL)
+    watched.extend(rel for rel in skill_rels if rel not in watched)
+    try:
+        proc = subprocess.run(
+            ["git", "diff", f"{since}..HEAD", "--", *watched],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=root,
+        )
+    except (OSError, ValueError):
+        return ""
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout.decode("utf-8", errors="replace")
+
+
+def build_spec_changes_section(
+    root: Path, spec_rel: str, skill_rels: list[str],
+    owned: list[str] | None = None,
+    part: str | None = None,
+) -> str:
+    """The SPEC CHANGES prompt section: a diff, or a one-line no-changes."""
+    resolved = part or part_from_spec_rel(spec_rel)
+    since = last_generation_commit(root, resolved) if resolved else None
+    if since is None:
+        return f"{CHANGES_TITLE}\nno changes (no previous generation found)."
+    diff = spec_changes_diff(root, spec_rel, skill_rels, since)
+    if not diff.strip():
+        return f"{CHANGES_TITLE}\n{NO_CHANGES_LINE}"
+    return f"{CHANGES_TITLE}\n{CHANGES_INSTRUCTION}\n```diff\n{diff}\n```"
+
+
+def build_prompt(
+    root: Path, spec_rel: str, skill_rels: list[str],
+    browser: bool = False, owned: list[str] | None = None,
+    part: str | None = None,
+) -> str:
+    """The coding-agent prompt: one spec part + shared constraints + PLAN.md
+    + relevant skills + the spec-changes diff (brief part 15 §8)."""
+    spec_path = root / spec_rel
+    plan_path = root / "PLAN.md"
+    shared_path = root / SHARED_CONSTRAINTS_REL
+    for path in (spec_path, plan_path, shared_path):
+        if not path.is_file():
+            raise DevLoopError(f"prompt input not found: {path}")
+    chunks = [
+        "Generate (or repair) ONLY the part described below. "
+        "Write the part's owned code files and its owned test files; "
+        "do not create or modify any other file.",
+        f"=== SPEC PART: {spec_rel} ===\n" + spec_path.read_text(encoding="utf-8"),
+        f"=== SHARED CONSTRAINTS: {SHARED_CONSTRAINTS_REL} ===\n"
+        + shared_path.read_text(encoding="utf-8"),
+        "=== PLAN.md ===\n" + plan_path.read_text(encoding="utf-8"),
+    ]
+    for rel in skill_rels:
+        skill_path = root / rel
+        if not skill_path.is_file():
+            raise DevLoopError(f"prompt input not found: {skill_path}")
+        chunks.append(
+            f"=== SKILL: {rel} ===\n" + skill_path.read_text(encoding="utf-8")
+        )
+    chunks.append(
+        build_spec_changes_section(
+            root, spec_rel, skill_rels, owned,
+            part=part or part_from_spec_rel(spec_rel),
+        )
+    )
+    if browser:
+        chunks.append(BROWSER_PROMPT)
+    return "\n\n".join(chunks)
+
+
+def parse_events(stdout_text: str) -> tuple[dict | None, dict | None]:
+    """Last run_usage payload and last run_terminal payload, if any."""
+    usage: dict | None = None
+    terminal: dict | None = None
+    for line in stdout_text.splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        payload = event.get("payload")
+        if not isinstance(payload, dict):
+            continue
+        kind = payload.get("kind")
+        if kind == "run_usage":
+            usage = payload
+        elif kind == "run_terminal":
+            terminal = payload
+    return usage, terminal
+
+
+def run_muse(
+    *, model: str, effort: str, max_steps: int, workspace: Path, prompt: str,
+    browser: bool = False,
+) -> dict:
+    """Invoke Muse per skills/muse-code-headless.md; return usage+terminal.
+
+    The API key travels on stdin only (--api-key-stdin). It never appears in
+    argv, in the prompt, or in any file or log this tool writes.
+
+    Parts that build a screen (registry ``"browser": true``, brief part 15
+    §8) run outside the shell sandbox -- headless Chrome cannot start
+    inside it, and outside it does -- with PHYSICS_PROOF_BROWSER=1 in the
+    agent's environment so its own browser tests can run.
+    """
+    key = os.environ.get("META_API_KEY")
+    if not key:
+        raise DevLoopError(
+            "META_API_KEY is not set; refusing to invoke the coding agent"
+        )
+    argv = [
+        "muse", "exec", "--api-key-stdin", "--json",
+        "--model", model,
+        "--reasoning-effort", effort,
+        "--max-model-steps", str(max_steps),
+        "--no-foreign-personal-context",
+        "--disable-reminders",
+        "--trust-workspace",
+        "--approval-mode", "never",
+        "--sandbox-network", "enabled",
+        "--workspace", str(workspace),
+    ]
+    env = dict(os.environ)
+    if browser:
+        argv.append("--disable-sandbox")
+        env[BROWSER_ENV] = "1"
+    argv.append(prompt)
+    proc = subprocess.run(
+        argv,
+        input=key.encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=workspace,
+        env=env,
+    )
+    stdout_text = proc.stdout.decode("utf-8", errors="replace")
+    usage, terminal = parse_events(stdout_text)
+    return {
+        "usage": usage,
+        "terminal": terminal,
+        "returncode": proc.returncode,
+        "stderr": proc.stderr.decode("utf-8", errors="replace")[-2000:],
+        "stdout_text": stdout_text,
+    }
+
+
+def price_usage(usage: dict | None) -> tuple[float | None, str]:
+    """Convert a run_usage payload to dollars; unknown model -> cost unknown."""
+    if not usage or not usage.get("models"):
+        return None, "no usage reported"
+    total = 0.0
+    unknown: list[str] = []
+    bits: list[str] = []
+    for entry in usage["models"]:
+        name = str(entry.get("model", "?"))
+        try:
+            in_tokens = int(entry.get("input_tokens", 0))
+            cached = int(entry.get("cached_tokens", 0))
+            out_tokens = int(entry.get("output_tokens", 0))
+            calls = int(entry.get("calls", 0))
+        except (TypeError, ValueError):
+            continue
+        bits.append(
+            f"{name}: in {in_tokens} cached {cached} "
+            f"out {out_tokens} calls {calls}"
+        )
+        prices = PRICES.get(name)
+        if prices is None:
+            unknown.append(name)
+            continue
+        total += (
+            (in_tokens - cached) * prices["input"]
+            + cached * prices["cached"]
+            + out_tokens * prices["output"]
+        ) / 1_000_000
+    if unknown or not bits:
+        return None, "; ".join(bits) if bits else "no usage reported"
+    return total, "; ".join(bits)
+
+
+def run_part_tests(
+    test_command: list[str], cwd: Path, browser: bool = False,
+) -> tuple[int, str]:
+    """Run the part's test command; return (exit code, full output).
+
+    Callers slice the tail for agent feedback; the record keeps the full text.
+    Screen-building parts (brief part 15 §8) run their tests with
+    PHYSICS_PROOF_BROWSER=1 so the headless-Chrome checks can run;
+    every other part keeps the sandbox.
+    """
+    env = dict(os.environ)
+    if browser:
+        env[BROWSER_ENV] = "1"
+    proc = subprocess.run(
+        test_command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=cwd,
+        text=True,
+        env=env,
+    )
+    return proc.returncode, proc.stdout
+
+
+COLLECTION_TARGET = "tests"
+COLLECTION_ARGS = ["--collect-only", "-q"]
+
+# Full-suite guard (brief part 15 §9, owner addendum 2026-10-28): a part's
+# own tests can pass while it breaks other parts, which only showed in the
+# full suite after the chain. dev_loop therefore runs the whole suite
+# itself — a baseline before the first attempt, and a guard after the
+# part's tests and the collection check pass.
+FULL_SUITE_TARGET = "tests"
+FULL_SUITE_ARGS = ["-v", "--tb=short"]
+
+# Feedback section for the next attempt's prompt when the guard fires.
+OTHER_PARTS_TITLE = "OTHER PARTS' TESTS YOU BROKE"
+OTHER_PARTS_INSTRUCTION = (
+    "Other parts use these names, files and behaviours; keep them unless "
+    "your spec says otherwise."
+)
+
+# A spec section may declare that some other part's tests must change
+# because of it, in a line starting with this prefix followed by test
+# paths and the part that will update them. Failures of those tests are
+# expected breaks: listed, never attempt-failing.
+BREAKS_PREFIX = "Breaks on purpose:"
+
+
+def collection_command(test_runner: list[str]) -> list[str]:
+    """`pytest --collect-only -q` over the whole `tests/` tree.
+
+    Reuses the configured test runner prefix (brief part 15 §2 item 3 owns
+    the per-part command; the suite-wide collection uses the same runner)
+    and defaults to the current interpreter when none is configured.
+    """
+    runner = list(test_runner) if test_runner else [sys.executable, "-m", "pytest"]
+    return runner + [COLLECTION_TARGET, *COLLECTION_ARGS]
+
+
+def run_suite_collection(
+    test_runner: list[str], cwd: Path, browser: bool = False,
+) -> tuple[int, str]:
+    """Collect the whole `tests/` tree without running it.
+
+    A part's own tests can pass while a new file collides with another
+    part's (duplicate test-module basenames break pytest's default import
+    mode, brief part 04 section 3). A collection error fails the attempt
+    like a test failure; its text goes back as feedback. Returns
+    (exit code, full output).
+    """
+    env = dict(os.environ)
+    if browser:
+        env[BROWSER_ENV] = "1"
+    proc = subprocess.run(
+        collection_command(test_runner),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=cwd,
+        text=True,
+        env=env,
+    )
+    return proc.returncode, proc.stdout
+
+
+def full_suite_command(test_runner: list[str]) -> list[str]:
+    """`pytest tests/ -v --tb=short`: per-test verdicts for the §9 guard.
+
+    Verbose (not `-q`) so the baseline can record which tests pass and
+    the guard can name which foreign tests fail; the same runner prefix
+    as the collection check.
+    """
+    runner = list(test_runner) if test_runner else [sys.executable, "-m", "pytest"]
+    return runner + [FULL_SUITE_TARGET, *FULL_SUITE_ARGS]
+
+
+def run_full_suite(
+    test_runner: list[str], cwd: Path, browser: bool = False,
+) -> tuple[int, str]:
+    """Run the whole `tests/` tree; return (exit code, full output).
+
+    Local only, costs nothing (brief part 15 §9 item 5). Screen-building
+    parts run it with PHYSICS_PROOF_BROWSER=1 like their own tests.
+    """
+    env = dict(os.environ)
+    if browser:
+        env[BROWSER_ENV] = "1"
+    proc = subprocess.run(
+        full_suite_command(test_runner),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=cwd,
+        text=True,
+        env=env,
+    )
+    return proc.returncode, proc.stdout
+
+
+def run_one_test(
+    test_runner: list[str], cwd: Path, test_id: str, browser: bool = False,
+) -> tuple[int, str]:
+    """Rerun one test id alone; return (exit code, full output).
+
+    A foreign test that fails in the full run but passes alone is flaky
+    and does not fail the attempt (brief part 15 §9 item 2).
+    """
+    env = dict(os.environ)
+    if browser:
+        env[BROWSER_ENV] = "1"
+    runner = list(test_runner) if test_runner else [sys.executable, "-m", "pytest"]
+    proc = subprocess.run(
+        runner + [test_id, "-q", "--tb=short"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=cwd,
+        text=True,
+        env=env,
+    )
+    return proc.returncode, proc.stdout
+
+
+VERBOSE_RESULT_RE = re.compile(
+    r"^(\S+)\s+(PASSED|FAILED|ERROR|SKIPPED|XFAIL|XPASS)(?:\s+\[.*\])?\s*$"
+)
+
+
+def parse_suite_verdicts(output: str) -> dict[str, str]:
+    """Test id -> outcome from `pytest -v` output (one entry per test)."""
+    verdicts: dict[str, str] = {}
+    for raw in output.splitlines():
+        match = VERBOSE_RESULT_RE.match(raw.strip())
+        if match:
+            verdicts[match.group(1)] = match.group(2)
+    return verdicts
+
+
+def suite_test_file(test_id: str) -> str:
+    """The test's file: the path before the first `::`."""
+    return test_id.split("::", 1)[0]
+
+
+def test_is_owned(test_file: str, owned: list[str]) -> bool:
+    """True when the test file sits under the part's owned paths."""
+    for entry in owned:
+        base = entry.rstrip("/")
+        if test_file == base or test_file.startswith(base + "/"):
+            return True
+    return False
+
+
+# Owner addendum 2026-10-29 (brief part 15 §16): a generation writes
+# only its own paths. After each attempt the tool lists the files the
+# attempt changed; a changed file outside the part's owned_paths is
+# restored to its state before the attempt and fails the attempt with
+# "wrote outside its paths: <files>". The three files dev_loop itself
+# writes (ITERATIONS.md, README.md, tools/manifest.json) are exempt.
+OWN_WRITE_EXEMPT = frozenset(
+    {"ITERATIONS.md", "README.md", "tools/manifest.json"}
+)
+
+# Directories never snapshotted for the §16 check: version control, the
+# tool's own attempt records, virtualenvs and caches (thousands of
+# tool-made files the agent never touches, e.g. `.venv/` created when
+# the agent runs the test command itself), and pytest's cache.
+SKIP_SNAPSHOT_DIRS = frozenset(
+    {".git", ".dev_loop", ".venv", ".pytest_cache", "node_modules"}
+)
+
+
+def _snapshot_rel(root: Path, path: Path) -> str | None:
+    """Repo-relative posix path, or None when the file is out of scope."""
+    try:
+        rel = path.relative_to(root).as_posix()
+    except ValueError:
+        return None
+    if rel in OWN_WRITE_EXEMPT:
+        return None
+    if any(part in SKIP_SNAPSHOT_DIRS for part in Path(rel).parts):
+        return None
+    if is_ignored(root, path):
+        return None
+    return rel
+
+
+def snapshot_tree(root: Path) -> dict[str, bytes]:
+    """Pre-attempt file state: {rel: bytes} for every in-scope file.
+
+    In scope is everything under root except the tool's own writes
+    (OWN_WRITE_EXEMPT), version control, attempt records, virtualenvs
+    and caches. Symlinks are never followed. A missing/unreadable file
+    is skipped, never fatal.
+    """
+    state: dict[str, bytes] = {}
+    try:
+        candidates = sorted(root.rglob("*"))
+    except OSError:
+        return state
+    for path in candidates:
+        if path.is_symlink() or not path.is_file():
+            continue
+        rel = _snapshot_rel(root, path)
+        if rel is None or rel in state:
+            continue
+        try:
+            state[rel] = path.read_bytes()
+        except OSError:
+            continue
+    return state
+
+
+def snapshot_dirs(root: Path) -> set[str]:
+    """Pre-attempt directory set, same scope rules as snapshot_tree.
+
+    Used to prune directories an attempt created (and emptied again on
+    restore) without touching directories that already existed.
+    """
+    dirs: set[str] = set()
+    try:
+        candidates = sorted(root.rglob("*"))
+    except OSError:
+        return dirs
+    for path in candidates:
+        if not path.is_dir() or path.is_symlink():
+            continue
+        try:
+            rel = path.relative_to(root).as_posix()
+        except ValueError:
+            continue
+        if any(part in SKIP_SNAPSHOT_DIRS for part in Path(rel).parts):
+            continue
+        dirs.add(rel)
+    return dirs
+
+
+def check_attempt_writes(
+    root: Path, owned: list[str], before: dict[str, bytes],
+    before_dirs: set[str],
+) -> tuple[list[str], list[str]]:
+    """Restore foreign changes since the snapshot; list what changed.
+
+    Returns (changed, outside): every file whose content appeared,
+    disappeared or differs from the snapshot, and the subset outside
+    the part's owned_paths. Each outside file is restored to its state
+    before the attempt (modified/deleted files rewritten, new files
+    unlinked with newly created empty parents pruned). A file that
+    cannot be restored is still reported.
+    """
+    after = snapshot_tree(root)
+    changed = sorted(
+        rel
+        for rel in set(before) | set(after)
+        if before.get(rel) != after.get(rel)
+    )
+    outside = [
+        rel for rel in changed if not test_is_owned(rel, owned)
+    ]
+    for rel in outside:
+        target = root / rel
+        if rel in before:
+            try:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(before[rel])
+            except OSError:
+                continue
+        else:
+            try:
+                if target.is_file() or target.is_symlink():
+                    target.unlink()
+            except OSError:
+                continue
+            parent = target.parent
+            while parent != root:
+                try:
+                    parent_rel = parent.relative_to(root).as_posix()
+                except ValueError:
+                    break
+                if parent_rel in before_dirs:
+                    break
+                try:
+                    parent.rmdir()
+                except OSError:
+                    break
+                parent = parent.parent
+    return changed, outside
+
+
+def load_breaks_on_purpose(root: Path, spec_rel: str) -> list[str]:
+    """Test paths the spec declares as expected breaks (may be empty).
+
+    A spec section may say that some other part's tests must change
+    because of it, in a line starting `Breaks on purpose:` followed by
+    test paths and the part that will update them (brief part 15 §9).
+    Entries may be files (`tests/loop/test_x.py`) or directories
+    (`tests/loop/`); each matches that file or everything under it.
+
+    Owner addendum 2026-10-28 (brief part 15 §11): every leading and
+    trailing character that cannot end a path is stripped from each
+    token — backtick, single/double quote, parens, comma, semicolon,
+    colon, full stop, bang, question mark, em-dash — so prose
+    punctuation (`` `tests/a/test_x.py`. ``) never corrupts the path.
+    A trailing `/` is not in the strip set: it is kept, then dropped
+    as before, so directory entries still match everything under them.
+    """
+    # NOTE: "/" is deliberately absent from this set (see docstring).
+    PUNCTUATION = "`'\"(),;:.!?—"
+    try:
+        text = (root / spec_rel).read_text(encoding="utf-8")
+    except OSError:
+        return []
+    paths: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith(BREAKS_PREFIX):
+            continue
+        for token in stripped[len(BREAKS_PREFIX):].split():
+            cleaned = token.strip(PUNCTUATION)
+            if cleaned.startswith("tests/"):
+                paths.append(cleaned.rstrip("/"))
+    return paths
+
+
+def is_expected_break(test_file: str, broken_paths: list[str]) -> bool:
+    """True when the failing test's file was declared `Breaks on purpose`."""
+    for declared in broken_paths:
+        if test_file == declared or test_file.startswith(declared + "/"):
+            return True
+    return False
+
+
+# A brief section may declare that some of the part's own tests are
+# allowed to go away, in a line starting with this prefix followed by
+# test node ids (brief part 15 §12). Parsed exactly like `Breaks on
+# purpose:` (brief part 15 §11): the same leading/trailing punctuation
+# is stripped from each token.
+REMOVES_PREFIX = "Removes test:"
+
+# Feedback section for the next attempt's prompt when own tests vanish.
+MISSING_OWN_TITLE = "OWN TESTS THAT WENT MISSING"
+MISSING_OWN_INSTRUCTION = (
+    "Every recorded test function below must still be collected under "
+    "the same file and name. Keep each one (edit its body as the brief "
+    "requires) and add new tests beside them; only a `Removes test:` "
+    "brief line excuses a removal."
+)
+
+# Attempt-prompt section listing the recorded functions up front (§12).
+RECORDED_TITLE = "RECORDED TEST FUNCTIONS (THE PART'S OWN TESTS)"
+RECORDED_INSTRUCTION = (
+    "These test functions were collected from the part's own test paths "
+    "before this regeneration. They must ALL still be collected under "
+    "the same file and name when you finish: edit them as the brief "
+    "requires, and add new ones beside them. Only a `Removes test:` "
+    "brief line naming a function excuses its removal."
+)
+
+
+def load_removed_tests(root: Path, spec_rel: str) -> list[str]:
+    """Test node ids the spec allows this regeneration to drop (may be []).
+
+    Parsed like `Breaks on purpose:` (§11): the same punctuation strip
+    applies, so prose punctuation never corrupts the path. Entries are
+    full node ids (`tests/x/test_y.py::test_z`); a bare function name
+    (`test_z`) excuses that function in any of the part's own files.
+    """
+    punctuation = "`'\"(),;:.!?—"
+    try:
+        text = (root / spec_rel).read_text(encoding="utf-8")
+    except OSError:
+        return []
+    names: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith(REMOVES_PREFIX):
+            continue
+        for token in stripped[len(REMOVES_PREFIX):].split():
+            cleaned = token.strip(punctuation)
+            if cleaned:
+                names.append(cleaned)
+    return names
+
+
+def is_removed(node_id: str, removed: list[str]) -> bool:
+    """True when a recorded node id is excused by a `Removes test:` entry."""
+    func = node_id.split("::", 1)[-1] if "::" in node_id else node_id
+    for entry in removed:
+        if node_id == entry or func == entry:
+            return True
+    return False
+
+
+def owned_test_targets(owned: list[str]) -> list[str]:
+    """The part's own test paths: owned entries under `tests/`."""
+    return [entry for entry in owned if entry == "tests" or entry.startswith("tests/")]
+
+
+PARAM_SUFFIX_RE = re.compile(r"\[.*\]$")
+
+
+def strip_param_suffix(node_id: str) -> str:
+    """Drop a parametrize suffix: `f.py::test_x[a-1]` -> `f.py::test_x`."""
+    return PARAM_SUFFIX_RE.sub("", node_id.strip())
+
+
+def collect_test_functions(
+    test_runner: list[str], cwd: Path, test_paths: list[str],
+) -> tuple[list[str], str]:
+    """Recorded own-test functions: node ids without parametrize suffixes.
+
+    Runs `pytest --collect-only -q` over the part's own test paths that
+    currently exist (brief part 15 §12). Returns (sorted unique node ids,
+    full output). Unparseable or missing output records nothing rather
+    than failing: the guard is vacuous, never blocking, on no evidence.
+    """
+    existing = [path for path in test_paths if (cwd / path).exists()]
+    if not existing:
+        return [], ""
+    runner = list(test_runner) if test_runner else [sys.executable, "-m", "pytest"]
+    proc = subprocess.run(
+        runner + existing + ["--collect-only", "-q"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=cwd,
+        text=True,
+    )
+    found: list[str] = []
+    seen: set[str] = set()
+    for raw in proc.stdout.splitlines():
+        line = raw.strip()
+        if "::" not in line:
+            continue
+        head = line.split("::", 1)[0]
+        if not head.endswith(".py"):
+            continue
+        node_id = strip_param_suffix(line)
+        if node_id not in seen:
+            seen.add(node_id)
+            found.append(node_id)
+    return sorted(found), proc.stdout
+
+
+def format_recorded_tests_block(recorded: list[str]) -> str:
+    """The attempt-prompt section listing every recorded function (§12)."""
+    lines = [RECORDED_TITLE, RECORDED_INSTRUCTION]
+    if recorded:
+        lines.extend(f"- {node_id}" for node_id in recorded)
+    else:
+        lines.append("(no test functions recorded: the part has no tests yet)")
+    return "\n".join(lines)
+
+
+def format_missing_own_block(missing: list[str]) -> str:
+    """The retry-prompt section naming the recorded functions that vanished."""
+    lines = [MISSING_OWN_TITLE, MISSING_OWN_INSTRUCTION]
+    lines.extend(f"- {node_id}" for node_id in missing)
+    return "\n".join(lines)
+
+
+def format_baseline_line(
+    verdicts: dict[str, str], baseline_passed: set[str],
+) -> str:
+    """The baseline summary line (brief part 15 §13).
+
+    Always names the skipped count: a skipped test is not a protected
+    test, so the guard can later fail on a test that passed here and
+    skips there.
+    """
+    skipped = sum(1 for outcome in verdicts.values() if outcome == "SKIPPED")
+    total = len(verdicts)
+    word = "test" if total == 1 else "tests"
+    return (
+        f"baseline: {len(baseline_passed)} passed, "
+        f"{skipped} skipped of {total} collected {word}"
+    )
+
+
+def reason_for_failure(
+    test_id: str, summary: dict[str, str], output: str,
+) -> str:
+    """One error line for a failed test: the FAILED summary reason first."""
+    if test_id in summary and summary[test_id]:
+        return summary[test_id]
+    for line in output.splitlines():
+        match = PYTEST_ERROR_LINE_RE.match(line)
+        if match:
+            return match.group(1).strip()
+    return ""
+
+
+def format_other_parts_block(
+    failures: list[tuple[str, str, str]],
+) -> str:
+    """The OTHER PARTS' TESTS YOU BROKE feedback section (§9 item 3)."""
+    lines = [OTHER_PARTS_TITLE, OTHER_PARTS_INSTRUCTION]
+    for test_id, reason, test_file in failures:
+        detail = f" — {reason}" if reason else ""
+        lines.append(f"- {test_id} (in {test_file}){detail}")
+    return "\n".join(lines)
+
+
+def utc_timestamp() -> str:
+    """Sortable UTC timestamp for attempt-record directory names."""
+    return datetime.datetime.now(datetime.timezone.utc).strftime(
+        "%Y%m%dT%H%M%S%fZ"
+    )
+
+
+def write_attempt_record(
+    record_dir: Path, events_text: str, final_text: str, test_output: str,
+    attempt_cost: float | None = None, attempt_summary: str = "",
+) -> None:
+    """Leave one attempt's record: event log, final message, test output,
+    and that attempt's own cost (brief part 15 §8)."""
+    record_dir.mkdir(parents=True, exist_ok=True)
+    (record_dir / "events.jsonl").write_text(events_text or "", encoding="utf-8")
+    (record_dir / "final_message.txt").write_text(
+        final_text or "", encoding="utf-8"
+    )
+    (record_dir / "test_output.txt").write_text(
+        test_output or "", encoding="utf-8"
+    )
+    (record_dir / "cost.txt").write_text(
+        cost_str(attempt_cost, attempt_summary) + "\n", encoding="utf-8"
+    )
+
+
+FAIL_LINE_RE = re.compile(r"^(?:FAILED|ERROR)\s+(\S+)(?:\s+-\s+(.*))?\s*$")
+UNIT_FAIL_LINE_RE = re.compile(r"^FAIL:\s+(\S+)(?:\s*\((.*)\))?\s*$")
+PYTEST_ERROR_LINE_RE = re.compile(r"^\s*E\s+(.*\S)\s*$")
+
+
+def summarize_failures(output: str) -> list[tuple[str, str]]:
+    """Failing test names with their first error lines, in output order.
+
+    Understands pytest's short-summary lines (FAILED/ERROR ... - reason) and
+    unittest's FAIL: lines. A summary line without an inline reason falls back
+    to the output's first E-line; a test with neither keeps an empty reason.
+    """
+    first_error = ""
+    for line in output.splitlines():
+        match = PYTEST_ERROR_LINE_RE.match(line)
+        if match:
+            first_error = match.group(1).strip()
+            break
+    failures: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for raw in output.splitlines():
+        line = raw.strip()
+        match = FAIL_LINE_RE.match(line) or UNIT_FAIL_LINE_RE.match(line)
+        if not match:
+            continue
+        name = match.group(1)
+        if name in seen:
+            continue
+        seen.add(name)
+        reason = (match.group(2) or "").strip() or first_error
+        failures.append((name, reason))
+    return failures
+
+
+def update_manifest(
+    manifest_path: Path, root: Path, part: str, owned: list[str]
+) -> None:
+    manifest = load_manifest(manifest_path)
+    files = manifest.setdefault("files", {})
+    for path in iter_owned_files(root, owned):
+        rel = path.relative_to(root).as_posix()
+        files[rel] = {"sha256": file_sha256(path), "part": part}
+    manifest["version"] = 1
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def append_iteration(iterations_path: Path, line: str) -> None:
+    """Append exactly one line to ITERATIONS.md; never edit existing lines."""
+    clean = line.replace("\n", " ").strip()
+    iterations_path.parent.mkdir(parents=True, exist_ok=True)
+    with iterations_path.open("a", encoding="utf-8") as handle:
+        handle.write(clean + "\n")
+
+
+def refresh_readme(root: Path) -> tuple[int, str]:
+    """Re-run tools/make_readme so README.md follows ITERATIONS.md (§15).
+
+    The README is generated from the repository itself, so after dev_loop
+    appends its ITERATIONS.md line the parts table and the "all
+    generations so far" total are stale until make_readme runs again.
+    Runs the part-15-owned script as a subprocess: offline,
+    deterministic, costs nothing. Returns (exit code, combined output).
+    A tree without tools/make_readme (fixture repos in this part's own
+    tests) has nothing to refresh, so that is a quiet skip, not a
+    failure.
+    """
+    script = root / "tools" / "make_readme"
+    if not script.is_file():
+        return 0, "no tools/make_readme; skipping README refresh"
+    proc = subprocess.run(
+        [sys.executable, str(script)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=root,
+        text=True,
+    )
+    return proc.returncode, proc.stdout
+
+
+def cost_str(dollars: float | None, summary: str) -> str:
+    if dollars is None:
+        return f"cost unknown ({summary})"
+    return f"cost ${dollars:.4f} ({summary})"
+
+
+def format_run_cost(
+    costs: list[float | None], summaries: list[str]
+) -> str:
+    """Whole-run cost for the ITERATIONS.md line (brief part 15 §8).
+
+    Every attempt's run_usage is priced on its own and added up; the line
+    gives the attempt count plus each attempt's cost, e.g.
+    ``cost $3.27 over 2 attempts ($1.61 + $1.66)``. One attempt without
+    priced usage (truncated run, unknown model, no usage reported) makes
+    the whole line unknown rather than pricing only the other attempts.
+    """
+    count = len(costs)
+    word = "attempt" if count == 1 else "attempts"
+    if not costs or any(cost is None for cost in costs):
+        detail = "; ".join(
+            f"attempt {index}: {summary or 'no usage reported'}"
+            for index, summary in enumerate(summaries, 1)
+        ) or "no attempts ran"
+        return f"cost unknown over {count} {word} ({detail})"
+    total = sum(cost for cost in costs if cost is not None)
+    parts = " + ".join(f"${cost:.4f}" for cost in costs)
+    joined = "; ".join(summary for summary in summaries if summary)
+    return (
+        f"cost ${total:.4f} over {count} {word} ({parts})"
+        + (f" ({joined})" if joined else "")
+    )
+
+
+def cmd_part(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    try:
+        config = load_config(Path(args.config) if args.config else root / "tools" / "parts.json")
+        part = normalize_part(args.part)
+        cfg = part_cfg(config, part)
+    except DevLoopError as exc:
+        print(f"dev_loop: {exc}", file=sys.stderr)
+        return EXIT_FAIL
+
+    defaults = config.get("defaults", {})
+    model = cfg.get("model", defaults.get("model", "muse-spark-1.3-contributor"))
+    effort = cfg.get("effort", defaults.get("effort", "medium"))
+    max_steps = int(cfg.get("max_model_steps", defaults.get("max_model_steps", 60)))
+    max_attempts = int(defaults.get("max_attempts", 3))
+    owned = list(cfg.get("owned_paths", []))
+    test_command = list(cfg.get("test_command", []))
+    test_runner = list(defaults.get("test_runner", []))
+    # Registry entry may set "browser": true (brief part 15 §8: part 13
+    # and this part). Such a part's agent runs outside the shell
+    # sandbox with PHYSICS_PROOF_BROWSER=1; every other part keeps it.
+    browser = bool(cfg.get("browser", False))
+    manifest_path = Path(args.manifest) if args.manifest else root / "tools" / "manifest.json"
+    iterations_path = (
+        Path(args.iterations) if args.iterations else root / "ITERATIONS.md"
+    )
+    date = datetime.date.today().isoformat()
+
+    # The running script exempts itself from deletion (it cannot delete the
+    # program that is executing it); it is still hash-checked like the rest.
+    keep = {Path(__file__).resolve()}
+
+    # Step 1: hand-edit refusal.
+    try:
+        manifest = load_manifest(manifest_path)
+        violations = check_clean(root, part, owned, manifest)
+    except DevLoopError as exc:
+        print(f"dev_loop: {exc}", file=sys.stderr)
+        return EXIT_FAIL
+    if violations:
+        named = ", ".join(violations)
+        print(
+            f"dev_loop: refusing to regenerate part {part}: "
+            f"generated file edited by hand: {named}",
+            file=sys.stderr,
+        )
+        append_iteration(
+            iterations_path,
+            f"{date} | part {part} | REFUSED hand-edited generated file: {named} "
+            "| tests not-run | acceptance not-run | pages not-run",
+        )
+        return EXIT_FAIL
+
+    # Step 2+3: delete once, then regenerate and test; a retry continues
+    # from the previous attempt's files (never delete between attempts).
+    # Every attempt leaves a record under .dev_loop/<part>/<timestamp>-<n>/.
+    # Whole-run cost (brief part 15 §8): every attempt's run_usage is
+    # priced on its own and added up on the ITERATIONS.md line.
+    attempt_costs: list[float | None] = []
+    attempt_summaries: list[str] = []
+    tests_result = "not-run"
+    fail_reason = ""
+    attempts_used = 0
+    feedback = ""
+    last_record: Path | None = None
+    last_other_parts = ""
+    last_test_output = ""
+    try:
+        base_prompt = build_prompt(
+            root, cfg["spec"], list(cfg.get("skills", [])), browser=browser,
+            owned=list(cfg.get("owned_paths", [])),
+            part=part,
+        )
+    except (DevLoopError, KeyError) as exc:
+        print(f"dev_loop: {exc}", file=sys.stderr)
+        return EXIT_FAIL
+
+    # Owner addendum 2026-10-29 (brief part 15 §12): before the first
+    # attempt — while the part's own test files still exist — record
+    # their test functions as node ids without parametrize suffixes.
+    # The attempt prompt lists every one of them up front; the retry
+    # prompt names the ones that went missing.
+    recorded_tests, _ = collect_test_functions(
+        test_runner, root, owned_test_targets(owned)
+    )
+    if recorded_tests:
+        print(
+            f"dev_loop: recorded {len(recorded_tests)} own test "
+            f"function(s) for part {part}",
+            file=sys.stderr,
+        )
+    attempt_prompt = (
+        base_prompt + "\n\n" + format_recorded_tests_block(recorded_tests)
+    )
+    removed_tests = load_removed_tests(root, cfg.get("spec", ""))
+    if removed_tests:
+        print(
+            "dev_loop: Removes test excused functions: "
+            + ", ".join(removed_tests),
+            file=sys.stderr,
+        )
+
+    # Owner addendum 2026-10-28 (brief part 15 §11): the excused
+    # `Breaks on purpose:` paths are printed once, before the baseline,
+    # so a typo shows up at once instead of silently matching nothing
+    # while a guard fails twice.
+    broken_paths = load_breaks_on_purpose(root, cfg.get("spec", ""))
+    if broken_paths:
+        print(
+            "dev_loop: Breaks on purpose excused paths: "
+            + ", ".join(broken_paths),
+            file=sys.stderr,
+        )
+    else:
+        print(
+            "dev_loop: Breaks on purpose excused paths: none",
+            file=sys.stderr,
+        )
+
+    # Step 0 (§9 item 1): baseline. Before the first attempt — while the
+    # tree is still the base commit (the hand-edit check above passed) —
+    # run the full suite and record which tests pass. Only a test that
+    # passed here and fails after regeneration can fail an attempt.
+    # Owner addendum 2026-10-29 (brief part 15 §13): the baseline always
+    # runs with PHYSICS_PROOF_BROWSER=1, whatever the part's own flag, so
+    # browser-marked tests of other parts are protected too. The part's
+    # own tests keep the part's flag; only this baseline and the guard
+    # below force the browser on.
+    print("dev_loop: running full-suite baseline ...", file=sys.stderr)
+    _, baseline_output = run_full_suite(test_runner, root, browser=True)
+    baseline_verdicts = parse_suite_verdicts(baseline_output)
+    baseline_passed = {
+        test_id
+        for test_id, outcome in baseline_verdicts.items()
+        if outcome == "PASSED"
+    }
+    print(
+        f"dev_loop: {format_baseline_line(baseline_verdicts, baseline_passed)}",
+        file=sys.stderr,
+    )
+    run_timestamp = utc_timestamp()
+    records_base = root / ".dev_loop" / part
+    baseline_dir = records_base / f"{run_timestamp}-baseline"
+    try:
+        baseline_dir.mkdir(parents=True, exist_ok=True)
+        (baseline_dir / "suite_output.txt").write_text(
+            baseline_output, encoding="utf-8"
+        )
+        (baseline_dir / "passed.txt").write_text(
+            "\n".join(sorted(baseline_passed)) + "\n", encoding="utf-8"
+        )
+    except OSError:
+        pass
+
+    delete_owned(root, owned, keep)
+    expected_breaks: list[tuple[str, str, str]] = []
+    flaky_tests: list[str] = []
+    for _ in range(max_attempts):
+        attempts_used += 1
+        record_dir = records_base / f"{run_timestamp}-{attempts_used}"
+        # §16: state before the attempt, so the files this attempt
+        # changes can be listed — and foreign ones restored — after it.
+        before_tree = snapshot_tree(root)
+        before_dirs = snapshot_dirs(root)
+        try:
+            result = run_muse(
+                model=model,
+                effort=effort,
+                max_steps=max_steps,
+                workspace=root,
+                prompt=attempt_prompt + feedback,
+                browser=browser,
+            )
+        except DevLoopError as exc:
+            fail_reason = str(exc)
+            last_test_output = f"(tests not run: {exc})"
+            attempt_costs.append(None)
+            attempt_summaries.append(str(exc))
+            write_attempt_record(
+                record_dir, "", "", last_test_output,
+                None, str(exc),
+            )
+            last_record = record_dir
+            break
+        usage = result.get("usage")
+        dollars, usage_summary = price_usage(usage)
+        attempt_costs.append(dollars)
+        attempt_summaries.append(usage_summary)
+        terminal = result.get("terminal")
+        state = (terminal or {}).get("terminal")
+        events_text = result.get("stdout_text", "")
+        final_text = (terminal or {}).get("text") or ""
+        # §16: list what the attempt changed; restore anything outside
+        # the part's owned paths (the tool's own writes are exempt from
+        # the snapshot, so everything reported here is the attempt's).
+        changed, outside = check_attempt_writes(
+            root, owned, before_tree, before_dirs
+        )
+        if changed:
+            listed = ", ".join(changed)
+            print(
+                f"dev_loop: attempt {attempts_used} changed "
+                f"{len(changed)} file(s): {listed}",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"dev_loop: attempt {attempts_used} changed no files",
+                file=sys.stderr,
+            )
+        outside_msg = ""
+        if outside:
+            outside_msg = (
+                "wrote outside its paths: " + ", ".join(outside)
+            )
+            print(
+                f"dev_loop: part {part}: {outside_msg} (restored)",
+                file=sys.stderr,
+            )
+        if outside and state == "completed":
+            # The generation touched files no part-15 test needs
+            # changed: fail without running tests. The owner of that
+            # file must change it. Retries continue from the previous
+            # attempt's files (§2); the restored files stay restored.
+            fail_reason = outside_msg
+            tests_result = "fail"
+            last_test_output = (
+                "(tests not run: generation " + outside_msg + ")"
+            )
+            write_attempt_record(
+                record_dir, events_text, final_text, last_test_output,
+                dollars, usage_summary,
+            )
+            last_record = record_dir
+            feedback = (
+                "\n\nThe previous attempt "
+                + outside_msg
+                + ". Those files were restored to their state before "
+                "the attempt. If the part's tests need one of them "
+                "changed, say so: the owner of that file must change "
+                "it. Fix the owned files and only the owned files."
+            )
+            continue
+        if state != "completed":
+            fail_reason = (
+                f"generation failed: run_terminal={state!r} "
+                f"(returncode {result.get('returncode', 0)})"
+            )
+            last_test_output = (
+                "(tests not run: generation did not complete: "
+                f"run_terminal={state!r})"
+            )
+            write_attempt_record(
+                record_dir, events_text, final_text, last_test_output,
+                dollars, usage_summary,
+            )
+            last_record = record_dir
+            if outside:
+                fail_reason = (
+                    f"generation failed: run_terminal={state!r} "
+                    f"(returncode {result.get('returncode', 0)}); "
+                    + outside_msg
+                )
+            feedback = (
+                "\n\nThe previous attempt produced no usable output "
+                f"(run_terminal={state!r}, exit {result.get('returncode', 0)}). "
+                f"Agent stderr tail: {result.get('stderr', '')}\n"
+                + (
+                    f"The attempt also {outside_msg}; those files "
+                    "were restored. "
+                    if outside
+                    else ""
+                )
+                + "Continue from the current owned files; fix only the owned files."
+            )
+            continue
+        if not test_command:
+            fail_reason = "no test_command configured for this part"
+            last_test_output = (
+                "(tests not run: no test_command configured for this part)"
+            )
+            write_attempt_record(
+                record_dir, events_text, final_text, last_test_output,
+                dollars, usage_summary,
+            )
+            last_record = record_dir
+            break
+        returncode, output_full = run_part_tests(
+            test_command, root, browser=browser
+        )
+        collect_output = ""
+        if returncode == 0:
+            # The part's own tests pass: make sure the new files do not
+            # break the suite's collection (brief part 15 owner note
+            # 2026-10-28). A collection error fails the attempt like a
+            # test failure, and its text goes back as feedback.
+            collect_code, collect_output = run_suite_collection(
+                test_runner, root, browser=browser
+            )
+            if collect_code != 0:
+                returncode = collect_code
+                output_full = (
+                    output_full
+                    + "\n--- suite collection (pytest --collect-only -q "
+                    + "tests/) ---\n"
+                    + collect_output
+                )
+        other_parts_block = ""
+        missing_block = ""
+        if returncode == 0 and recorded_tests:
+            # §12: the part's own tests do not shrink. Every recorded
+            # function must still be collected under the same file and
+            # name unless a `Removes test:` brief line names it. A
+            # missing function fails the attempt like a failing test.
+            current, _ = collect_test_functions(
+                test_runner, root, owned_test_targets(owned)
+            )
+            current_set = set(current)
+            missing = [
+                node_id for node_id in recorded_tests
+                if node_id not in current_set
+                and not is_removed(node_id, removed_tests)
+            ]
+            if missing:
+                returncode = 1
+                output_full = (
+                    output_full
+                    + "\n--- own-test retention (pytest --collect-only "
+                    + "owned test paths) ---\n"
+                    + "\n".join(f"MISSING {node_id}" for node_id in missing)
+                    + "\n"
+                )
+                missing_block = format_missing_own_block(missing)
+                print(f"dev_loop: {missing_block}", file=sys.stderr)
+        if returncode == 0:
+            # §9 guard: the part's own tests and the collection check
+            # pass, so run the full suite. A test outside the part's
+            # owned paths that passed in the baseline and fails now
+            # fails the attempt; retries continue from the previous
+            # attempt's files (§8). The guard always runs with
+            # PHYSICS_PROOF_BROWSER=1 (§13), whatever the part's flag,
+            # and a guard-run skip of a baseline-passed test fails the
+            # attempt the same way a failure does.
+            print("dev_loop: running full-suite guard ...", file=sys.stderr)
+            _, suite_output = run_full_suite(
+                test_runner, root, browser=True
+            )
+            verdicts = parse_suite_verdicts(suite_output)
+            reasons = dict(summarize_failures(suite_output))
+            blocking: list[tuple[str, str, str]] = []
+            for test_id, outcome in verdicts.items():
+                if outcome in ("FAILED", "ERROR"):
+                    test_file = suite_test_file(test_id)
+                    if test_is_owned(test_file, owned):
+                        continue
+                    if test_id not in baseline_passed:
+                        # New since the baseline, or already red there:
+                        # never fails the attempt (§9 items 2 and 6).
+                        continue
+                    reason = reason_for_failure(
+                        test_id, reasons, suite_output
+                    )
+                    if is_expected_break(test_file, broken_paths):
+                        entry = (test_id, reason, test_file)
+                        if entry not in expected_breaks:
+                            expected_breaks.append(entry)
+                        continue
+                    alone_code, alone_output = run_one_test(
+                        test_runner, root, test_id, browser=True
+                    )
+                    if alone_code == 0 and parse_suite_verdicts(
+                        alone_output
+                    ).get(test_id) != "SKIPPED":
+                        if test_id not in flaky_tests:
+                            flaky_tests.append(test_id)
+                        print(
+                            "dev_loop: flaky (fails in suite, "
+                            f"passes alone): {test_id}",
+                            file=sys.stderr,
+                        )
+                        continue
+                    blocking.append((test_id, reason, test_file))
+                elif outcome == "SKIPPED":
+                    # §13: a skipped test is not a protected test. A
+                    # guard-run skip of a test that passed in the
+                    # baseline fails the attempt like a failure. (An
+                    # alone rerun of an env-gated skip exits 0, so no
+                    # flaky exemption applies here.)
+                    test_file = suite_test_file(test_id)
+                    if test_is_owned(test_file, owned):
+                        continue
+                    if test_id not in baseline_passed:
+                        continue
+                    if is_expected_break(test_file, broken_paths):
+                        entry = (test_id, "skipped in guard run", test_file)
+                        if entry not in expected_breaks:
+                            expected_breaks.append(entry)
+                        continue
+                    blocking.append(
+                        (
+                            test_id,
+                            "skipped in guard run after passing "
+                            "in baseline",
+                            test_file,
+                        )
+                    )
+            if blocking:
+                returncode = 1
+                output_full = (
+                    output_full
+                    + "\n--- full suite (pytest tests/ -v) ---\n"
+                    + suite_output
+                )
+                other_parts_block = format_other_parts_block(blocking)
+                print(f"dev_loop: {other_parts_block}", file=sys.stderr)
+        last_test_output = output_full
+        write_attempt_record(
+            record_dir, events_text, final_text, output_full,
+            dollars, usage_summary,
+        )
+        last_record = record_dir
+        last_other_parts = other_parts_block
+        output = output_full[-TEST_OUTPUT_TAIL_CHARS:]
+        if returncode != 0:
+            tests_result = "fail"
+            if collect_output:
+                fail_reason = (
+                    "suite collection failed (exit "
+                    f"{returncode})"
+                )
+            elif other_parts_block:
+                broken = ", ".join(
+                    test_id for test_id, _, _ in blocking
+                )
+                fail_reason = (
+                    f"other parts' tests broke: {broken}"
+                )
+            elif missing_block:
+                fail_reason = (
+                    "own tests went missing: "
+                    + ", ".join(
+                        node_id for node_id in missing
+                    )
+                )
+            else:
+                fail_reason = f"tests failed (exit {returncode})"
+            feedback = (
+                "\n\nThe previous attempt's tests failed. Failure output:\n"
+                f"{output}\n"
+                + (
+                    f"\n{other_parts_block}\n"
+                    if other_parts_block
+                    else ""
+                )
+                + (
+                    f"\n{missing_block}\n"
+                    if missing_block
+                    else ""
+                )
+                + "Fix the owned files and only the owned files."
+            )
+            continue
+        tests_result = "pass"
+        fail_reason = ""
+        break
+
+    # The ITERATIONS cost line covers every Muse run in this invocation:
+    # every attempt's run_usage is priced on its own and added up
+    # (brief part 15 §8).
+    run_cost = format_run_cost(attempt_costs, attempt_summaries)
+    if fail_reason:
+        # No deletion here: deletion happened once, before the first
+        # attempt, and a retry continues from the previous attempt's
+        # files (brief part 15 §2). Attempt records under .dev_loop/
+        # are kept: the owner diagnoses the red end from the last
+        # record without re-running anything.
+        print(f"dev_loop: part {part}: {fail_reason}", file=sys.stderr)
+        if last_other_parts:
+            print(f"dev_loop: {last_other_parts}", file=sys.stderr)
+        if last_record is not None:
+            print(
+                f"dev_loop: last attempt record: {last_record}",
+                file=sys.stderr,
+            )
+            failures = summarize_failures(last_test_output)
+            if failures:
+                print(
+                    "dev_loop: failing tests (last attempt):",
+                    file=sys.stderr,
+                )
+                for name, first_err in failures:
+                    if first_err:
+                        print(
+                            f"dev_loop: - {name}: {first_err}",
+                            file=sys.stderr,
+                        )
+                    else:
+                        print(f"dev_loop: - {name}", file=sys.stderr)
+            else:
+                print(
+                    "dev_loop: (no failing test names parsed; see "
+                    f"{last_record / 'test_output.txt'})",
+                    file=sys.stderr,
+                )
+        # Expected breaks (§9 item 4) are listed in the summary and the
+        # ITERATIONS.md line; they never fail the attempt.
+        guard_note = ""
+        if expected_breaks:
+            guard_note += " | expected breaks: " + ", ".join(
+                test_id for test_id, _, _ in expected_breaks
+            ) + " (per spec Breaks on purpose)"
+        if flaky_tests:
+            guard_note += " | flaky: " + ", ".join(flaky_tests)
+        append_iteration(
+            iterations_path,
+            f"{date} | part {part} | {model}/{effort}/steps {max_steps} "
+            f"| FAILED after {attempts_used} attempt(s): {fail_reason} "
+            f"| {run_cost} "
+            f"| tests {tests_result}{guard_note} "
+            "| acceptance not-run | pages not-run",
+        )
+        refresh_readme(root)
+        return EXIT_FAIL
+
+    # Step 5: record hashes, append the lab-notebook line.
+    update_manifest(manifest_path, root, part, owned)
+    guard_note = ""
+    if expected_breaks:
+        guard_note += " | expected breaks: " + ", ".join(
+            test_id for test_id, _, _ in expected_breaks
+        ) + " (per spec Breaks on purpose)"
+    if flaky_tests:
+        guard_note += " | flaky: " + ", ".join(flaky_tests)
+    append_iteration(
+        iterations_path,
+        f"{date} | part {part} | {model}/{effort}/steps {max_steps} "
+        f"| generated after {attempts_used} attempt(s) "
+        f"| {run_cost} "
+        f"| tests {tests_result}{guard_note} "
+        "| acceptance not-run | pages not-run",
+    )
+    # Owner addendum 2026-10-29 (brief part 15 §15): the README follows
+    # every generation. Refresh it now that the line above is appended,
+    # so the parts table (and the "all generations so far" total) picks
+    # up this run's cost. A stale refresh fails the run loudly: the next
+    # suite run's readme-match test would fail it anyway.
+    readme_code, readme_output = refresh_readme(root)
+    if readme_code != 0:
+        print(f"dev_loop: README refresh failed:\n{readme_output}",
+              file=sys.stderr)
+        return EXIT_FAIL
+    if expected_breaks:
+        print(
+            "dev_loop: expected breaks (per spec Breaks on purpose): "
+            + ", ".join(
+                test_id for test_id, _, _ in expected_breaks
+            ),
+            file=sys.stderr,
+        )
+    print(f"dev_loop: part {part} regenerated ({tests_result}, {run_cost})")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Regenerate one spec part via Muse, test it, log it."
+    )
+    parser.add_argument("--part", help="spec part number, e.g. 06")
+    parser.add_argument(
+        "--acceptance", action="store_true", help="run the acceptance harness"
+    )
+    parser.add_argument(
+        "--runs-dir", default="runs",
+        help="completed runs for --pages (default runs)",
+    )
+    parser.add_argument(
+        "--out", default="pages", help="page output dir (default pages)"
+    )
+    parser.add_argument(
+        "--pages", action="store_true", help="rebuild player pages and screenshots"
+    )
+    parser.add_argument("--config", help="parts registry (default tools/parts.json)")
+    parser.add_argument("--manifest", help="hash manifest (default tools/manifest.json)")
+    parser.add_argument(
+        "--iterations", help="iteration log (default ITERATIONS.md)"
+    )
+    parser.add_argument("--root", help="workspace root (default: repo root)")
+    return parser
+
+
+def is_live() -> bool:
+    """The owner-set gate for paid work (brief part 15 §8)."""
+    return os.environ.get(LIVE_ENV) == "1"
+
+
+def load_owned_module(root: Path, rel: str):
+    """Import a part-15-owned helper by file path (no package needed)."""
+    import importlib.util
+
+    path = root / rel
+    if not path.is_file():
+        raise DevLoopError(f"owned module not found: {path}")
+    name = "dev_loop_owned_" + rel.replace("/", "_").replace(".", "_")
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise DevLoopError(f"cannot load owned module: {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def cmd_acceptance(args: argparse.Namespace) -> int:
+    """Run the part-03 protocol via tests/acceptance/ (brief part 15 §4)."""
+    root = Path(args.root).resolve() if args.root else repo_root()
+    iterations_path = (
+        Path(args.iterations) if args.iterations else root / "ITERATIONS.md"
+    )
+    date = datetime.date.today().isoformat()
+    if not is_live():
+        print(
+            "dev_loop: --acceptance needs a live run: 3 fresh runs per "
+            "clip (A, B, C) via the one-command entrypoint, the 2-of-3 "
+            "evaluation, the universal criteria and the prompt-leak test "
+            f"(brief part 15 §4). Cost cap: up to ${ACCEPTANCE_COST_CAP_USD:.0f} "
+            f"(9 runs x $2 hard cap plus vision review). Set {LIVE_ENV}=1 "
+            "by hand for a real run.",
+        )
+        return EXIT_UNAVAILABLE
+    try:
+        harness = load_owned_module(
+            root, "tests/acceptance/harness.py"
+        )
+        code, report_text, summary_line = harness.run_full_acceptance(
+            repo_root=root
+        )
+    except DevLoopError as exc:
+        print(f"dev_loop: {exc}", file=sys.stderr)
+        return EXIT_FAIL
+    print(report_text)
+    append_iteration(
+        iterations_path,
+        f"{date} | part 15 | --acceptance "
+        f"| {'pass' if code == 0 else 'FAIL'} | {summary_line} "
+        "| pages not-run",
+    )
+    return code
+
+
+def cmd_pages(args: argparse.Namespace) -> int:
+    """Rebuild player pages and run the screenshot review (§§5-6)."""
+    root = Path(args.root).resolve() if args.root else repo_root()
+    iterations_path = (
+        Path(args.iterations) if args.iterations else root / "ITERATIONS.md"
+    )
+    date = datetime.date.today().isoformat()
+    runs_dir = args.runs_dir or "runs"
+    out_dir = args.out or "pages"
+    if not is_live():
+        print(
+            "dev_loop: --pages needs a live run: rebuild the affected "
+            f"player pages from {runs_dir}/ into {out_dir}/ (§5), screenshot "
+            "them headless at desktop and phone widths and run the Spark "
+            f"vision review (§6). Set {LIVE_ENV}=1 by hand for a real run "
+            f"(browser shots additionally need {BROWSER_ENV}=1)."
+        )
+        return EXIT_UNAVAILABLE
+    try:
+        review = load_owned_module(root, "tests/acceptance/review.py")
+        code, report_text, summary_line = review.rebuild_and_review(
+            repo_root=root, runs_dir=runs_dir, out_dir=out_dir
+        )
+    except DevLoopError as exc:
+        print(f"dev_loop: {exc}", file=sys.stderr)
+        return EXIT_FAIL
+    print(report_text)
+    append_iteration(
+        iterations_path,
+        f"{date} | part 15 | --pages "
+        f"| {'pass' if code == 0 else 'FAIL'} | {summary_line} "
+        f"| pages {out_dir}",
+    )
+    return code
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    if args.pages:
+        return cmd_pages(args)
+    if args.acceptance:
+        return cmd_acceptance(args)
+    if not args.part:
+        print("dev_loop: --part NN is required", file=sys.stderr)
+        return EXIT_UNAVAILABLE
+    return cmd_part(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

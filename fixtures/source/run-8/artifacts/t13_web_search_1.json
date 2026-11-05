@@ -1,0 +1,20 @@
+{
+  "query": "adult male standing height average metres",
+  "facts": [
+    {
+      "text": "The global average standing height for adult men is about 1.71 metres (171 cm, about 5 feet 7.5 inches).",
+      "url": "https://health.howstuffworks.com/human-body/average-height-for-men.htm",
+      "quote": "Globally, the average male height stands at about 5 feet 7.5 inches (171 cm), though this varies significantly depending on region."
+    },
+    {
+      "text": "In the United States, the average standing height for adult men is about 1.75 metres (175.3 cm, about 5 feet 9 inches).",
+      "url": "https://supplementchoices.com/the-average-heights-of-men-around-the-world/",
+      "quote": "American adult men average around 5 feet 9 inches (175.3 cm), according to CDC NHANES data."
+    },
+    {
+      "text": "Men in the Netherlands and Denmark have among the tallest national averages, around 1.83 metres (183 cm, about 6 feet).",
+      "url": "https://health.howstuffworks.com/human-body/average-height-for-men.htm",
+      "quote": "According to the World Health Organization and other human growth research bodies, countries in northern Europe like the Netherlands and Denmark report the tallest average male height, with averages around 6 feet (183 cm)."
+    }
+  ]
+}

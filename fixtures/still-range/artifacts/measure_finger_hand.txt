@@ -1,0 +1,5 @@
+hand_px = 200.0
+finger_px = 140.0
+value = finger_px / hand_px = 0.70
+sigma = 0.02
+formula = finger_px / hand_px

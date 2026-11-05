@@ -1,0 +1,18 @@
+{
+  "on_screen_text": "",
+  "scene": "A barren grey dusty cratered plain under a pitch-black sky, showing the surface of the Moon, as seen in frame 200 where grey soil, black sky, two suited figures and a planted flag are all visible.",
+  "things": [
+    "two people in bulky white spacesuits with large white life-support backpacks, helmets and gloves",
+    "a United States flag with stars and stripes on a thin vertical pole planted in the ground",
+    "grey cratered soil with footprints and small depressions",
+    "pitch-black sky background with no clouds",
+    "long dark shadows on the ground",
+    "no animals visible"
+  ],
+  "what_happens": [
+    "At 0.0s a suited astronaut with a backpack stands in the left foreground with back to camera while a second suited astronaut stands near a flag on a pole in the mid-background on grey ground under black sky.",
+    "At 5.0s the foreground astronaut turns sideways and moves across the ground in small steps and hops with an arm extended while the background astronaut stays near the flag.",
+    "At 8.5s the foreground astronaut crouches then leaps upward with both feet off the ground, lands, and leaps again with a prolonged airborne phase while the background astronaut watches near the flag.",
+    "At 15.0s both astronauts walk toward the right past the flagpole, with long shadows cast across the grey dusty ground."
+  ]
+}

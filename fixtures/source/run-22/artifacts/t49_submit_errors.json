@@ -1,0 +1,22 @@
+[
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[0].mask_check.alternative_readings",
+    "detail": "references[0] (life-support backpack plus top unit height): the blind check alternative 'the large light box-like volume carried on the back and upper torso of the left foreground figure' is not answered: add {\"description\": 'the large light box-like volume carried on the back and upper torso of the left foreground figure', \"size_m\": <size>} to mask_check.alternative_readings if it is another size of this reference; or add to size_derivation: 'the large light box-like volume carried on the back and upper torso of the left foreground figure': does not apply because ..."
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[0].mask_check.alternative_readings",
+    "detail": "references[0] (life-support backpack plus top unit height): the blind check alternative 'a smaller brighter upper cap-like section sitting on top of that box-like volume within the upper half of the tinted square' is not answered: add {\"description\": 'a smaller brighter upper cap-like section sitting on top of that box-like volume within the upper half of the tinted square', \"size_m\": <size>} to mask_check.alternative_readings if it is another size of this reference; or add to size_derivation: 'a smaller brighter upper cap-like section sitting on top of that box-like volume within the upper half of the tinted square': does not apply because ..."
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[1].mask_check.alternative_readings",
+    "detail": "references[1] (suited astronaut height): the blind check alternative 'bulky box-like volume carried on the back/left side of the figure' is not answered: add {\"description\": 'bulky box-like volume carried on the back/left side of the figure', \"size_m\": <size>} to mask_check.alternative_readings if it is another size of this reference; or add to size_derivation: 'bulky box-like volume carried on the back/left side of the figure': does not apply because ..."
+  },
+  {
+    "code": "ALTERNATIVE_NOT_ADDRESSED",
+    "field": "references[1].mask_check.alternative_readings",
+    "detail": "references[1] (suited astronaut height): the blind check alternative 'no other part of the same left-side figure lies outside the tinted region - the head-to-feet figure is fully contained inside' is not answered: add {\"description\": 'no other part of the same left-side figure lies outside the tinted region - the head-to-feet figure is fully contained inside', \"size_m\": <size>} to mask_check.alternative_readings if it is another size of this reference; or add to size_derivation: 'no other part of the same left-side figure lies outside the tinted region - the head-to-feet figure is fully contained inside': does not apply because ..."
+  }
+]

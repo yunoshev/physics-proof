@@ -1,0 +1,20 @@
+{
+  "overlay_artifact": "artifacts/t9_segment_preview_0.jpg",
+  "mask_extents_px": {
+    "x0": 0,
+    "x1": 352,
+    "y0": 0,
+    "y1": 240
+  },
+  "question": "An overlay image shows a translucent coloured mask drawn on one video frame, with one bounding box per masked region. Describe, in plain words, WHAT THE MASK COVERS: which part of the visible object or surface the tinted region covers, and which edges it includes or excludes (for example, whether it covers only part of an object or extends past it onto the background). Do NOT name or guess what the object is, where the footage comes from, or what experiment this is. Where the covering is ambiguous, list each alternative reading. As alternatives, name any separable or stacked parts inside the tinted region (for example a unit mounted on top of another) and any part of the same object left outside the tinted region.",
+  "coverage_answer": "Two separate tinted rectangular patches, each with its own bounding box. The large left patch covers the whole left foreground suited figure from the top of its back-mounted box to the soles of its feet, including the torso, limbs, and head area. The box is slightly larger than the figure so a narrow margin of background and ground around the sides, top and bottom is also tinted. The small right patch in the mid-distance covers the small upright suited figure standing to the right of a vertical pole, from head to feet, with only a narrow margin of surrounding background included. The pole and the element attached to it to the left, and the rest of the ground and background, are left outside the tint.",
+  "alternatives": [
+    "upper boxy unit mounted on the back/shoulders of the left foreground figure",
+    "main suited body of the left figure - torso, arms, legs and boots - below and in front of that upper box, inside the same left tint",
+    "small distant upright suited figure on the right, as a separate tinted unit",
+    "vertical pole and attached horizontal striped element immediately to the left of the right figure - part of the same distant grouping but left outside the tint",
+    "surrounding ground surface and dark background - mostly outside the tint except for thin margins of background/ground caught inside the two boxes around the figures"
+  ],
+  "confidence": null,
+  "turn": 42
+}

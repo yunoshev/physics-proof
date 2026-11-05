@@ -1,0 +1,4 @@
+artifacts/t13_segment_preview_0.jpg (240, 352, 3)
+artifacts/t8_segment_preview_0.jpg (240, 352, 3)
+pack stats {'top': 58, 'bottom': 128, 'left': 66, 'right': 120, 'height': 71, 'width': 55, 'area': 3001, 'centroid': {'x': 92.13462179273576, 'y': 93.30556481172943}}
+astro stats {'top': 58, 'bottom': 188, 'left': 67, 'right': 150, 'height': 131, 'width': 84, 'area': 6090, 'centroid': {'x': 100.9256157635468, 'y': 118.97077175697865}}

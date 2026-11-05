@@ -1,0 +1,5 @@
+192 29.969730572122174
+[np.float64(0.0), np.float64(0.033367), np.float64(0.066733), np.float64(0.1001), np.float64(0.133467), np.float64(0.166834), np.float64(0.2002), np.float64(0.233567), np.float64(0.266934), np.float64(0.3003)]
+[np.float64(6.072739), np.float64(6.106106), np.float64(6.139473), np.float64(6.17284), np.float64(6.206206), np.float64(6.239573), np.float64(6.27294), np.float64(6.306306), np.float64(6.339673), np.float64(6.37304)]
+dups []
+cuts []

@@ -1,0 +1,12 @@
+[
+  {
+    "artifact": "artifacts/t45_check_mask_0.json",
+    "overlay": "artifacts/t13_segment_preview_0.jpg",
+    "turn": 45
+  },
+  {
+    "artifact": "artifacts/t46_check_mask_0.json",
+    "overlay": "artifacts/t8_segment_preview_0.jpg",
+    "turn": 46
+  }
+]

@@ -1,0 +1,1506 @@
+{
+  "calculation_steps": [
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "text": "Duplicate frames and cuts are excluded from every fit window.",
+          "type": "text"
+        }
+      ],
+      "id": "time_from_frames",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Frame times come from measured timestamps, never the container rate.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "2.99 s of video",
+            "tone": "intermediate"
+          },
+          "fallback": "measured fps = 59.16 Hz over 177 frames",
+          "latex": "f = 59.16 \\, \\mathrm{Hz}, \\; N = 177 \\, \\mathrm{frames}",
+          "type": "formula"
+        }
+      ],
+      "title": "Time from frames"
+    },
+    {
+      "caveats": [],
+      "frame": 20,
+      "frame_end": null,
+      "full": [],
+      "id": "mask_check",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "A blind check read what the reference mask covers, with no knowledge of the measurement.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "The green translucent tint covers the full silhouette of the crouched foreground figure on the left side of the road facing right, from the top of the head to the soles of the shoes. It includes the head, the torso, both arms extended forward, the light shorts and legs, and the feet on the pavement. The tint follows the body contours closely and excludes the surrounding surfaces - the asphalt, curb, grass, utility pole, trees and buildings - and excludes the people standing on the sidewalk behind. Those background areas lie inside the thin rectangular outline only as a small margin but remain untinted.",
+            "tone": "intermediate"
+          },
+          "fallback": "measured extent = 427.0 px",
+          "latex": "\\ell = 427.0 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Blind mask check"
+    },
+    {
+      "caveats": [],
+      "frame": 79,
+      "frame_end": null,
+      "full": [],
+      "id": "mask_check",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "A blind check read what the reference mask covers, with no knowledge of the measurement.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "The green translucent fill covers the bulk of the low red vehicle centered in the foreground on the road, seen in front three-quarter view. From left to right it runs from the front nose and bumper to the rear deck and raised rear wing, and from bottom to top it runs from the lower contact of the tires with the pavement up to the roofline. The fill follows the vehicle silhouette, including the nose, headlight area, hood, windshield, roof, side windows, doors, side fender, both near-side wheels, and rear wing, and it does not spill outward onto the surrounding road surface, lane marking, sidewalk, pole, trees, buildings, or people behind. The thin rectangular outline around it leaves only small triangular background gaps at the corners; the tint itself is confined to the body and does not extend past it onto the background.",
+            "tone": "intermediate"
+          },
+          "fallback": "measured extent = 288.0 px",
+          "latex": "\\ell = 288.0 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Blind mask check"
+    },
+    {
+      "caveats": [
+        {
+          "artifact": null,
+          "text": "reference 'sports car height': shape check skipped, only 0 rest frames within \u00b11 s to compare against (R-S14)"
+        }
+      ],
+      "frame": 20,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": null,
+          "fallback": "person standing height: s = 1.73 m / 427.00468381506073 px",
+          "latex": "s = 1.73 \\, \\mathrm{m} / 427.00468381506073 \\, \\mathrm{px}",
+          "type": "formula"
+        },
+        {
+          "chip": null,
+          "fallback": "sports car height: s = 1.165 m / 288.0 px",
+          "latex": "s = 1.165 \\, \\mathrm{m} / 288.0 \\, \\mathrm{px}",
+          "type": "formula"
+        }
+      ],
+      "id": "scale",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Metres per pixel from the reference size over its extent.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "0.004048 m/px",
+            "tone": "final"
+          },
+          "fallback": "s = 0.004048 m/px from 2 references (0.004051 m/px, 0.004045 m/px; max ratio 1.002)",
+          "latex": "s = 0.004048 \\, \\mathrm{m/px}",
+          "type": "formula"
+        }
+      ],
+      "title": "Pixel scale"
+    },
+    {
+      "caveats": [],
+      "frame": 64,
+      "frame_end": 110,
+      "full": [
+        {
+          "text": "Contact frames stay outside every gravity fit.",
+          "type": "text"
+        }
+      ],
+      "id": "segment",
+      "segment_id": "hop_a",
+      "short": [
+        {
+          "text": "Tracked point over the free-flight window.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "centroid of the person mask",
+            "tone": "intermediate"
+          },
+          "fallback": "N = 47 tracked frames",
+          "latex": "N = 47 \\, \\mathrm{frames}",
+          "type": "formula"
+        }
+      ],
+      "title": "Segment Jump over the car"
+    },
+    {
+      "caveats": [],
+      "frame": 64,
+      "frame_end": 110,
+      "full": [
+        {
+          "chip": null,
+          "fallback": "residual trend z = 0.73",
+          "latex": "\\rho_z = 0.73",
+          "type": "formula"
+        }
+      ],
+      "id": "fit",
+      "segment_id": "hop_a",
+      "short": [
+        {
+          "text": "Parabola fit to heights above the takeoff level.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "g = 10.654 m/s2",
+            "tone": "intermediate"
+          },
+          "fallback": "a = 2632.0 +/- 275.0 px/s2",
+          "latex": "a = 2632.0 \\pm 275.0 \\, \\mathrm{px/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Fit Jump over the car"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": {
+            "text": "Earth",
+            "tone": "intermediate"
+          },
+          "fallback": "Earth: 0.8 sigma",
+          "latex": "Earth: 0.8\\sigma",
+          "type": "formula"
+        }
+      ],
+      "id": "measured_g",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Apparent gravity at native playback speed.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "measured gravity",
+            "tone": "final"
+          },
+          "fallback": "g = 10.7 +/- 1.1 m/s2",
+          "latex": "g = 10.7 \\pm 1.1 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Measured gravity"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [],
+      "id": "clock",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "No independent clock in this clip: the speed is taken as filmed.",
+          "type": "text"
+        }
+      ],
+      "title": "Independent clock"
+    },
+    {
+      "caveats": [],
+      "frame": null,
+      "frame_end": null,
+      "full": [
+        {
+          "chip": {
+            "text": "reference_size",
+            "tone": "intermediate"
+          },
+          "fallback": "reference_size: 0.120 m/s2",
+          "latex": "\\sigma_{reference_size} = 0.120",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "pixel_scale",
+            "tone": "intermediate"
+          },
+          "fallback": "pixel_scale: 0.080 m/s2",
+          "latex": "\\sigma_{pixel_scale} = 0.080",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "fit",
+            "tone": "intermediate"
+          },
+          "fallback": "fit: 0.090 m/s2",
+          "latex": "\\sigma_{fit} = 0.090",
+          "type": "formula"
+        },
+        {
+          "chip": {
+            "text": "point_vs_com",
+            "tone": "intermediate"
+          },
+          "fallback": "point_vs_com: 1.100 m/s2",
+          "latex": "\\sigma_{point_vs_com} = 1.100",
+          "type": "formula"
+        }
+      ],
+      "id": "uncertainty",
+      "segment_id": null,
+      "short": [
+        {
+          "text": "Itemised error budget, recombined in quadrature.",
+          "type": "text"
+        },
+        {
+          "chip": {
+            "text": "error budget",
+            "tone": "final"
+          },
+          "fallback": "sigma total = 1.113 m/s2",
+          "latex": "\\sigma = 1.113 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        },
+        {
+          "source": "error_budget",
+          "type": "bars"
+        }
+      ],
+      "title": "Uncertainty"
+    },
+    {
+      "caveats": [],
+      "frame": 111,
+      "frame_end": null,
+      "full": [
+        {
+          "text": "Computed deterministically from the evidence by this validator.",
+          "type": "text"
+        }
+      ],
+      "id": "verdict",
+      "segment_id": null,
+      "short": [
+        {
+          "chip": {
+            "text": "Earth",
+            "tone": "final"
+          },
+          "fallback": "g = 10.7 +/- 1.1 m/s2",
+          "latex": "g = 10.7 \\pm 1.1 \\, \\mathrm{m/s^2}",
+          "type": "formula"
+        }
+      ],
+      "title": "Verdict"
+    }
+  ],
+  "clock": null,
+  "clock_absent_reason": "no visible independent rhythm",
+  "contract_version": 3,
+  "error_budget": {
+    "components": [
+      {
+        "basis": "quoted size spread over fitted gravity",
+        "name": "reference_size",
+        "sigma_contribution": 0.12
+      },
+      {
+        "basis": "endpoint placement",
+        "name": "pixel_scale",
+        "sigma_contribution": 0.08
+      },
+      {
+        "basis": "parabola residuals",
+        "name": "fit",
+        "sigma_contribution": 0.09
+      },
+      {
+        "basis": "body shape change between centroid and median-row fits",
+        "name": "point_vs_com",
+        "sigma_contribution": 1.1
+      }
+    ],
+    "sigma_relative": 0.10447036606968425,
+    "sigma_total": 1.113058848399311
+  },
+  "first_look": {
+    "by_eye": {
+      "airborne_s": 0.85,
+      "jump_m": 1.5,
+      "reasoning": "the feet rise well above the car roof and hang in the air for most of a second"
+    },
+    "motions": [
+      {
+        "description": "small step during run-up",
+        "frame_end": 33,
+        "frame_start": 26,
+        "segment_id": null,
+        "skip_reason": "walking step, rise 24 px, not a free flight"
+      },
+      {
+        "description": "running jump over the car",
+        "frame_end": 110,
+        "frame_start": 64,
+        "segment_id": "hop_a",
+        "skip_reason": null
+      },
+      {
+        "description": "step after landing",
+        "frame_end": 133,
+        "frame_start": 113,
+        "segment_id": null,
+        "skip_reason": "walking step with negative curvature, not a free flight"
+      },
+      {
+        "description": "later walking step",
+        "frame_end": 162,
+        "frame_start": 149,
+        "segment_id": null,
+        "skip_reason": "walking step, rise 63 px, too short"
+      }
+    ],
+    "question": "Could a person really jump clean over a moving sports car on a street?",
+    "scene_card": {
+      "confidence": "medium",
+      "objects": [
+        "person in red shirt and white shorts",
+        "red sports car",
+        "street",
+        "buildings",
+        "onlookers"
+      ],
+      "place_date": null,
+      "scene": "A paved street with buildings, trees and onlookers, a red sports car driving past and a person in red shirt and white shorts running and jumping."
+    },
+    "summary": "A person in a red shirt runs on a street and leaps over a moving red sports car, clearing its roof and landing on the road.",
+    "views": [
+      {
+        "artifact": "artifacts/t5_view_frames_0.jpg",
+        "frame_end": 170,
+        "frame_start": 0
+      },
+      {
+        "artifact": "artifacts/t6_view_frames_0.jpg",
+        "frame_end": 105,
+        "frame_start": 75
+      },
+      {
+        "artifact": "artifacts/t2_view_frames_0.jpg",
+        "frame_end": 130,
+        "frame_start": 60
+      }
+    ],
+    "wonder": null
+  },
+  "page_texts": {},
+  "provenance": {
+    "artifacts": [
+      {
+        "name": "view",
+        "path": "artifacts/t5_view_frames_0.jpg",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "segment masks",
+        "path": "artifacts/t7_segment_0.npz",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "person reference masks",
+        "path": "artifacts/t43_segment_0.npz",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "car reference masks",
+        "path": "artifacts/t17_segment_0.npz",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "person mask check",
+        "path": "artifacts/t54_check_mask_0.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "car mask check",
+        "path": "artifacts/t55_check_mask_0.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "person line check",
+        "path": "artifacts/t70_check_line_0.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "car line check",
+        "path": "artifacts/t75_check_line_0.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "track",
+        "path": "workspace/track_hop_rel.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "reference track",
+        "path": "workspace/ref_track.json",
+        "produced_by": "run_python"
+      },
+      {
+        "name": "motion overview",
+        "path": "artifacts/t8_motion_overview_0.json",
+        "produced_by": "run_python"
+      }
+    ],
+    "model": "muse-spark-1.3-contributor",
+    "run_id": "20261104T220840Z-12c1afbc"
+  },
+  "range_checks": [],
+  "references": [
+    {
+      "extent_description": "height of the person from head to sole",
+      "extent_px": {
+        "frame": 20,
+        "length_px": 427.00468381506073,
+        "x1": 555.0,
+        "x2": 553.0,
+        "y1": 321.0,
+        "y2": 748.0
+      },
+      "extent_type": "rotation_invariant",
+      "mask": {
+        "artifact": "artifacts/t7_segment_0.npz",
+        "frame": 20,
+        "object_id": "0",
+        "outline": [
+          [
+            571,
+            321
+          ],
+          [
+            430,
+            499
+          ],
+          [
+            468,
+            585
+          ],
+          [
+            443,
+            718
+          ],
+          [
+            502,
+            704
+          ],
+          [
+            476,
+            669
+          ],
+          [
+            503,
+            577
+          ],
+          [
+            553,
+            748
+          ],
+          [
+            618,
+            727
+          ],
+          [
+            575,
+            704
+          ],
+          [
+            530,
+            498
+          ],
+          [
+            650,
+            445
+          ],
+          [
+            616,
+            442
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [],
+        "artifact": "artifacts/t54_check_mask_0.json",
+        "confidence": null,
+        "coverage_answer": "The green translucent tint covers the full silhouette of the crouched foreground figure on the left side of the road facing right, from the top of the head to the soles of the shoes. It includes the head, the torso, both arms extended forward, the light shorts and legs, and the feet on the pavement. The tint follows the body contours closely and excludes the surrounding surfaces - the asphalt, curb, grass, utility pole, trees and buildings - and excludes the people standing on the sidewalk behind. Those background areas lie inside the thin rectangular outline only as a small margin but remain untinted."
+      },
+      "name": "person standing height",
+      "size_derivation": {
+        "mode": "single",
+        "note": "single quoted height of the jumper. 'head of the crouched foreground figure': does not apply because it is only a part of the quoted whole, not a different whole-body size. 'torso and upper garment of the foreground figure': does not apply because it is only a part of the quoted whole. 'both arms and hands reaching forward of the foreground figure': does not apply because they are only parts of the quoted whole. 'lower garment, upper legs, lower legs and shod feet of the foreground figure': does not apply because it is only part of the quoted whole. 'standing figure on the sidewalk behind, visible inside the rectangular outline but not covered by the green tint except where hidden behind the foreground figure': does not apply because it is background outside the tint, not the measured person.",
+        "state_match": {
+          "shown_and_covered": "full silhouette from head to soles shown in the mask and covered by the quoted standing height",
+          "shown_not_covered": "street and background shown but outside the person extent"
+        }
+      },
+      "size_m": 1.73,
+      "size_tolerance_m": 0.02,
+      "sources": [
+        {
+          "domain": "celebheights.com",
+          "quote": "5ft 8 (173 cm)",
+          "quote_highlight": "173 cm",
+          "source_type": "height listing",
+          "url": "https://www.celebheights.com/tags/103.html",
+          "value_m": 1.73
+        }
+      ]
+    },
+    {
+      "extent_description": "height of the car from the road to the roof",
+      "extent_px": {
+        "frame": 79,
+        "length_px": 288.0,
+        "x1": 788.0,
+        "x2": 788.0,
+        "y1": 411.0,
+        "y2": 699.0
+      },
+      "extent_type": "rotation_invariant",
+      "mask": {
+        "artifact": "artifacts/t17_segment_0.npz",
+        "frame": 79,
+        "object_id": "0",
+        "outline": [
+          [
+            1136,
+            414
+          ],
+          [
+            727,
+            424
+          ],
+          [
+            475,
+            551
+          ],
+          [
+            433,
+            662
+          ],
+          [
+            665,
+            716
+          ],
+          [
+            858,
+            702
+          ],
+          [
+            922,
+            641
+          ],
+          [
+            1125,
+            579
+          ],
+          [
+            1142,
+            492
+          ],
+          [
+            1093,
+            430
+          ]
+        ]
+      },
+      "mask_check": {
+        "alternative_readings": [],
+        "artifact": "artifacts/t55_check_mask_0.json",
+        "confidence": null,
+        "coverage_answer": "The green translucent fill covers the bulk of the low red vehicle centered in the foreground on the road, seen in front three-quarter view. From left to right it runs from the front nose and bumper to the rear deck and raised rear wing, and from bottom to top it runs from the lower contact of the tires with the pavement up to the roofline. The fill follows the vehicle silhouette, including the nose, headlight area, hood, windshield, roof, side windows, doors, side fender, both near-side wheels, and rear wing, and it does not spill outward onto the surrounding road surface, lane marking, sidewalk, pole, trees, buildings, or people behind. The thin rectangular outline around it leaves only small triangular background gaps at the corners; the tint itself is confined to the body and does not extend past it onto the background."
+      },
+      "name": "sports car height",
+      "size_derivation": {
+        "mode": "single",
+        "note": "single quoted overall height; car only visible after takeoff so measured during flight. 'near-side front wheel and tire assembly inside the tint': does not apply because it is only a part inside the quoted whole car, not a different whole-car size. 'near-side rear wheel and tire assembly inside the tint': does not apply because it is only a part inside the quoted whole. 'front windshield / glasshouse and roof panel inside the tint': does not apply because it is only a part inside the quoted whole. 'side mirror protrusion on the near side inside the tint': does not apply because it is only a small part inside the quoted whole. 'raised wing / spoiler structure projecting from the rear upper edge inside the tint': does not apply because it is only a part inside the quoted whole. 'no additional forward, rearward, or upper section of the same continuous red body is visible outside the tint - front nose to rear deck are all included': does not apply as an alternative size because it confirms the tint already covers the full quoted whole from nose to deck and road to roof.",
+        "state_match": {
+          "shown_and_covered": "car body from road contact to roofline shown in the mask and covered by the quoted overall height",
+          "shown_not_covered": "road and background shown but outside the car extent"
+        }
+      },
+      "size_m": 1.165,
+      "size_tolerance_m": 0.01,
+      "sources": [
+        {
+          "domain": "thecaryoudrive.com",
+          "quote": "| Height | 1165.00 mm (millimeters)   3.82 ft (feet)   45.87 in (inches)   1.1650 m (meters) |",
+          "quote_highlight": "1.1650 m",
+          "source_type": "vehicle specification",
+          "url": "http://www.thecaryoudrive.com/en/03231891046",
+          "value_m": 1.165
+        }
+      ]
+    }
+  ],
+  "scale": {
+    "check_scale": null,
+    "extent_px": {
+      "frame": 20,
+      "length_px": 427.00468381506073,
+      "x1": 555.0,
+      "x2": 553.0,
+      "y1": 321.0,
+      "y2": 748.0
+    },
+    "frame": 20,
+    "m_per_px": 0.0040479187455967494,
+    "reference_index": 0,
+    "reference_indices": [
+      0,
+      1
+    ],
+    "second_reference_absent_reason": null,
+    "second_reference_index": 1,
+    "sigma_m_per_px": 3.346605151770894e-05
+  },
+  "segments": [
+    {
+      "apex_info": {
+        "feet_clearance_m": null,
+        "rise_m": 0.8305441036025791,
+        "sigma_m": 0.08676724654037922
+      },
+      "fit": {
+        "a_px_s2": 2632.0444762402735,
+        "g_app": 10.654302174617381,
+        "n_points": 47,
+        "residual_trend": -0.10994680784243879,
+        "sigma_a_px_s2": 274.97064994451176,
+        "sigma_g": 1.113058848399311,
+        "v0": 15.733597390709017,
+        "y0": -10.81220128129885
+      },
+      "fit_curve_px": [
+        {
+          "t_s": 1.081885,
+          "x_px": -685.072986419404,
+          "y_px": -413.1350092173493
+        },
+        {
+          "t_s": 1.09879,
+          "x_px": -682.6386283315414,
+          "y_px": -430.32772342511305
+        },
+        {
+          "t_s": 1.115694,
+          "x_px": -680.204414245932,
+          "y_px": -446.76730424997805
+        },
+        {
+          "t_s": 1.132599,
+          "x_px": -677.7700561580693,
+          "y_px": -462.4556967441005
+        },
+        {
+          "t_s": 1.149503,
+          "x_px": -675.3358420724599,
+          "y_px": -477.39104484211595
+        },
+        {
+          "t_s": 1.166407,
+          "x_px": -672.9016279868504,
+          "y_px": -491.57429882274647
+        },
+        {
+          "t_s": 1.183312,
+          "x_px": -670.4672698989879,
+          "y_px": -505.00623099376287
+        },
+        {
+          "t_s": 1.200216,
+          "x_px": -668.0330558133784,
+          "y_px": -517.6852522475438
+        },
+        {
+          "t_s": 1.217121,
+          "x_px": -665.5986977255158,
+          "y_px": -529.6128627049189
+        },
+        {
+          "t_s": 1.234025,
+          "x_px": -663.1644836399063,
+          "y_px": -540.7876512318503
+        },
+        {
+          "t_s": 1.25093,
+          "x_px": -660.7301255520438,
+          "y_px": -551.2109399755843
+        },
+        {
+          "t_s": 1.267834,
+          "x_px": -658.2959114664343,
+          "y_px": -560.8814957756658
+        },
+        {
+          "t_s": 1.284739,
+          "x_px": -655.8615533785717,
+          "y_px": -569.8004628057586
+        },
+        {
+          "t_s": 1.301643,
+          "x_px": -653.4273392929622,
+          "y_px": -577.9667858789907
+        },
+        {
+          "t_s": 1.318548,
+          "x_px": -650.9929812050996,
+          "y_px": -585.3814311954419
+        },
+        {
+          "t_s": 1.335452,
+          "x_px": -648.5587671194901,
+          "y_px": -592.0435215418245
+        },
+        {
+          "t_s": 1.352356,
+          "x_px": -646.1245530338806,
+          "y_px": -597.953517770822
+        },
+        {
+          "t_s": 1.369261,
+          "x_px": -643.6901949460181,
+          "y_px": -603.1117027641674
+        },
+        {
+          "t_s": 1.386165,
+          "x_px": -641.2559808604086,
+          "y_px": -607.5174662663153
+        },
+        {
+          "t_s": 1.40307,
+          "x_px": -638.821622772546,
+          "y_px": -611.1713295460194
+        },
+        {
+          "t_s": 1.419974,
+          "x_px": -636.3874086869365,
+          "y_px": -614.0728603213178
+        },
+        {
+          "t_s": 1.436879,
+          "x_px": -633.953050599074,
+          "y_px": -616.2224018873804
+        },
+        {
+          "t_s": 1.453783,
+          "x_px": -631.5188365134645,
+          "y_px": -617.6196999358292
+        },
+        {
+          "t_s": 1.470688,
+          "x_px": -629.0844784256019,
+          "y_px": -618.2649197882506
+        },
+        {
+          "t_s": 1.487592,
+          "x_px": -626.6502643399924,
+          "y_px": -618.1579851098498
+        },
+        {
+          "t_s": 1.504497,
+          "x_px": -624.2159062521299,
+          "y_px": -617.29888324863
+        },
+        {
+          "t_s": 1.521401,
+          "x_px": -621.7816921665204,
+          "y_px": -615.6877158433796
+        },
+        {
+          "t_s": 1.538305,
+          "x_px": -619.3474780809108,
+          "y_px": -613.3244543207443
+        },
+        {
+          "t_s": 1.55521,
+          "x_px": -616.9131199930483,
+          "y_px": -610.2088921364184
+        },
+        {
+          "t_s": 1.572114,
+          "x_px": -614.4789059074388,
+          "y_px": -606.3413978869337
+        },
+        {
+          "t_s": 1.589019,
+          "x_px": -612.0445478195763,
+          "y_px": -601.7215139889663
+        },
+        {
+          "t_s": 1.605923,
+          "x_px": -609.6103337339669,
+          "y_px": -596.3497870126321
+        },
+        {
+          "t_s": 1.622828,
+          "x_px": -607.1759756461042,
+          "y_px": -590.2255814010234
+        },
+        {
+          "t_s": 1.639732,
+          "x_px": -604.7417615604948,
+          "y_px": -583.3496216978393
+        },
+        {
+          "t_s": 1.656637,
+          "x_px": -602.3074034726322,
+          "y_px": -575.7210943725896
+        },
+        {
+          "t_s": 1.673541,
+          "x_px": -599.8731893870226,
+          "y_px": -567.3409019425559
+        },
+        {
+          "t_s": 1.690446,
+          "x_px": -597.4388312991601,
+          "y_px": -558.2080529036649
+        },
+        {
+          "t_s": 1.70735,
+          "x_px": -595.0046172135507,
+          "y_px": -548.3236277467817
+        },
+        {
+          "t_s": 1.724255,
+          "x_px": -592.570259125688,
+          "y_px": -537.6864569942492
+        },
+        {
+          "t_s": 1.741159,
+          "x_px": -590.1360450400787,
+          "y_px": -526.2977991105165
+        },
+        {
+          "t_s": 1.758063,
+          "x_px": -587.7018309544691,
+          "y_px": -514.1570471093987
+        },
+        {
+          "t_s": 1.774968,
+          "x_px": -585.2674728666066,
+          "y_px": -501.26341603375994
+        },
+        {
+          "t_s": 1.791872,
+          "x_px": -582.8332587809971,
+          "y_px": -487.6184313057931
+        },
+        {
+          "t_s": 1.808777,
+          "x_px": -580.3989006931345,
+          "y_px": -473.220478516513
+        },
+        {
+          "t_s": 1.825681,
+          "x_px": -577.964686607525,
+          "y_px": -458.07126106169613
+        },
+        {
+          "t_s": 1.842586,
+          "x_px": -575.5303285196625,
+          "y_px": -442.16898655877515
+        },
+        {
+          "t_s": 1.85949,
+          "x_px": -573.096114434053,
+          "y_px": -425.5155363771085
+        }
+      ],
+      "frames": {
+        "apex": 85,
+        "end": 110,
+        "start": 64
+      },
+      "ghosts": [],
+      "id": "hop_a",
+      "key_moments": [
+        {
+          "caption": "leaving the ground",
+          "frame": 64,
+          "t_s": 1.081885,
+          "type": "takeoff"
+        },
+        {
+          "caption": "hanging at the top",
+          "frame": 85,
+          "t_s": 1.436879,
+          "type": "apex"
+        },
+        {
+          "caption": "touching down softly",
+          "frame": 110,
+          "t_s": 1.85949,
+          "type": "landing"
+        }
+      ],
+      "kind": "free_flight",
+      "label": "Jump over the car",
+      "landing_info": {
+        "airborne_s": 0.7776050000000001,
+        "sigma_s": 0.02390586605835516
+      },
+      "mask": {
+        "artifact": "artifacts/t7_segment_0.npz",
+        "object_id": "0"
+      },
+      "overlay": [
+        {
+          "bbox": [
+            -693.9221420231398,
+            -423.4484396560875,
+            8.0,
+            8.0
+          ],
+          "frame": 64,
+          "outline": [
+            [
+              -693.9221420231398,
+              -423.4484396560875
+            ],
+            [
+              -685.9221420231398,
+              -423.4484396560875
+            ],
+            [
+              -685.9221420231398,
+              -415.4484396560875
+            ],
+            [
+              -693.9221420231398,
+              -415.4484396560875
+            ]
+          ],
+          "point": [
+            -689.9221420231398,
+            -419.4484396560875
+          ]
+        },
+        {
+          "bbox": [
+            -638.2617043092531,
+            -618.492910436132,
+            8.0,
+            8.0
+          ],
+          "frame": 85,
+          "outline": [
+            [
+              -638.2617043092531,
+              -618.492910436132
+            ],
+            [
+              -630.2617043092531,
+              -618.492910436132
+            ],
+            [
+              -630.2617043092531,
+              -610.492910436132
+            ],
+            [
+              -638.2617043092531,
+              -610.492910436132
+            ]
+          ],
+          "point": [
+            -634.2617043092531,
+            -614.492910436132
+          ]
+        },
+        {
+          "bbox": [
+            -582.6313278609598,
+            -434.6792054915216,
+            8.0,
+            8.0
+          ],
+          "frame": 110,
+          "outline": [
+            [
+              -582.6313278609598,
+              -434.6792054915216
+            ],
+            [
+              -574.6313278609598,
+              -434.6792054915216
+            ],
+            [
+              -574.6313278609598,
+              -426.6792054915216
+            ],
+            [
+              -582.6313278609598,
+              -426.6792054915216
+            ]
+          ],
+          "point": [
+            -578.6313278609598,
+            -430.6792054915216
+          ]
+        }
+      ],
+      "repetitions": [],
+      "takeoff_level_y_px": -419.4484396560875,
+      "times_s": {
+        "apex": 1.436879,
+        "end": 1.85949,
+        "start": 1.081885
+      },
+      "track": [
+        {
+          "frame": 64,
+          "t_s": 1.081885,
+          "x_m": 0.0,
+          "x_px": -689.9221420231398,
+          "y_m": 0.0,
+          "y_px": -419.4484396560875
+        },
+        {
+          "frame": 65,
+          "t_s": 1.09879,
+          "x_m": 0.006586683186470727,
+          "x_px": -688.2949643052976,
+          "y_m": 0.06472490458194922,
+          "y_px": -435.43811451118574
+        },
+        {
+          "frame": 66,
+          "t_s": 1.115694,
+          "x_m": 0.017840283220956123,
+          "x_px": -685.5148689669891,
+          "y_m": 0.11753342396100318,
+          "y_px": -448.48395922743606
+        },
+        {
+          "frame": 67,
+          "t_s": 1.132599,
+          "x_m": 0.02796542002701825,
+          "x_px": -683.0135497848597,
+          "y_m": 0.15623949473297208,
+          "y_px": -458.04592753870037
+        },
+        {
+          "frame": 68,
+          "t_s": 1.149503,
+          "x_m": 0.03775834960505542,
+          "x_px": -680.5942992530427,
+          "y_m": 0.20776687656828263,
+          "y_px": -470.7752793547073
+        },
+        {
+          "frame": 69,
+          "t_s": 1.166407,
+          "x_m": 0.04253312466187223,
+          "x_px": -679.414736283304,
+          "y_m": 0.27300253756559156,
+          "y_px": -486.89113174632735
+        },
+        {
+          "frame": 70,
+          "t_s": 1.183312,
+          "x_m": 0.05446024421022323,
+          "x_px": -676.4682543260451,
+          "y_m": 0.3359105573498098,
+          "y_px": -502.4319624145932
+        },
+        {
+          "frame": 71,
+          "t_s": 1.200216,
+          "x_m": 0.06505553812775486,
+          "x_px": -673.8507872810218,
+          "y_m": 0.3975894436873923,
+          "y_px": -517.6691473024262
+        },
+        {
+          "frame": 72,
+          "t_s": 1.217121,
+          "x_m": 0.08496482753262016,
+          "x_px": -668.9323858366938,
+          "y_m": 0.44464536692727075,
+          "y_px": -529.293867608649
+        },
+        {
+          "frame": 73,
+          "t_s": 1.234025,
+          "x_m": 0.10544627934218807,
+          "x_px": -663.872637087575,
+          "y_m": 0.4912616734588848,
+          "y_px": -540.80998476943
+        },
+        {
+          "frame": 74,
+          "t_s": 1.25093,
+          "x_m": 0.1288189246404491,
+          "x_px": -658.0986463611837,
+          "y_m": 0.5273341255137175,
+          "y_px": -549.7213425119913
+        },
+        {
+          "frame": 75,
+          "t_s": 1.267834,
+          "x_m": 0.14039307148415828,
+          "x_px": -655.2393629686256,
+          "y_m": 0.5778988309386225,
+          "y_px": -562.2128742355242
+        },
+        {
+          "frame": 76,
+          "t_s": 1.284739,
+          "x_m": 0.15679121471359683,
+          "x_px": -651.1883569430536,
+          "y_m": 0.6273934745459079,
+          "y_px": -574.4400573184664
+        },
+        {
+          "frame": 77,
+          "t_s": 1.301643,
+          "x_m": 0.16682914229180026,
+          "x_px": -648.708581974961,
+          "y_m": 0.659476843834985,
+          "y_px": -582.3659499327825
+        },
+        {
+          "frame": 78,
+          "t_s": 1.318548,
+          "x_m": 0.17577174854128605,
+          "x_px": -646.4993957705162,
+          "y_m": 0.661085775805908,
+          "y_px": -582.7634213426702
+        },
+        {
+          "frame": 79,
+          "t_s": 1.335452,
+          "x_m": 0.19531094216487543,
+          "x_px": -641.6724229848486,
+          "y_m": 0.7058451461045055,
+          "y_px": -593.8207999887426
+        },
+        {
+          "frame": 80,
+          "t_s": 1.352356,
+          "x_m": 0.20932437613593313,
+          "x_px": -638.2105368028937,
+          "y_m": 0.7190102719482957,
+          "y_px": -597.0731196797223
+        },
+        {
+          "frame": 81,
+          "t_s": 1.369261,
+          "x_m": 0.2172236744002606,
+          "x_px": -636.2590899580379,
+          "y_m": 0.7427640962210641,
+          "y_px": -602.9412770627249
+        },
+        {
+          "frame": 82,
+          "t_s": 1.386165,
+          "x_m": 0.22462220336973715,
+          "x_px": -634.4313534261412,
+          "y_m": 0.7518245743003623,
+          "y_px": -605.1795823867026
+        },
+        {
+          "frame": 83,
+          "t_s": 1.40307,
+          "x_m": 0.23627643798753667,
+          "x_px": -631.5522851072732,
+          "y_m": 0.7643636981015556,
+          "y_px": -608.2772542001087
+        },
+        {
+          "frame": 84,
+          "t_s": 1.419974,
+          "x_m": 0.2383389203096873,
+          "x_px": -631.0427683773748,
+          "y_m": 0.7764342418989647,
+          "y_px": -611.2591677601423
+        },
+        {
+          "frame": 85,
+          "t_s": 1.436879,
+          "x_m": 0.22530892921016235,
+          "x_px": -634.2617043092531,
+          "y_m": 0.7895241694955395,
+          "y_px": -614.492910436132
+        },
+        {
+          "frame": 86,
+          "t_s": 1.453783,
+          "x_m": 0.21135094368995083,
+          "x_px": -637.709892476418,
+          "y_m": 0.8048000591194346,
+          "y_px": -618.266674334064
+        },
+        {
+          "frame": 87,
+          "t_s": 1.470688,
+          "x_m": 0.2385104796649557,
+          "x_px": -631.0003862629969,
+          "y_m": 0.799778689899445,
+          "y_px": -617.0261926110917
+        },
+        {
+          "frame": 88,
+          "t_s": 1.487592,
+          "x_m": 0.2569380883494554,
+          "x_px": -626.448020011934,
+          "y_m": 0.8000488546398434,
+          "y_px": -617.0929342522603
+        },
+        {
+          "frame": 89,
+          "t_s": 1.504497,
+          "x_m": 0.26056056831764773,
+          "x_px": -625.5531206337948,
+          "y_m": 0.8013804437451857,
+          "y_px": -617.4218907331162
+        },
+        {
+          "frame": 90,
+          "t_s": 1.521401,
+          "x_m": 0.2730602362410686,
+          "x_px": -622.4651960214202,
+          "y_m": 0.7967520318814383,
+          "y_px": -616.278485404444
+        },
+        {
+          "frame": 91,
+          "t_s": 1.538305,
+          "x_m": 0.2922652907735723,
+          "x_px": -617.7207691345429,
+          "y_m": 0.7868383304757984,
+          "y_px": -613.8293993360975
+        },
+        {
+          "frame": 92,
+          "t_s": 1.55521,
+          "x_m": 0.3053928505952885,
+          "x_px": -614.4777297736377,
+          "y_m": 0.7749374108883107,
+          "y_px": -610.889389831106
+        },
+        {
+          "frame": 93,
+          "t_s": 1.572114,
+          "x_m": 0.32977015830634987,
+          "x_px": -608.4555467104084,
+          "y_m": 0.7679995839137098,
+          "y_px": -609.1754653650707
+        },
+        {
+          "frame": 94,
+          "t_s": 1.589019,
+          "x_m": 0.3478577897676116,
+          "x_px": -603.987168613408,
+          "y_m": 0.7635285900488185,
+          "y_px": -608.0709486625666
+        },
+        {
+          "frame": 95,
+          "t_s": 1.605923,
+          "x_m": 0.3499436249240641,
+          "x_px": -603.4718827869024,
+          "y_m": 0.7342104419029716,
+          "y_px": -600.828177750295
+        },
+        {
+          "frame": 96,
+          "t_s": 1.622828,
+          "x_m": 0.3552894291508427,
+          "x_px": -602.151252467286,
+          "y_m": 0.71944458545364,
+          "y_px": -597.1804127190939
+        },
+        {
+          "frame": 97,
+          "t_s": 1.639732,
+          "x_m": 0.3576566298086671,
+          "x_px": -601.5664579576631,
+          "y_m": 0.6810772960723012,
+          "y_px": -587.7021371427686
+        },
+        {
+          "frame": 98,
+          "t_s": 1.656637,
+          "x_m": 0.3646927493521239,
+          "x_px": -599.8282512431359,
+          "y_m": 0.6392798448557317,
+          "y_px": -577.3764725621651
+        },
+        {
+          "frame": 99,
+          "t_s": 1.673541,
+          "x_m": 0.37679176388097996,
+          "x_px": -596.8393042584621,
+          "y_m": 0.6000523876528764,
+          "y_px": -567.6857006696891
+        },
+        {
+          "frame": 100,
+          "t_s": 1.690446,
+          "x_m": 0.37561240790491657,
+          "x_px": -597.1306529860882,
+          "y_m": 0.5510887263502631,
+          "y_px": -555.5896917377225
+        },
+        {
+          "frame": 101,
+          "t_s": 1.70735,
+          "x_m": 0.38098062494723073,
+          "x_px": -595.8044857926005,
+          "y_m": 0.5025506226456792,
+          "y_px": -543.5988127811272
+        },
+        {
+          "frame": 102,
+          "t_s": 1.724255,
+          "x_m": 0.3842853000235078,
+          "x_px": -594.9880971040005,
+          "y_m": 0.4558482944705216,
+          "y_px": -532.0614447877703
+        },
+        {
+          "frame": 103,
+          "t_s": 1.741159,
+          "x_m": 0.3895477733861302,
+          "x_px": -593.688052885389,
+          "y_m": 0.4079456168934961,
+          "y_px": -520.22754183971
+        },
+        {
+          "frame": 104,
+          "t_s": 1.758063,
+          "x_m": 0.3990587074797051,
+          "x_px": -591.3384666680469,
+          "y_m": 0.3673800746440943,
+          "y_px": -510.20620870560793
+        },
+        {
+          "frame": 105,
+          "t_s": 1.774968,
+          "x_m": 0.4054999060332085,
+          "x_px": -589.7472295513162,
+          "y_m": 0.32282333775340993,
+          "y_px": -499.19888872440714
+        },
+        {
+          "frame": 106,
+          "t_s": 1.791872,
+          "x_m": 0.41286260330559865,
+          "x_px": -587.9283449009266,
+          "y_m": 0.27263242706962,
+          "y_px": -486.7996994525408
+        },
+        {
+          "frame": 107,
+          "t_s": 1.808777,
+          "x_m": 0.4222484372046771,
+          "x_px": -585.6096635021737,
+          "y_m": 0.21631105776503717,
+          "y_px": -472.8860384222031
+        },
+        {
+          "frame": 108,
+          "t_s": 1.825681,
+          "x_m": 0.43226421571878176,
+          "x_px": -583.1353602506572,
+          "y_m": 0.15892020352263275,
+          "y_px": -458.708171263967
+        },
+        {
+          "frame": 109,
+          "t_s": 1.842586,
+          "x_m": 0.44393177559427666,
+          "x_px": -580.2530000530404,
+          "y_m": 0.09778370053337931,
+          "y_px": -443.60497704699895
+        },
+        {
+          "frame": 110,
+          "t_s": 1.85949,
+          "x_m": 0.45049617285981275,
+          "x_px": -578.6313278609598,
+          "y_m": 0.045461227552661285,
+          "y_px": -430.6792054915216
+        }
+      ],
+      "world_outcomes": [
+        {
+          "landing_time_s": 0.8467231190955765,
+          "landing_x_px": -567.9921051612337,
+          "world": "Earth"
+        }
+      ]
+    }
+  ],
+  "self_built_tools": [],
+  "sentence": "Realistic on Earth: measured g = 10.7 \u00b1 1.1 m/s\u00b2, 0.8\u03c3 from Earth's 9.81.",
+  "verdict": {
+    "clock_note": null,
+    "decided_by": "gravity",
+    "direction": null,
+    "factor": null,
+    "g_measured": 10.654302174617381,
+    "kind": "world",
+    "reason": null,
+    "sigma_g": 1.113058848399311,
+    "world": "Earth"
+  },
+  "video": {
+    "coded_height": 240,
+    "coded_width": 352,
+    "duration_s": 2.9920880000000003,
+    "frame_count": 177,
+    "measured_fps": 59.15759583530437,
+    "sample_aspect": {
+      "den": 1,
+      "num": 1
+    }
+  },
+  "worlds": {
+    "candidates": [
+      {
+        "delta_sigma": 0.7585422602152359,
+        "fits_native": true,
+        "g_m_s2": 9.81,
+        "retime_factor": 0.9595596971507238,
+        "world": "Earth"
+      }
+    ],
+    "excluded": []
+  }
+}

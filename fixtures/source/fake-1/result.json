@@ -1,0 +1,1404 @@
+{
+ "contract_version": 3,
+ "video": {
+  "coded_width": 352,
+  "coded_height": 240,
+  "sample_aspect": {
+   "num": 1,
+   "den": 1
+  },
+  "measured_fps": 29.969730572122174,
+  "frame_count": 192,
+  "duration_s": 6.406407
+ },
+ "first_look": {
+  "question": "Does the foreground figure's hop fall as it would in lunar gravity?",
+  "summary": "Two white-suited figures with backpacks move on a grey plain under a black sky with a flag on a pole. The foreground figure walks then makes a low two-footed hop around 4.5-5.1 s. Body height and backpack-unit size answer the pixel scale and the hop's fitted fall answers the gravity.",
+  "scene_card": {
+   "scene": "Grey plain under black sky with two white-suited figures with backpacks and a flag on a pole.",
+   "place_date": null,
+   "confidence": "medium",
+   "objects": [
+    "foreground suited figure",
+    "background suited figure",
+    "backpack unit",
+    "flag on pole",
+    "grey plain"
+   ]
+  },
+  "by_eye": {
+   "jump_m": null,
+   "airborne_s": 0.6,
+   "reasoning": "feet leave the ground after 4.5 s and return about 0.6 s later in a low hop"
+  },
+  "views": [
+   {
+    "frame_start": 0,
+    "frame_end": 184,
+    "artifact": "artifacts/t4_view_frames_0.jpg"
+   },
+   {
+    "frame_start": 0,
+    "frame_end": 189,
+    "artifact": "artifacts/t28_view_frames_0.jpg"
+   }
+  ],
+  "motions": [
+   {
+    "frame_start": 135,
+    "frame_end": 152,
+    "description": "foreground two-footed hop",
+    "segment_id": "hop_a",
+    "skip_reason": null
+   }
+  ],
+  "wonder": {
+   "claim": "Two figures in bulky white suits with backpacks move on a grey plain under a black sky presented as the lunar surface, with the foreground figure making a low two-footed hop",
+   "checks": [
+    {
+     "what": "downward acceleration of the foreground figure during the airborne phase of the hop",
+     "why": "a body with nothing holding it up must accelerate downward at the local g, so the fitted acceleration directly tests the claimed world and playback speed",
+     "compare_with": "the Moon's surface gravity"
+    },
+    {
+     "what": "standing height of the suited figure and backpack-unit size and ratio",
+     "why": "checks the pixel scale against independent body and hardware norms so a miniature set or costume cannot bias the gravity result",
+     "compare_with": "adult human stature norms and published spacesuit backpack dimensions"
+    }
+   ],
+   "realistic_if": "Realistic if the hop's fitted downward acceleration matches lunar gravity within uncertainty and body and hardware sizes match human and equipment norms.",
+   "not_realistic_if": "Not realistic if the fitted acceleration clearly misses lunar gravity or the measured sizes and hop duration clearly contradict human and equipment norms."
+  }
+ },
+ "references": [
+  {
+   "name": "backpack unit height",
+   "extent_description": "height of the backpack unit on the foreground figure seen from behind",
+   "extent_type": "face_on",
+   "extent_px": {
+    "x1": 47.0,
+    "y1": 40.0,
+    "x2": 38.0,
+    "y2": 130.0,
+    "length_px": 90.44888059008801,
+    "frame": 10
+   },
+   "size_m": 0.914,
+   "size_tolerance_m": 0.03,
+   "size_derivation": {
+    "mode": "sum",
+    "note": "sum of PLSS height 0.66 m plus top OPS unit height 0.254 m stacked on top; 'a smaller upper box-like protrusion forming the top of the pack inside the tint' is the top OPS unit included in the headline size; 'a larger lower rectangular section forming the main body of the pack below it inside the tint' is the PLSS body included in the headline size; 'the white suited lower body and legs of the same figure continuing down below the bottom edge of the tint and left outside' does not apply because it is outside the pack extent; 'the dark background and ground immediately to the right and above the pack only marginally included at the edge of the tint' does not apply because it is background margin outside the measured endpoints",
+    "state_match": {
+     "shown_and_covered": "backpack-unit mask covers the stacked light rectangular pack body plus the smaller top protrusion seen from behind, covered by the quoted PLSS plus OPS heights",
+     "shown_not_covered": "white suited legs below the pack, helmet, flag and ground shown outside the pack extent and not covered by the quoted heights"
+    }
+   },
+   "sources": [
+    {
+     "url": "https://en.wikipedia.org/wiki/Primary_life_support_system",
+     "domain": "en.wikipedia.org",
+     "quote": "The PLSS was 26 inches (66 cm) high, 18 inches (46 cm) wide, and 10 inches (25 cm) deep.",
+     "quote_highlight": "66 cm",
+     "value_m": 0.66,
+     "source_type": "encyclopedia article"
+    },
+    {
+     "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+     "domain": "nasa.gov",
+     "quote": "inches long, 10 inches high, and 8 inches deep.",
+     "quote_highlight": "10 inches high",
+     "value_m": 0.254,
+     "source_type": "museum catalogue"
+    }
+   ],
+   "mask": {
+    "artifact": "artifacts/t12_segment_0.npz",
+    "object_id": "0",
+    "frame": 10,
+    "outline": [
+     [
+      6.0,
+      40.0
+     ],
+     [
+      69.0,
+      40.0
+     ],
+     [
+      69.0,
+      130.0
+     ],
+     [
+      6.0,
+      130.0
+     ]
+    ]
+   },
+   "mask_check": {
+    "artifact": "artifacts/t21_check_mask_0.json",
+    "coverage_answer": "On the left side of the frame the pale tint covers the large light rectangular pack on the back of the light-suited figure seen from behind. It includes the top of the pack against the dark background, the left side at the frame edge, and the right side with a narrow margin onto the background, while its bottom edge cuts straight across the figure at about waist to upper-leg level. It covers only the pack unit and excludes the white legs and lower suit below it and excludes the surrounding ground and background.",
+    "confidence": null,
+    "alternative_readings": [
+     {
+      "description": "lower main body only (PLSS without top OPS unit)",
+      "size_m": 0.66
+     }
+    ]
+   }
+  },
+  {
+   "name": "suited figure height",
+   "extent_description": "full height of the foreground suited figure from pack top to boot soles",
+   "extent_type": "rotation_invariant",
+   "extent_px": {
+    "x1": 66.0,
+    "y1": 58.0,
+    "x2": 61.0,
+    "y2": 213.0,
+    "length_px": 155.08062419270823,
+    "frame": 10
+   },
+   "size_m": 1.625,
+   "size_tolerance_m": 0.125,
+   "size_derivation": {
+    "mode": "mean",
+    "note": "mean of quoted adult women height bounds 1.50 m and 1.75 m; 'upper boxy unit mounted on the back/shoulders of the left foreground figure' is the pack top included in the headline height; 'main suited body of the left figure - torso, arms, legs and boots - below and in front of that upper box, inside the same left tint' is the body included in the headline height; 'small distant upright suited figure on the right, as a separate tinted unit' does not apply because it is a different figure at greater depth not used for this extent; 'vertical pole and attached horizontal striped element immediately to the left of the right figure - part of the same distant grouping but left outside the tint' does not apply because it is a different object outside the figure extent; 'surrounding ground surface and dark background - mostly outside the tint except for thin margins of background/ground caught inside the two boxes around the figures' does not apply because it is background margin outside the measured endpoints",
+    "state_match": {
+     "shown_and_covered": "figure mask covers the whole foreground suited figure from pack top to boot soles including suit, helmet and boots, covered by the quoted adult stature range",
+     "shown_not_covered": "backpack-unit sub-part included in the height, background figure at different depth and flag and ground shown outside the figure extent and not covered by the stature range"
+    }
+   },
+   "sources": [
+    {
+     "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+     "domain": "myhsn.co.uk",
+     "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+     "quote_highlight": "1.50 to 1.75 metres",
+     "value_m": 1.5,
+     "source_type": "survey report"
+    },
+    {
+     "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+     "domain": "myhsn.co.uk",
+     "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+     "quote_highlight": "1.50 to 1.75 metres",
+     "value_m": 1.75,
+     "source_type": "survey report"
+    }
+   ],
+   "mask": {
+    "artifact": "artifacts/t9_segment_0.npz",
+    "object_id": "1",
+    "frame": 10,
+    "outline": [
+     [
+      12.0,
+      58.0
+     ],
+     [
+      91.0,
+      58.0
+     ],
+     [
+      91.0,
+      213.0
+     ],
+     [
+      12.0,
+      213.0
+     ]
+    ]
+   },
+   "mask_check": {
+    "artifact": "artifacts/t42_check_mask_0.json",
+    "coverage_answer": "Two separate tinted rectangular patches, each with its own bounding box. The large left patch covers the whole left foreground suited figure from the top of its back-mounted box to the soles of its feet, including the torso, limbs, and head area. The box is slightly larger than the figure so a narrow margin of background and ground around the sides, top and bottom is also tinted. The small right patch in the mid-distance covers the small upright suited figure standing to the right of a vertical pole, from head to feet, with only a narrow margin of surrounding background included. The pole and the element attached to it to the left, and the rest of the ground and background, are left outside the tint.",
+    "confidence": null,
+    "alternative_readings": []
+   }
+  }
+ ],
+ "scale": {
+  "frame": 10,
+  "m_per_px": 0.010177265991858635,
+  "sigma_m_per_px": 0.00035922165785853605,
+  "reference_index": 0,
+  "reference_indices": [
+   0,
+   1
+  ],
+  "extent_px": {
+   "x1": 47.0,
+   "y1": 40.0,
+   "x2": 38.0,
+   "y2": 130.0,
+   "length_px": 90.44888059008801,
+   "frame": 10
+  },
+  "second_reference_index": 1,
+  "second_reference_absent_reason": null,
+  "check_scale": null
+ },
+ "segments": [
+  {
+   "id": "hop_a",
+   "label": "Foreground hop",
+   "kind": "free_flight",
+   "mask": {
+    "artifact": "artifacts/t12_segment_0.npz",
+    "object_id": "0"
+   },
+   "frames": {
+    "start": 135,
+    "apex": 143,
+    "end": 152
+   },
+   "times_s": {
+    "start": 4.504505,
+    "apex": 4.771438,
+    "end": 5.071738
+   },
+   "key_moments": [
+    {
+     "type": "takeoff",
+     "frame": 135,
+     "t_s": 4.504505,
+     "caption": "leaving the ground"
+    },
+    {
+     "type": "apex",
+     "frame": 143,
+     "t_s": 4.771438,
+     "caption": "hanging at the top"
+    },
+    {
+     "type": "landing",
+     "frame": 152,
+     "t_s": 5.071738,
+     "caption": "touching down softly"
+    }
+   ],
+   "overlay": [
+    {
+     "frame": 135,
+     "outline": [
+      [
+       88.24175824175825,
+       76.3601559730592
+      ],
+      [
+       96.24175824175825,
+       76.3601559730592
+      ],
+      [
+       96.24175824175825,
+       84.3601559730592
+      ],
+      [
+       88.24175824175825,
+       84.3601559730592
+      ]
+     ],
+     "point": [
+      92.24175824175825,
+      80.3601559730592
+     ],
+     "bbox": [
+      88.24175824175825,
+      76.3601559730592,
+      8.0,
+      8.0
+     ]
+    },
+    {
+     "frame": 143,
+     "outline": [
+      [
+       86.87051649928264,
+       55.84791965566715
+      ],
+      [
+       94.87051649928264,
+       55.84791965566715
+      ],
+      [
+       94.87051649928264,
+       63.84791965566715
+      ],
+      [
+       86.87051649928264,
+       63.84791965566715
+      ]
+     ],
+     "point": [
+      90.87051649928264,
+      59.84791965566715
+     ],
+     "bbox": [
+      86.87051649928264,
+      55.84791965566715,
+      8.0,
+      8.0
+     ]
+    },
+    {
+     "frame": 152,
+     "outline": [
+      [
+       87.59937265012353,
+       89.652879292441
+      ],
+      [
+       95.59937265012353,
+       89.652879292441
+      ],
+      [
+       95.59937265012353,
+       97.652879292441
+      ],
+      [
+       87.59937265012353,
+       97.652879292441
+      ]
+     ],
+     "point": [
+      91.59937265012353,
+      93.652879292441
+     ],
+     "bbox": [
+      87.59937265012353,
+      89.652879292441,
+      8.0,
+      8.0
+     ]
+    }
+   ],
+   "track": [
+    {
+     "frame": 135,
+     "t_s": 4.504505,
+     "x_px": 92.24175824175825,
+     "y_px": 80.3601559730592,
+     "x_m": 0.0,
+     "y_m": 0.0
+    },
+    {
+     "frame": 136,
+     "t_s": 4.537871,
+     "x_px": 92.24175824175825,
+     "y_px": 80.3601559730592,
+     "x_m": 0.0,
+     "y_m": 0.0
+    },
+    {
+     "frame": 137,
+     "t_s": 4.571238,
+     "x_px": 91.9386742289968,
+     "y_px": 73.88443814250266,
+     "x_m": -0.0030845666157531064,
+     "y_m": 0.06590510284979559
+    },
+    {
+     "frame": 138,
+     "t_s": 4.604605,
+     "x_px": 91.91375623663578,
+     "y_px": 69.70135424091234,
+     "x_m": -0.003338163651994366,
+     "y_m": 0.1084774603825421
+    },
+    {
+     "frame": 139,
+     "t_s": 4.637971,
+     "x_px": 91.68212873067242,
+     "y_px": 66.01546206400576,
+     "x_m": -0.0056954983912143,
+     "y_m": 0.1459897654842312
+    },
+    {
+     "frame": 140,
+     "t_s": 4.671338,
+     "x_px": 91.56579898770788,
+     "y_px": 62.884309472161966,
+     "x_m": -0.006879417128128951,
+     "y_m": 0.17785633827252306
+    },
+    {
+     "frame": 141,
+     "t_s": 4.704705,
+     "x_px": 91.37589670014347,
+     "y_px": 60.94332855093257,
+     "x_m": -0.008812103221134357,
+     "y_m": 0.19761021739299744
+    },
+    {
+     "frame": 142,
+     "t_s": 4.738071,
+     "x_px": 91.04179950407368,
+     "y_px": 60.33404179950407,
+     "x_m": -0.012212299252670773,
+     "y_m": 0.20381109072760073
+    },
+    {
+     "frame": 143,
+     "t_s": 4.771438,
+     "x_px": 90.87051649928264,
+     "y_px": 59.84791965566715,
+     "x_m": -0.013955491952313942,
+     "y_m": 0.20875848508996167
+    },
+    {
+     "frame": 144,
+     "t_s": 4.804805,
+     "x_px": 90.95658414065304,
+     "y_px": 60.42913527090061,
+     "x_m": -0.013079558672795573,
+     "y_m": 0.20284329917510896
+    },
+    {
+     "frame": 145,
+     "t_s": 4.838172,
+     "x_px": 91.06736689605215,
+     "y_px": 61.18761318362912,
+     "x_m": -0.011952093103787772,
+     "y_m": 0.1951240677083212
+    },
+    {
+     "frame": 146,
+     "t_s": 4.871538,
+     "x_px": 91.50632453921214,
+     "y_px": 62.69678352005783,
+     "x_m": -0.007484704410189139,
+     "y_m": 0.17976483976746344
+    },
+    {
+     "frame": 147,
+     "t_s": 4.904905,
+     "x_px": 91.44680073126142,
+     "y_px": 66.56928702010968,
+     "x_m": -0.00809049403655198,
+     "y_m": 0.14035334159303214
+    },
+    {
+     "frame": 148,
+     "t_s": 4.938272,
+     "x_px": 91.61148148148148,
+     "y_px": 68.76703703703704,
+     "x_m": -0.006414494237823625,
+     "y_m": 0.11798625508715059
+    },
+    {
+     "frame": 149,
+     "t_s": 4.971638,
+     "x_px": 92.0964125560538,
+     "y_px": 75.08445440956652,
+     "x_m": -0.0014792217041831863,
+     "y_m": 0.053692218105329426
+    },
+    {
+     "frame": 150,
+     "t_s": 5.005005,
+     "x_px": 91.91327102803739,
+     "y_px": 78.13869158878505,
+     "x_m": -0.003343101748961731,
+     "y_m": 0.022608433930198412
+    },
+    {
+     "frame": 151,
+     "t_s": 5.038372,
+     "x_px": 91.75632183908046,
+     "y_px": 85.89578544061303,
+     "x_m": -0.004940415392182882,
+     "y_m": -0.05633757352366614
+    },
+    {
+     "frame": 152,
+     "t_s": 5.071738,
+     "x_px": 91.59937265012353,
+     "y_px": 93.652879292441,
+     "x_m": -0.006537729035404032,
+     "y_m": -0.13528358097753068
+    }
+   ],
+   "fit": {
+    "g_app": 7.442670622275192,
+    "sigma_g": 1.1385976964727815,
+    "a_px_s2": 731.3035375344421,
+    "sigma_a_px_s2": 111.8765783839795,
+    "v0": 35.51977888924921,
+    "y0": -84.54646498233231,
+    "residual_trend": 0.15498471161584965,
+    "n_points": 16
+   },
+   "fit_curve_px": [
+    {
+     "t_s": 4.537871,
+     "x_px": 91.56155577131892,
+     "y_px": 79.67665975553427
+    },
+    {
+     "t_s": 4.571238,
+     "x_px": 91.56155577131892,
+     "y_px": 74.35968542254341
+    },
+    {
+     "t_s": 4.604605,
+     "x_px": 91.56155577131892,
+     "y_px": 69.8569127747578
+    },
+    {
+     "t_s": 4.637971,
+     "x_px": 91.56155577131892,
+     "y_px": 66.16844015731658
+    },
+    {
+     "t_s": 4.671338,
+     "x_px": 91.56155577131892,
+     "y_px": 63.29404647853062
+    },
+    {
+     "t_s": 4.704705,
+     "x_px": 91.56155577131892,
+     "y_px": 61.233854484950825
+    },
+    {
+     "t_s": 4.738071,
+     "x_px": 91.56155577131892,
+     "y_px": 59.987889318228554
+    },
+    {
+     "t_s": 4.771438,
+     "x_px": 91.56155577131892,
+     "y_px": 59.55607629364749
+    },
+    {
+     "t_s": 4.804805,
+     "x_px": 91.56155577131892,
+     "y_px": 59.938464954268056
+    },
+    {
+     "t_s": 4.838172,
+     "x_px": 91.56155577131892,
+     "y_px": 61.13505530009934
+    },
+    {
+     "t_s": 4.871538,
+     "x_px": 91.56155577131892,
+     "y_px": 63.14577486789494
+    },
+    {
+     "t_s": 4.904905,
+     "x_px": 91.56155577131892,
+     "y_px": 65.97074418272314
+    },
+    {
+     "t_s": 4.938272,
+     "x_px": 91.56155577131892,
+     "y_px": 69.6099151827566
+    },
+    {
+     "t_s": 4.971638,
+     "x_px": 91.56155577131892,
+     "y_px": 74.0631422012757
+    },
+    {
+     "t_s": 5.005005,
+     "x_px": 91.56155577131892,
+     "y_px": 79.33069217030607
+    },
+    {
+     "t_s": 5.038372,
+     "x_px": 91.56155577131892,
+     "y_px": 85.4124438245417
+    }
+   ],
+   "takeoff_level_y_px": 80.3601559730592,
+   "apex_info": {
+    "rise_m": 0.26717296147643005,
+    "sigma_m": 0.04087276381497064,
+    "feet_clearance_m": null
+   },
+   "landing_info": {
+    "airborne_s": 0.5672329999999999,
+    "sigma_s": 0.04718806393570304
+   },
+   "world_outcomes": [
+    {
+     "world": "Moon",
+     "landing_time_s": 2.5280793252639016,
+     "landing_x_px": 91.54465236811149
+    }
+   ],
+   "ghosts": [
+    {
+     "role": "earth_counterfactual",
+     "world": "Earth",
+     "gravity_m_s2": 9.81,
+     "points": [
+      {
+       "t_s": 4.504505,
+       "frame": 135,
+       "x_px": 92.24175824175825,
+       "y_px": 80.3601559730592
+      },
+      {
+       "t_s": 4.537871,
+       "frame": 136,
+       "x_px": 92.23255772564008,
+       "y_px": 74.35865684903573
+      },
+      {
+       "t_s": 4.571238,
+       "frame": 137,
+       "x_px": 92.22335693377666,
+       "y_px": 69.43014087108142
+      },
+      {
+       "t_s": 4.604605,
+       "frame": 138,
+       "x_px": 92.21415614191324,
+       "y_px": 65.57480398934284
+      },
+      {
+       "t_s": 4.637971,
+       "frame": 139,
+       "x_px": 92.20495562579507,
+       "y_px": 62.79271350337704
+      },
+      {
+       "t_s": 4.671338,
+       "frame": 140,
+       "x_px": 92.19575483393164,
+       "y_px": 61.08370265118158
+      },
+      {
+       "t_s": 4.704705,
+       "frame": 141,
+       "x_px": 92.18655404206822,
+       "y_px": 60.44787089520187
+      },
+      {
+       "t_s": 4.738071,
+       "frame": 142,
+       "x_px": 92.17735352595005,
+       "y_px": 60.88518904729371
+      },
+      {
+       "t_s": 4.771438,
+       "frame": 143,
+       "x_px": 92.16815273408663,
+       "y_px": 62.395683320857074
+      },
+      {
+       "t_s": 4.804805,
+       "frame": 144,
+       "x_px": 92.15895194222321,
+       "y_px": 64.97935669063621
+      },
+      {
+       "t_s": 4.838172,
+       "frame": 145,
+       "x_px": 92.14975115035979,
+       "y_px": 68.63620915663108
+      },
+      {
+       "t_s": 4.871538,
+       "frame": 146,
+       "x_px": 92.14055063424162,
+       "y_px": 73.36608288010794
+      },
+      {
+       "t_s": 4.904905,
+       "frame": 147,
+       "x_px": 92.1313498423782,
+       "y_px": 79.16926137564592
+      },
+      {
+       "t_s": 4.938272,
+       "frame": 148,
+       "x_px": 92.12214905051478,
+       "y_px": 86.04561896739965
+      },
+      {
+       "t_s": 4.970289737509498,
+       "frame": 149,
+       "x_px": 92.11332031137843,
+       "y_px": 93.652879292441
+      }
+     ],
+     "landing": {
+      "t_s": 4.970289737509498,
+      "x_px": 92.11332031137843,
+      "y_px": 93.652879292441
+     }
+    },
+    {
+     "role": "fitting_world",
+     "world": "Moon",
+     "gravity_m_s2": 1.62,
+     "points": [
+      {
+       "t_s": 4.504505,
+       "frame": 135,
+       "x_px": 92.24175824175825,
+       "y_px": 80.3601559730592
+      },
+      {
+       "t_s": 4.537871,
+       "frame": 136,
+       "x_px": 92.23255772564008,
+       "y_px": 73.91070527014736
+      },
+      {
+       "t_s": 4.571238,
+       "frame": 137,
+       "x_px": 92.22335693377666,
+       "y_px": 67.63828085356361
+      },
+      {
+       "t_s": 4.604605,
+       "frame": 138,
+       "x_px": 92.21415614191324,
+       "y_px": 61.5430786730522
+      },
+      {
+       "t_s": 4.637971,
+       "frame": 139,
+       "x_px": 92.20495562579507,
+       "y_px": 55.62527343330586
+      },
+      {
+       "t_s": 4.671338,
+       "frame": 140,
+       "x_px": 92.19575483393164,
+       "y_px": 49.88451041363642
+      },
+      {
+       "t_s": 4.704705,
+       "frame": 141,
+       "x_px": 92.18655404206822,
+       "y_px": 44.32096963003945
+      },
+      {
+       "t_s": 4.738071,
+       "frame": 142,
+       "x_px": 92.17735352595005,
+       "y_px": 38.93480985345858
+      },
+      {
+       "t_s": 4.771438,
+       "frame": 143,
+       "x_px": 92.16815273408663,
+       "y_px": 33.72570823070345
+      },
+      {
+       "t_s": 4.804805,
+       "frame": 144,
+       "x_px": 92.15895194222321,
+       "y_px": 28.693828844020643
+      },
+      {
+       "t_s": 4.838172,
+       "frame": 145,
+       "x_px": 92.14975115035979,
+       "y_px": 23.839171693410165
+      },
+      {
+       "t_s": 4.871538,
+       "frame": 146,
+       "x_px": 92.14055063424162,
+       "y_px": 19.16187430476444
+      },
+      {
+       "t_s": 4.904905,
+       "frame": 147,
+       "x_px": 92.1313498423782,
+       "y_px": 14.661656314995938
+      },
+      {
+       "t_s": 4.938272,
+       "frame": 148,
+       "x_px": 92.12214905051478,
+       "y_px": 10.338660561299761
+      },
+      {
+       "t_s": 4.971638,
+       "frame": 149,
+       "x_px": 92.11294853439662,
+       "y_px": 6.193008635819638
+      },
+      {
+       "t_s": 5.005005,
+       "frame": 150,
+       "x_px": 92.1037477425332,
+       "y_px": 2.2244520429654386
+      },
+      {
+       "t_s": 5.038372,
+       "frame": 151,
+       "x_px": 92.09454695066978,
+       "y_px": -1.5668823138164356
+      },
+      {
+       "t_s": 5.071738,
+       "frame": 152,
+       "x_px": 92.08534643455161,
+       "y_px": -5.180888776131198
+      },
+      {
+       "t_s": 7.032584325263901,
+       "frame": 191,
+       "x_px": 91.54465236811149,
+       "y_px": 93.65287929244097
+      }
+     ],
+     "landing": {
+      "t_s": 7.032584325263901,
+      "x_px": 91.54465236811149,
+      "y_px": 93.65287929244097
+     }
+    }
+   ],
+   "repetitions": []
+  }
+ ],
+ "range_checks": [
+  {
+   "id": "suited_figure_height",
+   "label": "suited figure height",
+   "answers": "It settles whether the foreground figure's stature matches adult human norms.",
+   "unit": "m",
+   "frame": 10,
+   "extents": [
+    {
+     "frame": 10,
+     "length_px": 155.08062419270823,
+     "name": "suited figure height",
+     "x1": 66.0,
+     "x2": 61.0,
+     "y1": 58.0,
+     "y2": 213.0
+    }
+   ],
+   "value": 1.5769566427124344,
+   "sigma": 0.0574887007137525,
+   "formula": "length_px \u00d7 m_per_px",
+   "uses_scale": true,
+   "measurement_artifact": "artifacts/measure_figure_height.txt",
+   "range": {
+    "bounds_kind": "min-max",
+    "max": 1.75,
+    "min": 1.5,
+    "percentiles": null,
+    "sources": [
+     {
+      "bound": "min",
+      "domain": "myhsn.co.uk",
+      "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+      "quote_highlight": "1.50 to 1.75 metres",
+      "source_type": "survey report",
+      "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+      "value": 1.5
+     },
+     {
+      "bound": "max",
+      "domain": "myhsn.co.uk",
+      "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)",
+      "quote_highlight": "1.50 to 1.75 metres",
+      "source_type": "survey report",
+      "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+      "value": 1.75
+     }
+    ],
+    "typical": null,
+    "what": "adult women standing height"
+   },
+   "outcome": "inside",
+   "delta_sigma": 0.0,
+   "side": null
+  }
+ ],
+ "calculation_steps": [
+  {
+   "id": "time_from_frames",
+   "title": "Time from frames",
+   "frame": null,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "Frame times come from measured timestamps, never the container rate."
+    },
+    {
+     "type": "formula",
+     "latex": "f = 29.97 \\, \\mathrm{Hz}, \\; N = 192 \\, \\mathrm{frames}",
+     "fallback": "measured fps = 29.97 Hz over 192 frames",
+     "chip": {
+      "text": "6.41 s of video",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "full": [
+    {
+     "type": "text",
+     "text": "Duplicate frames and cuts are excluded from every fit window."
+    }
+   ],
+   "caveats": []
+  },
+  {
+   "id": "mask_check",
+   "title": "Blind mask check",
+   "frame": 10,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "A blind check read what the reference mask covers, with no knowledge of the measurement."
+    },
+    {
+     "type": "formula",
+     "latex": "\\ell = 90.4 \\, \\mathrm{px}",
+     "fallback": "measured extent = 90.4 px",
+     "chip": {
+      "text": "On the left side of the frame the pale tint covers the large light rectangular pack on the back of the light-suited figure seen from behind. It includes the top of the pack against the dark background, the left side at the frame edge, and the right side with a narrow margin onto the background, while its bottom edge cuts straight across the figure at about waist to upper-leg level. It covers only the pack unit and excludes the white legs and lower suit below it and excludes the surrounding ground and background.",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "full": [],
+   "caveats": []
+  },
+  {
+   "id": "mask_check",
+   "title": "Blind mask check",
+   "frame": 10,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "A blind check read what the reference mask covers, with no knowledge of the measurement."
+    },
+    {
+     "type": "formula",
+     "latex": "\\ell = 155.1 \\, \\mathrm{px}",
+     "fallback": "measured extent = 155.1 px",
+     "chip": {
+      "text": "Two separate tinted rectangular patches, each with its own bounding box. The large left patch covers the whole left foreground suited figure from the top of its back-mounted box to the soles of its feet, including the torso, limbs, and head area. The box is slightly larger than the figure so a narrow margin of background and ground around the sides, top and bottom is also tinted. The small right patch in the mid-distance covers the small upright suited figure standing to the right of a vertical pole, from head to feet, with only a narrow margin of surrounding background included. The pole and the element attached to it to the left, and the rest of the ground and background, are left outside the tint.",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "full": [],
+   "caveats": []
+  },
+  {
+   "id": "scale",
+   "title": "Pixel scale",
+   "frame": 10,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "Metres per pixel from the reference size over its extent."
+    },
+    {
+     "type": "formula",
+     "latex": "s = 0.010177 \\, \\mathrm{m/px}",
+     "fallback": "s = 0.010177 m/px from 2 references (0.010105 m/px, 0.010478 m/px; max ratio 1.037)",
+     "chip": {
+      "text": "0.010177 m/px",
+      "tone": "final"
+     }
+    }
+   ],
+   "full": [
+    {
+     "type": "formula",
+     "latex": "s = 0.914 \\, \\mathrm{m} / 90.44888059008801 \\, \\mathrm{px}",
+     "fallback": "backpack unit height: s = 0.914 m / 90.44888059008801 px",
+     "chip": null
+    },
+    {
+     "type": "formula",
+     "latex": "s = 1.625 \\, \\mathrm{m} / 155.08062419270823 \\, \\mathrm{px}",
+     "fallback": "suited figure height: s = 1.625 m / 155.08062419270823 px",
+     "chip": null
+    }
+   ],
+   "caveats": []
+  },
+  {
+   "id": "segment",
+   "title": "Segment Foreground hop",
+   "frame": 135,
+   "frame_end": 152,
+   "segment_id": "hop_a",
+   "short": [
+    {
+     "type": "text",
+     "text": "Tracked point over the free-flight window."
+    },
+    {
+     "type": "formula",
+     "latex": "N = 18 \\, \\mathrm{frames}",
+     "fallback": "N = 18 tracked frames",
+     "chip": {
+      "text": "centroid of the backpack unit, rigid with the body",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "full": [
+    {
+     "type": "text",
+     "text": "Contact frames stay outside every gravity fit."
+    }
+   ],
+   "caveats": []
+  },
+  {
+   "id": "fit",
+   "title": "Fit Foreground hop",
+   "frame": 135,
+   "frame_end": 152,
+   "segment_id": "hop_a",
+   "short": [
+    {
+     "type": "text",
+     "text": "Parabola fit to heights above the takeoff level."
+    },
+    {
+     "type": "formula",
+     "latex": "a = 731.3 \\pm 111.9 \\, \\mathrm{px/s^2}",
+     "fallback": "a = 731.3 +/- 111.9 px/s2",
+     "chip": {
+      "text": "g = 7.443 m/s2",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "full": [
+    {
+     "type": "formula",
+     "latex": "\\rho_z = 0.54",
+     "fallback": "residual trend z = 0.54",
+     "chip": null
+    }
+   ],
+   "caveats": []
+  },
+  {
+   "id": "measured_g",
+   "title": "Measured gravity",
+   "frame": null,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "Apparent gravity at native playback speed."
+    },
+    {
+     "type": "formula",
+     "latex": "g = 7.4 \\pm 1.1 \\, \\mathrm{m/s^2}",
+     "fallback": "g = 7.4 +/- 1.1 m/s2",
+     "chip": {
+      "text": "measured gravity",
+      "tone": "final"
+     }
+    }
+   ],
+   "full": [
+    {
+     "type": "formula",
+     "latex": "Moon: 5.1\\sigma",
+     "fallback": "Moon: 5.1 sigma",
+     "chip": {
+      "text": "Moon",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "caveats": []
+  },
+  {
+   "id": "clock",
+   "title": "Independent clock",
+   "frame": null,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "No independent clock in this clip: the speed is taken as filmed."
+    }
+   ],
+   "full": [],
+   "caveats": []
+  },
+  {
+   "id": "scale",
+   "title": "Range check suited figure height",
+   "frame": 10,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "Measured suited figure height against its quoted range."
+    },
+    {
+     "type": "formula",
+     "latex": "suited figure height = 155.1 px x 0.010177 m/px = 157.7 \u00b1 5.7 cm against [150 cm, 175 cm]: inside",
+     "fallback": "suited figure height = 155.1 px x 0.010177 m/px = 157.7 \u00b1 5.7 cm against [150 cm, 175 cm]: inside",
+     "chip": {
+      "text": "inside",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "full": [
+    {
+     "type": "text",
+     "text": "suited_figure_height: suited figure height: 157.7 \u00b1 5.7 cm against the adult women standing height range 150 cm\u2013175 cm: inside."
+    }
+   ],
+   "caveats": [
+    {
+     "text": "\u03c3 raised from 0.0538607 m to 0.0574887 m (endpoint and scale floor)",
+     "artifact": null
+    }
+   ]
+  },
+  {
+   "id": "uncertainty",
+   "title": "Uncertainty",
+   "frame": null,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "text",
+     "text": "Itemised error budget, recombined in quadrature."
+    },
+    {
+     "type": "formula",
+     "latex": "\\sigma = 1.139 \\, \\mathrm{m/s^2}",
+     "fallback": "sigma total = 1.139 m/s2",
+     "chip": {
+      "text": "error budget",
+      "tone": "final"
+     }
+    },
+    {
+     "type": "bars",
+     "source": "error_budget"
+    }
+   ],
+   "full": [
+    {
+     "type": "formula",
+     "latex": "\\sigma_{reference_size} = 0.244",
+     "fallback": "reference_size: 0.244 m/s2",
+     "chip": {
+      "text": "reference_size",
+      "tone": "intermediate"
+     }
+    },
+    {
+     "type": "formula",
+     "latex": "\\sigma_{pixel_scale} = 0.082",
+     "fallback": "pixel_scale: 0.082 m/s2",
+     "chip": {
+      "text": "pixel_scale",
+      "tone": "intermediate"
+     }
+    },
+    {
+     "type": "formula",
+     "latex": "\\sigma_{fit} = 0.156",
+     "fallback": "fit: 0.156 m/s2",
+     "chip": {
+      "text": "fit",
+      "tone": "intermediate"
+     }
+    },
+    {
+     "type": "formula",
+     "latex": "\\sigma_{point_vs_com} = 0.372",
+     "fallback": "point_vs_com: 0.372 m/s2",
+     "chip": {
+      "text": "point_vs_com",
+      "tone": "intermediate"
+     }
+    },
+    {
+     "type": "formula",
+     "latex": "\\sigma_{reading_spread} = 1.033",
+     "fallback": "reading_spread: 1.033 m/s2",
+     "chip": {
+      "text": "reading_spread",
+      "tone": "intermediate"
+     }
+    }
+   ],
+   "caveats": []
+  },
+  {
+   "id": "verdict",
+   "title": "Verdict",
+   "frame": 153,
+   "frame_end": null,
+   "segment_id": null,
+   "short": [
+    {
+     "type": "formula",
+     "latex": "sped up x2.14 to Moon; g = 7.4 +/- 1.1 m/s2",
+     "fallback": "sped up x2.14 to Moon; g = 7.4 +/- 1.1 m/s2",
+     "chip": {
+      "text": "Moon",
+      "tone": "final"
+     }
+    }
+   ],
+   "full": [
+    {
+     "type": "text",
+     "text": "Computed deterministically from the evidence by this validator."
+    }
+   ],
+   "caveats": []
+  }
+ ],
+ "clock": null,
+ "clock_absent_reason": "no visible independent rhythm; gait signal over walking produced no reliable clock",
+ "worlds": {
+  "candidates": [
+   {
+    "world": "Moon",
+    "g_m_s2": 1.62,
+    "fits_native": false,
+    "delta_sigma": 5.113896365953507,
+    "retime_factor": 0.4665445359862796
+   },
+   {
+    "world": "Earth",
+    "g_m_s2": 9.81,
+    "fits_native": false,
+    "delta_sigma": 2.0791622757172865,
+    "retime_factor": 1.148074587259352
+   }
+  ],
+  "excluded": []
+ },
+ "error_budget": {
+  "components": [
+   {
+    "name": "reference_size",
+    "sigma_contribution": 0.24391231630205865,
+    "basis": "quoted PLSS plus OPS and stature size spreads over fitted gravity"
+   },
+   {
+    "name": "pixel_scale",
+    "sigma_contribution": 0.08179986217447087,
+    "basis": "endpoint placement"
+   },
+   {
+    "name": "fit",
+    "sigma_contribution": 0.1559084087871097,
+    "basis": "parabola residuals"
+   },
+   {
+    "name": "point_vs_com",
+    "sigma_contribution": 0.371817555338504,
+    "basis": "centroid versus centre-of-mass allowance"
+   },
+   {
+    "name": "reading_spread",
+    "sigma_contribution": 1.0332785454702407,
+    "basis": "half size difference between whole-pack and lower-body-only readings over fitted gravity"
+   }
+  ],
+  "sigma_total": 1.1385976964727815,
+  "sigma_relative": 0.15298241105350935
+ },
+ "verdict": {
+  "kind": "retimed",
+  "world": "Moon",
+  "direction": "sped",
+  "factor": 2.143418093807466,
+  "g_measured": 7.442670622275192,
+  "sigma_g": 1.1385976964727815,
+  "reason": null,
+  "clock_note": "clock: none, scene-pinned",
+  "decided_by": "gravity"
+ },
+ "sentence": "Not realistic at this speed: sped up \u00d72.14; at real speed it fits the Moon (no independent clock; scene-pinned). Measured g = 7.4 \u00b1 1.1 m/s\u00b2.",
+ "page_texts": {},
+ "self_built_tools": [],
+ "provenance": {
+  "model": "muse-spark-1.3-contributor",
+  "run_id": "20261031T180411Z-2a6ce844",
+  "artifacts": [
+   {
+    "name": "view",
+    "produced_by": "run_python",
+    "path": "artifacts/t4_view_frames_0.jpg"
+   },
+   {
+    "name": "full scan view",
+    "produced_by": "run_python",
+    "path": "artifacts/t28_view_frames_0.jpg"
+   },
+   {
+    "name": "segment masks",
+    "produced_by": "run_python",
+    "path": "artifacts/t12_segment_0.npz"
+   },
+   {
+    "name": "figure masks",
+    "produced_by": "run_python",
+    "path": "artifacts/t9_segment_0.npz"
+   },
+   {
+    "name": "flag masks",
+    "produced_by": "run_python",
+    "path": "artifacts/t25_segment_0.npz"
+   },
+   {
+    "name": "mask check",
+    "produced_by": "run_python",
+    "path": "artifacts/t21_check_mask_0.json"
+   },
+   {
+    "name": "figure mask check",
+    "produced_by": "run_python",
+    "path": "artifacts/t42_check_mask_0.json"
+   },
+   {
+    "name": "line check",
+    "produced_by": "run_python",
+    "path": "artifacts/t40_check_line_0.json"
+   },
+   {
+    "name": "track",
+    "produced_by": "run_python",
+    "path": "workspace/track_hop_a.json"
+   },
+   {
+    "name": "reference track",
+    "produced_by": "run_python",
+    "path": "workspace/ref_flag_track.json"
+   },
+   {
+    "name": "figure height measurement",
+    "produced_by": "run_python",
+    "path": "artifacts/measure_figure_height.txt"
+   }
+  ]
+ }
+}

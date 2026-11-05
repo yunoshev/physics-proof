@@ -1,0 +1,30 @@
+{
+  "query": "adult human standing height average range metres",
+  "facts": [
+    {
+      "text": "The average range for adult men is approximately 1.65 to 1.85 metres.",
+      "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+      "quote": "The *average* range for **adult men** is approximately **1.65 to 1.85 metres** (about **5\u20195\u2033\u20136\u20191\u2033**)"
+    },
+    {
+      "text": "Worldwide average height for adult men is around 1.71 m.",
+      "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+      "quote": "Worldwide *average* is around **1.71 m** (5\u2032 7\u2033)"
+    },
+    {
+      "text": "The average range for adult women is around 1.50 to 1.75 metres.",
+      "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+      "quote": "The *average* range for **adult women** is around **1.50 to 1.75 metres** (about **4\u201911\u2033\u20135\u20199\u2033**)"
+    },
+    {
+      "text": "Worldwide average height for adult women is around 1.59 m.",
+      "url": "https://myhsn.co.uk/what-is-normal-human-height/",
+      "quote": "Worldwide *average* is around **1.59 m** (5\u2032 3\u2033)"
+    },
+    {
+      "text": "Global mean height was 171 cm (1.71 m) for adult men and 159 cm (1.59 m) for adult women born in 1996.",
+      "url": "https://simple.wikipedia.org/wiki/Human_height",
+      "quote": "Over the last two millennia, human height, based on skeletal remains, has stayed fairly steady, oscillating around 170 \u00a0 cm (5 \u00a0 ft 7 \u00a0 in). The global mean height of adult men born in 1996 was 171 \u00a0 cm (5 \u00a0 ft 7 \u00a0 in), while the global average height of adult women born in 1996 was 159 \u00a0 cm (5 \u00a0 ft 3 \u00a0 in).[2]"
+    }
+  ]
+}

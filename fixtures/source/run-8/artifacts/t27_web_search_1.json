@@ -1,0 +1,15 @@
+{
+  "query": "life support system width inches depth",
+  "facts": [
+    {
+      "text": "The portable life support pack is 20.5 inches wide.",
+      "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+      "quote": "104 pounds; it is 26 inches high, 20.5 inches wide,"
+    },
+    {
+      "text": "The portable life support pack is 10.5 inches deep.",
+      "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/LM15_Portable_Life_Support_System_ppP1-5.pdf",
+      "quote": "and 10.5 inches deep. It is powered by a 16.8-volt"
+    }
+  ]
+}
